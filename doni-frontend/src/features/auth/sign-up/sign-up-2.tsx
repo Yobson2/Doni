@@ -1,73 +1,28 @@
 import { Link } from '@tanstack/react-router'
-import { Logo, Wordmark } from '@/components/logo'
-import { AnimatedContainer } from '@/components/motion/animated-container'
+import { useTranslation } from 'react-i18next'
+import { AuthSplitLayout } from '../auth-split-layout'
 import { SignUpForm } from './components/sign-up-form'
 
 export default function SignUp2() {
+  const { t } = useTranslation()
+
   return (
-    <AnimatedContainer variant='scaleIn' className='relative container grid h-svh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0'>
-      <div className='bg-primary text-primary-foreground relative hidden h-full flex-col p-10 lg:flex dark:border-r dark:bg-secondary dark:text-foreground'>
-        <div className='absolute inset-0 bg-primary dark:bg-secondary' />
-        <Link to='/' className='relative z-20 flex items-center text-lg font-medium'>
-          <Wordmark className='h-7 w-auto' />
-        </Link>
-
-        <div className='relative z-20 m-auto flex flex-col items-center gap-4'>
-          <Logo className='h-24 w-24' />
-          <span className='text-lg font-medium opacity-90'>Research BRVM stocks and track your portfolio</span>
-        </div>
-
-        <div className='relative z-20 mt-auto'>
-          <blockquote className='space-y-2'>
-            <p className='text-lg'>
-              &ldquo;This template has saved me countless hours of work and
-              helped me deliver stunning designs to my clients faster than ever
-              before.&rdquo;
-            </p>
-          </blockquote>
-        </div>
-      </div>
-      <div className='lg:p-8'>
-        <div className='mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[350px]'>
-          <Link to='/' className='mb-4 flex items-center gap-2 lg:hidden'>
-            <Wordmark className='text-primary h-7 w-auto' />
+    <AuthSplitLayout
+      title={t('auth.signUp.title')}
+      subtitle={t('auth.signUp.subtitle')}
+      footer={
+        <>
+          {t('auth.signUp.haveAccount')}{' '}
+          <Link
+            to='/sign-in'
+            className='text-primary font-medium underline-offset-4 hover:underline'
+          >
+            {t('auth.signUp.signIn')}
           </Link>
-          <div className='flex flex-col space-y-2 text-left'>
-            <h1 className='text-2xl font-semibold tracking-tight'>
-              Create an account
-            </h1>
-            <p className='text-muted-foreground text-sm'>
-              Enter your email and password to create an account.
-              <br />
-              Already have an account?{' '}
-              <Link
-                to='/sign-in'
-                className='hover:text-primary underline underline-offset-4'
-              >
-                Sign In
-              </Link>
-            </p>
-          </div>
-          <SignUpForm />
-          <p className='text-muted-foreground px-8 text-center text-sm'>
-            By creating an account, you agree to our{' '}
-            <a
-              href='/terms'
-              className='hover:text-primary underline underline-offset-4'
-            >
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a
-              href='/privacy'
-              className='hover:text-primary underline underline-offset-4'
-            >
-              Privacy Policy
-            </a>
-            .
-          </p>
-        </div>
-      </div>
-    </AnimatedContainer>
+        </>
+      }
+    >
+      <SignUpForm />
+    </AuthSplitLayout>
   )
 }

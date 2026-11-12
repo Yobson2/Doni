@@ -1,4 +1,231 @@
 {
   "welcome": "Bienvenue dans notre application !",
-  "language": "Langue"
+  "language": "Langue",
+  "landing": {
+    "nav": {
+      "features": "Fonctionnalités",
+      "how": "Comment ça marche",
+      "faq": "FAQ",
+      "signIn": "Se connecter",
+      "getStarted": "Créer un compte",
+      "toggleMenu": "Ouvrir le menu",
+      "product": "Produit",
+      "trust": "Données",
+      "home": "Accueil Doni",
+      "language": "Langue",
+      "main": "Principale",
+      "skip": "Aller au contenu"
+    },
+    "hero": {
+      "title1": "Investir à la BRVM,",
+      "title2": "doni doni.",
+      "subtitle": "Suivez les sociétés cotées, enregistrez vos opérations et voyez ce que votre portefeuille rapporte vraiment, dividendes compris. Pensé pour les investisseurs de la zone UEMOA.",
+      "note": "Cours de clôture issus du bulletin officiel de la BRVM. Information uniquement, pas un conseil en investissement.",
+      "eyebrow": "Pour les investisseurs de la BRVM, dans les 8 pays de l'UEMOA",
+      "secondary": "Voir comment ça marche"
+    },
+    "features": {
+      "title": "Tout ce qu'il faut pour votre portefeuille",
+      "subtitle": "Un seul endroit pour suivre le marché régional et vos propres positions, sans tableur.",
+      "market": {
+        "title": "Fiches sociétés",
+        "description": "Profil, secteur et historique des cours de chaque titre coté, avec la date et la source de chaque cours de clôture."
+      },
+      "portfolio": {
+        "title": "Suivi de portefeuille",
+        "description": "Enregistrez vos achats et ventes avec les frais et votre SGI. Doni calcule votre PMP et vos plus-values réalisées et latentes."
+      },
+      "dividends": {
+        "title": "Dividendes",
+        "description": "Doni propose chaque dividende d'après les titres que vous déteniez à la date de détachement. Vous confirmez le montant net réellement reçu."
+      },
+      "returns": {
+        "title": "Votre vrai rendement",
+        "description": "Votre rendement personnel, dividendes compris, comparé au BRVM Composite sur la même période."
+      },
+      "alerts": {
+        "title": "Liste de suivi et alertes",
+        "description": "Suivez des sociétés que vous ne détenez pas encore et recevez une alerte quotidienne : détachements de dividendes, opérations sur titres, seuils de cours."
+      },
+      "currency": {
+        "title": "FCFA ou euros",
+        "description": "Voyez la répartition par société et par secteur, en FCFA ou en euros à la parité fixe de 655,957."
+      },
+      "eyebrow": "Produit",
+      "moreTitle": "Et autour de votre portefeuille"
+    },
+    "how": {
+      "title": "Comment ça marche",
+      "subtitle": "Partez de ce que vous détenez déjà. Doni fait les calculs.",
+      "step1": {
+        "title": "Ajoutez votre portefeuille",
+        "description": "Saisissez les positions que vous détenez déjà, puis enregistrez chaque achat, vente et dividende au fil de l'eau."
+      },
+      "step2": {
+        "title": "Des cours mis à jour à chaque séance",
+        "description": "Après la clôture, Doni lit le bulletin officiel de la cote (BOC) et le vérifie avant d'afficher le moindre cours."
+      },
+      "step3": {
+        "title": "Voyez où vous en êtes",
+        "description": "Positions, plus-values et rendement, toujours avec la date des cours utilisés."
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "subtitle": "Ce qu'on nous demande avant de s'inscrire.",
+      "broker": {
+        "q": "Doni est-il un courtier ?",
+        "a": "Non. Doni n'achète ni ne vend de titres. Vous continuez de passer vos ordres auprès de votre SGI et vous les enregistrez dans Doni pour les suivre."
+      },
+      "advice": {
+        "q": "Est-ce du conseil en investissement ?",
+        "a": "Non. Doni fournit uniquement de l'information et de la pédagogie. Les décisions d'achat ou de vente vous appartiennent."
+      },
+      "live": {
+        "q": "Les cours sont-ils en temps réel ?",
+        "a": "Non. Doni affiche les cours de clôture du bulletin officiel de la BRVM, toujours datés. Si les données d'une séance ne passent pas nos contrôles, Doni continue d'afficher la dernière séance vérifiée jusqu'à leur validation."
+      },
+      "privacy": {
+        "q": "Qui peut voir mon portefeuille ?",
+        "a": "Personne d'autre que vous. Vous pouvez exporter toutes vos données ou supprimer votre compte à tout moment."
+      },
+      "countries": {
+        "q": "Quels pays sont couverts ?",
+        "a": "La BRVM est la bourse commune des huit pays de l'UEMOA : Bénin, Burkina Faso, Côte d'Ivoire, Guinée-Bissau, Mali, Niger, Sénégal et Togo. Doni est disponible en français et en anglais."
+      },
+      "more": "Une autre question ? Créez un compte et commencez par une seule position."
+    },
+    "cta": {
+      "title": "Commencez petit. Suivez tout.",
+      "subtitle": "Créez votre compte et ajoutez votre première position en quelques minutes.",
+      "eyebrow": "Doni doni, petit à petit"
+    },
+    "footer": {
+      "rights": "Tous droits réservés.",
+      "disclaimer": "Information et pédagogie uniquement. Pas un conseil en investissement.",
+      "tagline": "Recherche BRVM et suivi de portefeuille, petit à petit.",
+      "product": "Produit",
+      "account": "Compte"
+    },
+    "preview": {
+      "title": "Exemple de position",
+      "illustrative": "Chiffres d'illustration",
+      "shares": "{{count}} actions",
+      "buy": "Achat",
+      "dividend": "Dividende",
+      "net": "net",
+      "avgCost": "Prix moyen pondéré (PMP)",
+      "lastClose": "Dernier cours",
+      "unrealised": "Plus-value latente",
+      "totalReturn": "Rendement, dividendes compris",
+      "dividends": "Dividendes reçus",
+      "source": "Cours de clôture · bulletin officiel de la cote (BOC)",
+      "label": "Exemple de position dans Doni : deux achats et un dividende, avec le PMP et le rendement obtenus. Chiffres d'illustration."
+    },
+    "problem": {
+      "eyebrow": "Le problème",
+      "title": "Vos placements sont éparpillés. Votre vrai rendement reste une estimation.",
+      "statements": {
+        "title": "Les opérations chez votre SGI",
+        "description": "Vos achats, ventes et frais sont dans les relevés de votre SGI."
+      },
+      "bulletin": {
+        "title": "Les cours dans un bulletin",
+        "description": "Les cours de clôture sont publiés à chaque séance dans le bulletin officiel de la BRVM."
+      },
+      "dividends": {
+        "title": "Les dividendes à part",
+        "description": "Les dividendes arrivent plus tard, nets d'impôt, et sont faciles à oublier dans le calcul."
+      },
+      "answer": "Doni les réunit au même endroit et fait les calculs."
+    },
+    "demo": {
+      "title": "Faites le calcul",
+      "hint": "Modifiez les chiffres. Doni fait ce calcul pour chacune de vos positions.",
+      "buy1": "Premier achat",
+      "buy2": "Deuxième achat",
+      "quantity": "Actions",
+      "price": "Prix par action",
+      "dividend": "Dividende net par action",
+      "lastClose": "Dernier cours",
+      "currency": "Devise",
+      "results": "Résultat",
+      "shares": "Actions détenues",
+      "invested": "Montant investi",
+      "avgCost": "Prix moyen pondéré (PMP)",
+      "value": "Valeur au dernier cours",
+      "unrealised": "Plus-value latente",
+      "dividends": "Dividendes reçus",
+      "totalReturn": "Rendement, dividendes compris",
+      "note": "Exemple simplifié, hors frais. Dans Doni, les frais de votre SGI sont enregistrés avec chaque opération.",
+      "peg": "Euros à la parité fixe : 1 EUR = 655,957 FCFA."
+    },
+    "dividendFlow": {
+      "label": "Comment Doni propose un dividende",
+      "exDate": "Date de détachement",
+      "exDateText": "Vous déteniez 30 actions",
+      "suggested": "Doni propose",
+      "suggestedText": "30 × 900 FCFA",
+      "confirm": "Confirmez le montant net reçu",
+      "confirmed": "Confirmé",
+      "illustrative": "Chiffres d'illustration"
+    },
+    "returnBreakdown": {
+      "label": "Rendement, dividendes compris",
+      "price": "Plus-value",
+      "dividends": "Dividendes",
+      "total": "Rendement total",
+      "benchmark": "Affiché à côté du BRVM Composite sur la même période.",
+      "illustrative": "Suit le calcul ci-dessus"
+    },
+    "trust": {
+      "eyebrow": "Données",
+      "title": "Des chiffres dont vous connaissez l'origine",
+      "subtitle": "Doni montre d'où vient chaque chiffre, et ce qu'il n'est pas.",
+      "source": {
+        "title": "Source officielle",
+        "description": "Les cours de clôture viennent du bulletin officiel de la cote de la BRVM (BOC)."
+      },
+      "checked": {
+        "title": "Vérifiés avant affichage",
+        "description": "Les données de chaque séance sont contrôlées d'abord. En cas d'échec, Doni garde la dernière séance vérifiée."
+      },
+      "dated": {
+        "title": "Toujours datés",
+        "description": "Chaque cours et chaque total indique la date de la séance utilisée."
+      },
+      "yours": {
+        "title": "Votre argent reste chez votre SGI",
+        "description": "Doni ne détient aucun fonds et ne passe aucun ordre. Vous seul voyez votre portefeuille."
+      }
+    }
+  },
+  "auth": {
+    "panelTitle": "Petit à petit, voyez ce que votre portefeuille rapporte vraiment.",
+    "points": {
+      "pmp": "PMP et plus-values calculés pour chaque position",
+      "dividends": "Dividendes proposés d'après les titres que vous déteniez",
+      "dated": "Cours de clôture du bulletin officiel, toujours datés"
+    },
+    "disclaimer": "Information et pédagogie uniquement. Pas un conseil en investissement.",
+    "backHome": "Retour à l'accueil",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "signIn": {
+      "title": "Se connecter",
+      "subtitle": "Bon retour. Saisissez votre e-mail et votre mot de passe.",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Nouveau sur Doni ?",
+      "createAccount": "Créer un compte"
+    },
+    "signUp": {
+      "title": "Créez votre compte",
+      "subtitle": "Commencez par une position. Vous ajouterez le reste plus tard.",
+      "submit": "Créer un compte",
+      "haveAccount": "Déjà un compte ?",
+      "signIn": "Se connecter"
+    }
+  }
 }
