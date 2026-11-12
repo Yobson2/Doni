@@ -1,4 +1,218 @@
 {
-  "welcome": "Welcome to our app!",
-  "language": "Language"
+  "app": {
+    "tagline": "Follow your BRVM securities and track your portfolio",
+    "disclaimer": "Information and education only, not investment advice."
+  },
+  "language": {
+    "label": "Language",
+    "name": {
+      "fr": "Français",
+      "en": "English"
+    },
+    "switchTo": {
+      "fr": "Switch to French",
+      "en": "Switch to English"
+    }
+  },
+  "nav": {
+    "groups": {
+      "general": "General",
+      "other": "Other"
+    },
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "account": "My account",
+    "signOut": "Sign out",
+    "skipToMain": "Skip to main content"
+  },
+  "command": {
+    "search": "Search",
+    "placeholder": "Type a command or search…",
+    "empty": "No results found.",
+    "title": "Command menu",
+    "description": "Search for a page or command."
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "empty": {
+      "title": "Your portfolio will appear here",
+      "description": "Once you record your positions, Doni will show what your holdings are worth at the latest end-of-day prices and how they have performed."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your preferences.",
+    "appearance": {
+      "title": "Appearance",
+      "description": "Choose the language, font and theme of the app.",
+      "language": "Language",
+      "languageDescription": "The language used throughout the app.",
+      "font": "Font",
+      "fontDescription": "The font used throughout the app.",
+      "fonts": {
+        "inter": "Inter",
+        "manrope": "Manrope",
+        "system": "System font"
+      },
+      "themeDescription": "Choose a light or dark theme."
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "validation": {
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "Invalid email address.",
+      "passwordRequired": "Please enter your password.",
+      "passwordMin": "Password must be at least {{min}} characters long.",
+      "passwordMismatch": "Passwords don't match."
+    },
+    "signIn": {
+      "title": "Sign in",
+      "description": "Enter your email and password to sign in to your account.",
+      "action": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "success": "Signed in",
+      "legal": "By signing in, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+    },
+    "signUp": {
+      "title": "Create an account",
+      "description": "Enter your email and a password to create an account.",
+      "haveAccount": "Already have an account?",
+      "action": "Sign up",
+      "submit": "Create account",
+      "legal": "By creating an account, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "description": "Enter the email you signed up with and we will send you a link to reset your password.",
+      "noAccount": "Don't have an account?",
+      "backToSignIn": "Back to sign in",
+      "submit": "Continue"
+    }
+  },
+  "errors": {
+    "goBack": "Go back",
+    "backHome": "Back to home",
+    "unauthorized": {
+      "title": "Unauthorized",
+      "description": "Please sign in to access this page."
+    },
+    "forbidden": {
+      "title": "Access forbidden",
+      "description": "You don't have permission to view this page."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist or has been moved."
+    },
+    "general": {
+      "title": "Something went wrong",
+      "description": "Sorry for the inconvenience. Please try again later."
+    },
+    "maintenance": {
+      "title": "Doni is under maintenance",
+      "description": "The app is not available right now. We will be back shortly."
+    },
+    "toast": {
+      "generic": "Something went wrong.",
+      "notFound": "Content not found.",
+      "notModified": "Content not modified.",
+      "sessionExpired": "Your session has expired.",
+      "serverError": "Server error."
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "faq": "FAQ",
+      "toggleMenu": "Toggle menu"
+    },
+    "hero": {
+      "title": "Your BRVM portfolio,",
+      "highlight": "little by little",
+      "description": "Doni shows official end-of-day prices for BRVM securities and lets you see what your holdings are worth and how they have performed."
+    },
+    "features": {
+      "title": "What Doni does",
+      "description": "Built for people who already hold securities listed on the BRVM.",
+      "items": {
+        "prices": {
+          "title": "Official end-of-day prices",
+          "description": "Closing prices from the BRVM's official bulletin (BOC), always shown with the date they apply to."
+        },
+        "portfolio": {
+          "title": "Your portfolio",
+          "description": "Record your buys, sells and opening positions to see each position and its PMP."
+        },
+        "returns": {
+          "title": "Mon rendement",
+          "description": "See how your money has done, taking the timing of your contributions into account."
+        },
+        "dividends": {
+          "title": "Dividends",
+          "description": "Keep track of the dividends you actually received."
+        },
+        "languages": {
+          "title": "French and English",
+          "description": "Use Doni in French or English and switch at any time."
+        },
+        "mobile": {
+          "title": "Made for mobile",
+          "description": "Install Doni on your phone and check your portfolio on the go."
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "description": "Got questions? Here are some answers.",
+      "items": {
+        "advice": {
+          "question": "Does Doni give investment advice?",
+          "answer": "No. Doni provides information and education only. It never recommends buying or selling a security."
+        },
+        "cost": {
+          "question": "How much does Doni cost?",
+          "answer": "Doni is free during the beta."
+        },
+        "data": {
+          "question": "Where do the prices come from?",
+          "answer": "From the BRVM's official bulletin (BOC), published after each trading session. Prices are end-of-day, not real-time."
+        },
+        "orders": {
+          "question": "Can I buy or sell securities through Doni?",
+          "answer": "No. Doni does not receive or route orders. You trade through your SGI and record your trades in Doni."
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "description": "Create your account and start tracking your portfolio.",
+      "getStarted": "Get started",
+      "createAccount": "Create account",
+      "signIn": "Sign in"
+    },
+    "footer": {
+      "copyright": "© {{year}} {{name}}. All rights reserved."
+    }
+  },
+  "ui": {
+    "close": "Close",
+    "sidebar": {
+      "title": "Navigation",
+      "description": "Main navigation menu.",
+      "toggle": "Toggle sidebar"
+    }
+  }
 }

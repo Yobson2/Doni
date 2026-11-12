@@ -1,4 +1,5 @@
 import { IconSearch } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useSearch } from '@/context/search-context'
 import { Button } from './ui/button'
@@ -9,7 +10,8 @@ interface Props {
   placeholder?: string
 }
 
-export function Search({ className = '', placeholder = 'Search' }: Props) {
+export function Search({ className = '', placeholder }: Props) {
+  const { t } = useTranslation()
   const { setOpen } = useSearch()
   return (
     <Button
@@ -24,7 +26,7 @@ export function Search({ className = '', placeholder = 'Search' }: Props) {
         aria-hidden='true'
         className='absolute top-1/2 left-1.5 -translate-y-1/2'
       />
-      <span className='ml-3'>{placeholder}</span>
+      <span className='ml-3'>{placeholder ?? t('command.search')}</span>
     </Button>
   )
 }

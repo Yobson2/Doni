@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { IconMenu2, IconX } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
+import { LanguageSwitch } from '@/components/language-switch'
 import { Wordmark } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,14 +13,14 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 
+// Labels are i18n keys.
 const navLinks = [
-  { label: 'Features', href: '#features' },
-  { label: 'Testimonials', href: '#testimonials' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'landing.nav.features', href: '#features' },
+  { label: 'landing.nav.faq', href: '#faq' },
 ]
 
 export function LandingNavbar() {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -45,18 +47,19 @@ export function LandingNavbar() {
               href={link.href}
               className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
             >
-              {link.label}
+              {t(link.label)}
             </a>
           ))}
         </nav>
 
         <div className='flex items-center gap-2'>
           {/* <ThemeSwitch /> */}
+          <LanguageSwitch />
           <Button variant='ghost' size='sm' asChild className='hidden md:inline-flex'>
-            <Link to='/sign-in'>Sign In</Link>
+            <Link to='/sign-in'>{t('landing.cta.signIn')}</Link>
           </Button>
           <Button size='sm' asChild className='hidden md:inline-flex'>
-            <Link to='/sign-up'>Get Started</Link>
+            <Link to='/sign-up'>{t('landing.cta.getStarted')}</Link>
           </Button>
 
           {/* Mobile menu */}
@@ -64,7 +67,7 @@ export function LandingNavbar() {
             <SheetTrigger asChild>
               <Button variant='ghost' size='icon' className='md:hidden'>
                 {open ? <IconX className='h-5 w-5' /> : <IconMenu2 className='h-5 w-5' />}
-                <span className='sr-only'>Toggle menu</span>
+                <span className='sr-only'>{t('landing.nav.toggleMenu')}</span>
               </Button>
             </SheetTrigger>
             <SheetContent side='right' className='w-[300px]'>
@@ -81,16 +84,16 @@ export function LandingNavbar() {
                     onClick={() => setOpen(false)}
                     className='text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-2.5 text-base font-medium transition-colors'
                   >
-                    {link.label}
+                    {t(link.label)}
                   </a>
                 ))}
                 <hr className='my-4' />
                 <div className='flex flex-col gap-3 px-3'>
                   <Button variant='outline' size='lg' className='w-full' asChild>
-                    <Link to='/sign-in' onClick={() => setOpen(false)}>Sign In</Link>
+                    <Link to='/sign-in' onClick={() => setOpen(false)}>{t('landing.cta.signIn')}</Link>
                   </Button>
                   <Button size='lg' className='w-full' asChild>
-                    <Link to='/sign-up' onClick={() => setOpen(false)}>Get Started</Link>
+                    <Link to='/sign-up' onClick={() => setOpen(false)}>{t('landing.cta.getStarted')}</Link>
                   </Button>
                 </div>
               </nav>

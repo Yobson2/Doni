@@ -3,6 +3,7 @@ import js from '@eslint/js'
 import pluginQuery from '@tanstack/eslint-plugin-query'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import i18next from 'eslint-plugin-i18next'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
@@ -21,6 +22,7 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      i18next,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -29,6 +31,16 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       'no-console': 'error',
+      // Every visible string goes through i18next (ADR-0012).
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            include: ['^(aria-label|title|placeholder|alt)$'],
+          },
+        },
+      ],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -43,5 +55,9 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: { 'i18next/no-literal-string': 'off' },
   }
 )

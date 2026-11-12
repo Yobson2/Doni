@@ -37,6 +37,9 @@ jobs:
       - name: Type-check
         run: pnpm typecheck
 
+      - name: Unused files and dependencies (frontend)
+        run: pnpm --filter doni-frontend knip
+
       - name: Unit tests
         run: pnpm test
 

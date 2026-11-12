@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { handleServerError } from '@/utils/handle-server-error'
 import { FontProvider } from './context/font-context'
 import { ThemeProvider } from './context/theme-context'
+import i18n from './i18n'
 import './index.css'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
@@ -41,7 +42,7 @@ const queryClient = new QueryClient({
 
         if (error instanceof AxiosError) {
           if (error.response?.status === 304) {
-            toast.error('Content not modified!')
+            toast.error(i18n.t('errors.toast.notModified'))
           }
         }
       },
@@ -51,13 +52,13 @@ const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.status === 401) {
-          toast.error('Session expired!')
+          toast.error(i18n.t('errors.toast.sessionExpired'))
           useAuthStore.getState().auth.reset()
           const redirect = `${router.history.location.href}`
           router.navigate({ to: '/sign-in', search: { redirect } })
         }
         if (error.response?.status === 500) {
-          toast.error('Internal Server Error!')
+          toast.error(i18n.t('errors.toast.serverError'))
           router.navigate({ to: '/500' })
         }
         if (error.response?.status === 403) {

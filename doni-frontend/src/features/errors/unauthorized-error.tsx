@@ -1,24 +1,25 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { AnimatedContainer } from '@/components/motion/animated-container'
 import { Button } from '@/components/ui/button'
 
 export default function UnauthorisedError() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { history } = useRouter()
   return (
     <div className='h-svh'>
       <AnimatedContainer variant='fadeSlideUp' className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
         <h1 className='text-[7rem] leading-tight font-bold'>401</h1>
-        <span className='font-medium'>Unauthorized Access</span>
-        <p className='text-muted-foreground text-center'>
-          Please log in with the appropriate credentials <br /> to access this
-          resource.
+        <span className='font-medium'>{t('errors.unauthorized.title')}</span>
+        <p className='text-muted-foreground max-w-sm text-center'>
+          {t('errors.unauthorized.description')}
         </p>
         <div className='mt-6 flex gap-4'>
           <Button variant='outline' onClick={() => history.go(-1)}>
-            Go Back
+            {t('errors.goBack')}
           </Button>
-          <Button onClick={() => navigate({ to: '/' })}>Back to Home</Button>
+          <Button onClick={() => navigate({ to: '/' })}>{t('errors.backHome')}</Button>
         </div>
       </AnimatedContainer>
     </div>

@@ -1,21 +1,22 @@
 import { Link, useRouter } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/authStore'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useTranslation } from 'react-i18next'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
 export function ProfileDropdown() {
+  const { t } = useTranslation()
   const { auth } = useAuthStore()
   const router = useRouter()
+  const email = auth.user?.email ?? ''
 
   const handleLogout = () => {
     auth.reset()
@@ -25,43 +26,32 @@ export function ProfileDropdown() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
+        <Button
+          variant='ghost'
+          className='relative h-8 w-8 rounded-full'
+          aria-label={t('nav.account')}
+        >
           <Avatar className='h-8 w-8'>
-            <AvatarImage src='/avatars/01.png' alt='User' />
-            <AvatarFallback>AD</AvatarFallback>
+            <AvatarFallback>{email.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56' align='end' forceMount>
         <DropdownMenuLabel className='font-normal'>
-          <div className='flex flex-col space-y-1'>
-            <p className='text-sm leading-none font-medium'>
-              {auth.user?.email ?? 'Admin'}
+          <p className='text-sm leading-none font-medium'>{t('nav.account')}</p>
+          {email && (
+            <p className='text-muted-foreground mt-1 truncate text-xs leading-none'>
+              {email}
             </p>
-            <p className='text-muted-foreground text-xs leading-none'>
-              admin@example.com
-            </p>
-          </div>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link to='/settings'>
-              Profile
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to='/settings/account'>
-              Settings
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </Link>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+        <DropdownMenuItem asChild>
+          <Link to='/settings'>{t('nav.settings')}</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
-          Log out
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          {t('nav.signOut')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

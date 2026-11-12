@@ -1,65 +1,29 @@
 import { Link } from '@tanstack/react-router'
-import { Logo, Wordmark } from '@/components/logo'
-import { AnimatedContainer } from '@/components/motion/animated-container'
+import { useTranslation } from 'react-i18next'
+import { AuthSplitLayout } from '../auth-split-layout'
 import { ForgotPasswordForm } from './components/forgot-password-form'
 
+const linkClass = 'hover:text-primary underline underline-offset-4'
+
 export default function ForgotPassword2() {
+  const { t } = useTranslation()
+
   return (
-    <AnimatedContainer variant='scaleIn' className='relative container grid h-svh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0'>
-      <div className='bg-primary text-primary-foreground relative hidden h-full flex-col p-10 lg:flex dark:border-r dark:bg-secondary dark:text-foreground'>
-        <div className='absolute inset-0 bg-primary dark:bg-secondary' />
-        <Link to='/' className='relative z-20 flex items-center text-lg font-medium'>
-          <Wordmark className='h-7 w-auto' />
+    <AuthSplitLayout
+      title={t('auth.forgotPassword.title')}
+      description={t('auth.forgotPassword.description')}
+    >
+      <ForgotPasswordForm />
+      <p className='text-muted-foreground px-8 text-center text-sm'>
+        {t('auth.forgotPassword.noAccount')}{' '}
+        <Link to='/sign-up' className={linkClass}>
+          {t('auth.signUp.action')}
         </Link>
-
-        <div className='relative z-20 m-auto flex flex-col items-center gap-4'>
-          <Logo className='h-24 w-24' />
-          <span className='text-lg font-medium opacity-90'>Research BRVM stocks and track your portfolio</span>
-        </div>
-
-        <div className='relative z-20 mt-auto'>
-          <blockquote className='space-y-2'>
-            <p className='text-lg'>
-              &ldquo;This template has saved me countless hours of work and
-              helped me deliver stunning designs to my clients faster than ever
-              before.&rdquo;
-            </p>
-          </blockquote>
-        </div>
-      </div>
-      <div className='lg:p-8'>
-        <div className='mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[350px]'>
-          <Link to='/' className='mb-4 flex items-center gap-2 lg:hidden'>
-            <Wordmark className='text-primary h-7 w-auto' />
-          </Link>
-          <div className='flex flex-col space-y-2 text-left'>
-            <h1 className='text-2xl font-semibold tracking-tight'>
-              Forgot Password
-            </h1>
-            <p className='text-muted-foreground text-sm'>
-              Enter your registered email and <br />
-              we will send you a link to reset your password.
-            </p>
-          </div>
-          <ForgotPasswordForm />
-          <p className='text-muted-foreground px-8 text-center text-sm'>
-            Don&apos;t have an account?{' '}
-            <Link
-              to='/sign-up'
-              className='hover:text-primary underline underline-offset-4'
-            >
-              Sign up
-            </Link>
-            .{' '}
-            <Link
-              to='/sign-in'
-              className='hover:text-primary underline underline-offset-4'
-            >
-              Back to Sign In
-            </Link>
-          </p>
-        </div>
-      </div>
-    </AnimatedContainer>
+        {' · '}
+        <Link to='/sign-in' className={linkClass}>
+          {t('auth.forgotPassword.backToSignIn')}
+        </Link>
+      </p>
+    </AuthSplitLayout>
   )
 }

@@ -1,4 +1,218 @@
 {
-  "welcome": "Bienvenue dans notre application !",
-  "language": "Langue"
+  "app": {
+    "tagline": "Suivez vos titres de la BRVM et votre portefeuille",
+    "disclaimer": "Information et éducation uniquement, pas un conseil en investissement."
+  },
+  "language": {
+    "label": "Langue",
+    "name": {
+      "fr": "Français",
+      "en": "English"
+    },
+    "switchTo": {
+      "fr": "Passer en français",
+      "en": "Passer en anglais"
+    }
+  },
+  "nav": {
+    "groups": {
+      "general": "Général",
+      "other": "Autres"
+    },
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "account": "Mon compte",
+    "signOut": "Se déconnecter",
+    "skipToMain": "Aller au contenu principal"
+  },
+  "command": {
+    "search": "Rechercher",
+    "placeholder": "Saisissez une commande ou une recherche…",
+    "empty": "Aucun résultat.",
+    "title": "Menu de commandes",
+    "description": "Recherchez une page ou une commande."
+  },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "toggle": "Changer de thème"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "empty": {
+      "title": "Votre portefeuille apparaîtra ici",
+      "description": "Une fois vos positions enregistrées, Doni affichera la valeur de vos titres aux derniers cours de clôture et leur performance."
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "description": "Gérez vos préférences.",
+    "appearance": {
+      "title": "Apparence",
+      "description": "Choisissez la langue, la police et le thème de l'application.",
+      "language": "Langue",
+      "languageDescription": "La langue utilisée dans toute l'application.",
+      "font": "Police",
+      "fontDescription": "La police utilisée dans toute l'application.",
+      "fonts": {
+        "inter": "Inter",
+        "manrope": "Manrope",
+        "system": "Police du système"
+      },
+      "themeDescription": "Choisissez un thème clair ou sombre."
+    }
+  },
+  "auth": {
+    "email": "E-mail",
+    "emailPlaceholder": "nom@exemple.com",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "validation": {
+      "emailRequired": "Veuillez saisir votre e-mail.",
+      "emailInvalid": "Adresse e-mail invalide.",
+      "passwordRequired": "Veuillez saisir votre mot de passe.",
+      "passwordMin": "Le mot de passe doit contenir au moins {{min}} caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    },
+    "signIn": {
+      "title": "Connexion",
+      "description": "Saisissez votre e-mail et votre mot de passe pour vous connecter.",
+      "action": "Se connecter",
+      "forgotPassword": "Mot de passe oublié ?",
+      "success": "Connexion réussie",
+      "legal": "En vous connectant, vous acceptez nos <terms>Conditions d'utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>."
+    },
+    "signUp": {
+      "title": "Créer un compte",
+      "description": "Saisissez votre e-mail et un mot de passe pour créer un compte.",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "action": "S'inscrire",
+      "submit": "Créer mon compte",
+      "legal": "En créant un compte, vous acceptez nos <terms>Conditions d'utilisation</terms> et notre <privacy>Politique de confidentialité</privacy>."
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié",
+      "description": "Saisissez l'e-mail utilisé à l'inscription et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      "noAccount": "Pas encore de compte ?",
+      "backToSignIn": "Retour à la connexion",
+      "submit": "Continuer"
+    }
+  },
+  "errors": {
+    "goBack": "Retour",
+    "backHome": "Retour à l'accueil",
+    "unauthorized": {
+      "title": "Non autorisé",
+      "description": "Veuillez vous connecter pour accéder à cette page."
+    },
+    "forbidden": {
+      "title": "Accès refusé",
+      "description": "Vous n'avez pas l'autorisation de consulter cette page."
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "La page que vous cherchez n'existe pas ou a été déplacée."
+    },
+    "general": {
+      "title": "Une erreur est survenue",
+      "description": "Veuillez nous excuser pour la gêne occasionnée. Réessayez plus tard."
+    },
+    "maintenance": {
+      "title": "Doni est en maintenance",
+      "description": "L'application n'est pas disponible pour le moment. Nous revenons très vite."
+    },
+    "toast": {
+      "generic": "Une erreur est survenue.",
+      "notFound": "Contenu introuvable.",
+      "notModified": "Contenu non modifié.",
+      "sessionExpired": "Votre session a expiré.",
+      "serverError": "Erreur du serveur."
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Fonctionnalités",
+      "faq": "FAQ",
+      "toggleMenu": "Ouvrir ou fermer le menu"
+    },
+    "hero": {
+      "title": "Votre portefeuille BRVM,",
+      "highlight": "petit à petit",
+      "description": "Doni affiche les cours de clôture officiels des titres de la BRVM et vous permet de voir ce que valent vos titres et comment ils ont évolué."
+    },
+    "features": {
+      "title": "Ce que fait Doni",
+      "description": "Conçu pour les personnes qui détiennent déjà des titres cotés à la BRVM.",
+      "items": {
+        "prices": {
+          "title": "Cours de clôture officiels",
+          "description": "Les cours de clôture du Bulletin Officiel de la Cote (BOC), toujours affichés avec leur date."
+        },
+        "portfolio": {
+          "title": "Votre portefeuille",
+          "description": "Enregistrez vos achats, ventes et positions d'ouverture pour voir chaque position et son PMP."
+        },
+        "returns": {
+          "title": "Mon rendement",
+          "description": "Voyez comment votre argent a évolué, en tenant compte du moment de vos apports."
+        },
+        "dividends": {
+          "title": "Dividendes",
+          "description": "Suivez les dividendes que vous avez réellement reçus."
+        },
+        "languages": {
+          "title": "Français et anglais",
+          "description": "Utilisez Doni en français ou en anglais et changez à tout moment."
+        },
+        "mobile": {
+          "title": "Pensé pour le mobile",
+          "description": "Installez Doni sur votre téléphone et consultez votre portefeuille partout."
+        }
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "description": "Des questions ? Voici quelques réponses.",
+      "items": {
+        "advice": {
+          "question": "Doni donne-t-il des conseils en investissement ?",
+          "answer": "Non. Doni fournit uniquement de l'information et de l'éducation. Il ne recommande jamais d'acheter ou de vendre un titre."
+        },
+        "cost": {
+          "question": "Combien coûte Doni ?",
+          "answer": "Doni est gratuit pendant la bêta."
+        },
+        "data": {
+          "question": "D'où viennent les cours ?",
+          "answer": "Du Bulletin Officiel de la Cote (BOC) de la BRVM, publié après chaque séance. Les cours sont des cours de clôture, pas en temps réel."
+        },
+        "orders": {
+          "question": "Puis-je acheter ou vendre des titres via Doni ?",
+          "answer": "Non. Doni ne reçoit ni ne transmet d'ordres. Vous passez vos ordres auprès de votre SGI et les enregistrez dans Doni."
+        }
+      }
+    },
+    "cta": {
+      "title": "Prêt à commencer ?",
+      "description": "Créez votre compte et commencez à suivre votre portefeuille.",
+      "getStarted": "Commencer",
+      "createAccount": "Créer un compte",
+      "signIn": "Se connecter"
+    },
+    "footer": {
+      "copyright": "© {{year}} {{name}}. Tous droits réservés."
+    }
+  },
+  "ui": {
+    "close": "Fermer",
+    "sidebar": {
+      "title": "Navigation",
+      "description": "Menu de navigation principal.",
+      "toggle": "Afficher ou masquer la barre latérale"
+    }
+  }
 }

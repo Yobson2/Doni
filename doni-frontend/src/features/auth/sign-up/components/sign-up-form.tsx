@@ -1,8 +1,9 @@
-import { HTMLAttributes, useState } from 'react'
+import { HTMLAttributes, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconBrandFacebook, IconBrandGithub } from '@tabler/icons-react'
+import { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,31 +19,32 @@ import { PasswordInput } from '@/components/password-input'
 
 type SignUpFormProps = HTMLAttributes<HTMLFormElement>
 
-const formSchema = z
-  .object({
-    email: z
-      .string()
-      .min(1, { message: 'Please enter your email' })
-      .email({ message: 'Invalid email address' }),
-    password: z
-      .string()
-      .min(1, {
-        message: 'Please enter your password',
-      })
-      .min(7, {
-        message: 'Password must be at least 7 characters long',
-      }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
-    path: ['confirmPassword'],
-  })
+const createFormSchema = (t: TFunction) =>
+  z
+    .object({
+      email: z
+        .string()
+        .min(1, { message: t('auth.validation.emailRequired') })
+        .email({ message: t('auth.validation.emailInvalid') }),
+      password: z
+        .string()
+        .min(1, { message: t('auth.validation.passwordRequired') })
+        .min(7, { message: t('auth.validation.passwordMin', { min: 7 }) }),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t('auth.validation.passwordMismatch'),
+      path: ['confirmPassword'],
+    })
+
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>
 
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
+  const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
+  const formSchema = useMemo(() => createFormSchema(t), [t])
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -51,11 +53,10 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  function onSubmit(_data: FormValues) {
     setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log(data)
 
+    // Placeholder until the real sign-up flow is wired to the API (#5).
     setTimeout(() => {
       setIsLoading(false)
     }, 3000)
@@ -73,9 +74,14 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t('auth.email')}</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  type='email'
+                  autoComplete='email'
+                  placeholder={t('auth.emailPlaceholder')}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,9 +92,13 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
           name='password'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('auth.password')}</FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  autoComplete='new-password'
+                  placeholder='********'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -99,47 +109,21 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
           name='confirmPassword'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>{t('auth.confirmPassword')}</FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  autoComplete='new-password'
+                  placeholder='********'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button className='mt-2' disabled={isLoading}>
-          Create Account
+          {t('auth.signUp.submit')}
         </Button>
-
-        <div className='relative my-2'>
-          <div className='absolute inset-0 flex items-center'>
-            <span className='w-full border-t' />
-          </div>
-          <div className='relative flex justify-center text-xs uppercase'>
-            <span className='bg-background text-muted-foreground px-2'>
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <div className='grid grid-cols-2 gap-2'>
-          <Button
-            variant='outline'
-            className='w-full'
-            type='button'
-            disabled={isLoading}
-          >
-            <IconBrandGithub className='h-4 w-4' /> GitHub
-          </Button>
-          <Button
-            variant='outline'
-            className='w-full'
-            type='button'
-            disabled={isLoading}
-          >
-            <IconBrandFacebook className='h-4 w-4' /> Facebook
-          </Button>
-        </div>
       </form>
     </Form>
   )

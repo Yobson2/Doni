@@ -1,4 +1,5 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { AnimatedContainer } from '@/components/motion/animated-container'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ export default function GeneralError({
   className,
   minimal = false,
 }: GeneralErrorProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { history } = useRouter()
   return (
@@ -19,16 +21,16 @@ export default function GeneralError({
         {!minimal && (
           <h1 className='text-[7rem] leading-tight font-bold'>500</h1>
         )}
-        <span className='font-medium'>Oops! Something went wrong {`:')`}</span>
-        <p className='text-muted-foreground text-center'>
-          We apologize for the inconvenience. <br /> Please try again later.
+        <span className='font-medium'>{t('errors.general.title')}</span>
+        <p className='text-muted-foreground max-w-sm text-center'>
+          {t('errors.general.description')}
         </p>
         {!minimal && (
           <div className='mt-6 flex gap-4'>
             <Button variant='outline' onClick={() => history.go(-1)}>
-              Go Back
+              {t('errors.goBack')}
             </Button>
-            <Button onClick={() => navigate({ to: '/' })}>Back to Home</Button>
+            <Button onClick={() => navigate({ to: '/' })}>{t('errors.backHome')}</Button>
           </div>
         )}
       </AnimatedContainer>

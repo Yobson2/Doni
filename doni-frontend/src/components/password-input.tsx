@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { IconEye, IconEyeOff } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 
@@ -10,6 +11,7 @@ type PasswordInputProps = Omit<
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className, disabled, ...props }, ref) => {
+    const { t } = useTranslation()
     const [showPassword, setShowPassword] = React.useState(false)
     return (
       <div className={cn('relative rounded-md', className)}>
@@ -27,6 +29,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           disabled={disabled}
           className='text-muted-foreground absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2 rounded-md'
           onClick={() => setShowPassword((prev) => !prev)}
+          aria-label={t(showPassword ? 'auth.hidePassword' : 'auth.showPassword')}
         >
           {showPassword ? <IconEye size={18} /> : <IconEyeOff size={18} />}
         </Button>
