@@ -3,8 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+
+export interface NewUser {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+}
 import {
   PaginationQueryDto,
   PaginatedResponseDto,
@@ -23,7 +29,7 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: NewUser): Promise<User> {
     const existing = await this.userRepository.findOne({
       where: { email: dto.email },
     });
@@ -65,6 +71,10 @@ export class UsersService {
       throw new UserNotFoundError(id);
     }
     return user;
+  }
+
+  findByIdOrNull(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
   }
 
   async findByEmail(email: string): Promise<User | null> {

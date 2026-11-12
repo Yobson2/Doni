@@ -1,72 +1,105 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  ParseUUIDPipe,
+  Patch,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto, UpdateUserDto } from './dto/update-user.dto';
+import { UserListResponseDto, UserResponseDto } from './dto/user-response.dto';
 import { PaginationQueryDto } from '@common/dto/pagination.dto';
 import { Roles } from '@common/decorators/roles.decorator';
-import { Public } from '@common/decorators/public.decorator';
-import { RolesGuard } from '@common/guards/roles.guard';
+import { GetUserId } from '@common/decorators/get-user.decorator';
 import { UserRole } from '@common/constants/roles.constant';
 
+/**
+ * Accounts. A user reads and updates only their own account (`/me`);
+ * every other route is account administration and requires the admin role.
+ * Accounts are created only through sign-up (`POST /api/auth/sign-up`).
+ */
 @ApiTags('Users')
 @ApiBearerAuth('JWT-auth')
+@ApiUnauthorizedResponse({ description: 'Missing or invalid access token' })
 @Controller('api/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @Public()
-  @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
-  @ApiResponse({ status: 409, description: 'User already exists' })
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  @Get('me')
+  @ApiOperation({ operationId: 'getMe', summary: 'Read my account' })
+  @ApiOkResponse({ type: UserResponseDto })
+  async getMe(@GetUserId() userId: string): Promise<UserResponseDto> {
+    return (await this.usersService.findOne(userId)).toResponse();
+  }
+
+  @Patch('me')
+  @ApiOperation({ operationId: 'updateMe', summary: 'Update my account' })
+  @ApiOkResponse({ type: UserResponseDto })
+  async updateMe(
+    @GetUserId() userId: string,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<UserResponseDto> {
+    return (await this.usersService.update(userId, dto)).toResponse();
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all users (paginated)' })
-  @ApiResponse({ status: 200, description: 'Paginated user list' })
-  findAll(@Query() query: PaginationQueryDto) {
-    return this.usersService.findAll(query);
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ operationId: 'listUsers', summary: 'List accounts (admin)' })
+  @ApiOkResponse({ type: UserListResponseDto })
+  @ApiForbiddenResponse({ description: 'Admin role required' })
+  async findAll(
+    @Query() query: PaginationQueryDto,
+  ): Promise<UserListResponseDto> {
+    const page = await this.usersService.findAll(query);
+    return { data: page.data.map((u) => u.toResponse()), meta: page.meta };
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user by ID' })
-  @ApiResponse({ status: 200, description: 'User found' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ operationId: 'getUser', summary: 'Read an account (admin)' })
+  @ApiOkResponse({ type: UserResponseDto })
+  @ApiForbiddenResponse({ description: 'Admin role required' })
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<UserResponseDto> {
+    return (await this.usersService.findOne(id)).toResponse();
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update user' })
-  @ApiResponse({ status: 200, description: 'User updated' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    operationId: 'updateUser',
+    summary: 'Update an account (admin)',
+  })
+  @ApiOkResponse({ type: UserResponseDto })
+  @ApiForbiddenResponse({ description: 'Admin role required' })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    return (await this.usersService.update(id, dto)).toResponse();
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Deactivate user (admin only)' })
-  @ApiResponse({ status: 200, description: 'User deactivated' })
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @ApiOperation({
+    operationId: 'deactivateUser',
+    summary: 'Deactivate an account (admin)',
+  })
+  @ApiOkResponse({ description: 'Account deactivated' })
+  @ApiForbiddenResponse({ description: 'Admin role required' })
+  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    await this.usersService.remove(id);
   }
 }

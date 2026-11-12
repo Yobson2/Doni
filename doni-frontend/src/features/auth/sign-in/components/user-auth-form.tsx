@@ -2,10 +2,11 @@ import { HTMLAttributes, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ApiError } from '@/api/client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { afterSignInPath, signIn } from '@/features/auth/session'
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
@@ -30,7 +32,7 @@ const createFormSchema = (t: TFunction) =>
     password: z
       .string()
       .min(1, { message: t('auth.validation.passwordRequired') })
-      .min(7, { message: t('auth.validation.passwordMin', { min: 7 }) }),
+      .min(8, { message: t('auth.validation.passwordMin', { min: 8 }) }),
   })
 
 type FormValues = z.infer<ReturnType<typeof createFormSchema>>
@@ -39,6 +41,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const { redirect } = useSearch({ from: '/(auth)/sign-in' })
   const formSchema = useMemo(() => createFormSchema(t), [t])
 
   const form = useForm<FormValues>({
@@ -49,15 +52,21 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     },
   })
 
-  function onSubmit(_data: FormValues) {
+  async function onSubmit(data: FormValues) {
     setIsLoading(true)
-
-    // Placeholder until the real sign-in flow is wired to the API (#5).
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      await signIn(data)
       toast.success(t('auth.signIn.success'))
-      navigate({ to: '/dashboard' })
-    }, 1500)
+      await navigate({ to: afterSignInPath(redirect) })
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError && error.status === 401
+          ? t('auth.signIn.invalidCredentials')
+          : t('errors.toast.generic')
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

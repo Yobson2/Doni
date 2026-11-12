@@ -16,3 +16,5 @@
 
 # Ignore auto generated routeTree.gen.ts
 /src/routeTree.gen.ts
+# Generated from the backend OpenAPI document (pnpm api:generate)
+/src/api/schema.d.ts

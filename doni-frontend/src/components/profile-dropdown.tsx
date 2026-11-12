@@ -1,6 +1,6 @@
 import { Link, useRouter } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/authStore'
 import { useTranslation } from 'react-i18next'
+import { useAuthStore } from '@/stores/authStore'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { signOut } from '@/features/auth/session'
 
 export function ProfileDropdown() {
   const { t } = useTranslation()
@@ -18,9 +19,9 @@ export function ProfileDropdown() {
   const router = useRouter()
   const email = auth.user?.email ?? ''
 
-  const handleLogout = () => {
-    auth.reset()
-    router.navigate({ to: '/sign-in' })
+  const handleLogout = async () => {
+    await signOut().catch(() => undefined)
+    await router.navigate({ to: '/sign-in' })
   }
 
   return (

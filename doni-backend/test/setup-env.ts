@@ -12,8 +12,9 @@ const defaults: Record<string, string> = {
   DB_USER: 'postgres',
   DB_PASS: 'postgres',
   DB_NAME: 'doni_test',
-  JWT_SECRET: 'e2e-jwt-secret',
-  JWT_REFRESH_SECRET: 'e2e-jwt-refresh-secret',
+  // Test-only signing secrets; real ones come from the deployment's secrets.
+  JWT_ACCESS_SECRET: 'test-only-access-secret',
+  JWT_REFRESH_SECRET: 'test-only-refresh-secret',
   // Check schedules every second so scheduled jobs run within the test.
   JOBS_CRON_MONITOR_INTERVAL_SECONDS: '1',
   JOBS_CRON_WORKER_INTERVAL_SECONDS: '1',

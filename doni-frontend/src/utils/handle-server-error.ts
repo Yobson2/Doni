@@ -1,6 +1,5 @@
-import { AxiosError } from 'axios'
-import { toast } from 'sonner'
 import i18n from '@/i18n'
+import { toast } from 'sonner'
 
 export function handleServerError(error: unknown) {
   // eslint-disable-next-line no-console
@@ -15,10 +14,6 @@ export function handleServerError(error: unknown) {
     Number(error.status) === 204
   ) {
     errMsg = i18n.t('errors.toast.notFound')
-  }
-
-  if (error instanceof AxiosError) {
-    errMsg = error.response?.data.title ?? errMsg
   }
 
   toast.error(errMsg)

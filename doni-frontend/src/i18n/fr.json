@@ -67,7 +67,8 @@
       "emailInvalid": "Adresse e-mail invalide.",
       "passwordRequired": "Veuillez saisir votre mot de passe.",
       "passwordMin": "Le mot de passe doit contenir au moins {{min}} caractères.",
-      "passwordMismatch": "Les mots de passe ne correspondent pas."
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "passwordMax": "Le mot de passe doit contenir au plus {{max}} caractères."
     },
     "signIn": {
       "title": "Se connecter",
@@ -76,14 +77,17 @@
       "submit": "Se connecter",
       "forgot": "Mot de passe oublié ?",
       "noAccount": "Nouveau sur Doni ?",
-      "createAccount": "Créer un compte"
+      "createAccount": "Créer un compte",
+      "invalidCredentials": "E-mail ou mot de passe incorrect."
     },
     "signUp": {
       "title": "Créez votre compte",
       "haveAccount": "Déjà un compte ?",
       "submit": "Créer un compte",
       "subtitle": "Commencez par une position. Vous ajouterez le reste plus tard.",
-      "signIn": "Se connecter"
+      "signIn": "Se connecter",
+      "emailTaken": "Un compte existe déjà avec cet e-mail.",
+      "success": "Compte créé"
     },
     "forgotPassword": {
       "title": "Mot de passe oublié",

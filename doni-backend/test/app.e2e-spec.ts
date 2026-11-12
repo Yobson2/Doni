@@ -31,74 +31,11 @@ describe('Application (e2e)', () => {
     });
   });
 
-  describe('Auth', () => {
-    const testUser = {
-      email: `test-${Date.now()}@example.com`,
-      password: 'TestPassword123!',
-      firstName: 'Test',
-      lastName: 'User',
-    };
-    let accessToken: string;
-
-    it('POST /api/auth/register - should register a new user', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/register')
-        .send(testUser)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('user');
-          expect(res.body).toHaveProperty('accessToken');
-          expect(res.body).toHaveProperty('refreshToken');
-          expect(res.body.user).toHaveProperty('email', testUser.email);
-          expect(res.body.user).not.toHaveProperty('password');
-        });
-    });
-
-    it('POST /api/auth/login - should login with credentials', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send({ email: testUser.email, password: testUser.password })
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('accessToken');
-          expect(res.body).toHaveProperty('refreshToken');
-          accessToken = res.body.accessToken;
-        });
-    });
-
-    it('GET /api/users - should return users with auth token', () => {
-      return request(app.getHttpServer())
-        .get('/api/users')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('data');
-          expect(res.body).toHaveProperty('meta');
-          expect(Array.isArray(res.body.data)).toBe(true);
-        });
-    });
-
-    it('GET /api/users - should reject without auth token', () => {
-      // The global AuthGuard currently answers 403 when no credentials are
-      // sent; the sign-in slice (#5) owns the final status code.
-      return request(app.getHttpServer()).get('/api/users').expect(403);
-    });
-
-    it('POST /api/auth/refresh - should refresh tokens', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send({ email: testUser.email, password: testUser.password })
-        .expect(201)
-        .then((loginRes) => {
-          return request(app.getHttpServer())
-            .post('/api/auth/refresh')
-            .send({ refreshToken: loginRes.body.refreshToken })
-            .expect(201)
-            .expect((res) => {
-              expect(res.body).toHaveProperty('accessToken');
-              expect(res.body).toHaveProperty('refreshToken');
-            });
-        });
+  describe('Protected routes', () => {
+    // 401: no or invalid credentials. 403 is kept for an authenticated user
+    // who lacks the role (see auth.e2e-spec.ts).
+    it('GET /api/users - answers 401 without credentials', () => {
+      return request(app.getHttpServer()).get('/api/users').expect(401);
     });
   });
 });
