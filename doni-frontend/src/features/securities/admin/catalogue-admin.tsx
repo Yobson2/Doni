@@ -34,6 +34,7 @@ import {
   securitiesQuery,
 } from '../api'
 import { PageShell } from '../components/page-shell'
+import { CorporateActionForm } from './corporate-action-form'
 
 const DECIMAL = /^\d{1,15}(\.\d{1,6})?$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -59,6 +60,7 @@ export function CatalogueAdmin() {
       <div className='grid gap-6 lg:grid-cols-2'>
         <PriceEntryForm />
         <SecurityForm />
+        <CorporateActionForm selectClass={selectClass} />
       </div>
     </PageShell>
   )
@@ -262,11 +264,9 @@ const securitySchema = (t: TFunction) =>
     sectorCode: z
       .string()
       .min(1, { message: t('admin.catalogue.validation.required') }),
-    country: z
-      .string()
-      .regex(/^[A-Z]{2}$/, {
-        message: t('admin.catalogue.validation.country'),
-      }),
+    country: z.string().regex(/^[A-Z]{2}$/, {
+      message: t('admin.catalogue.validation.country'),
+    }),
     profileFr: z.string(),
     profileEn: z.string(),
     profileOriginalLanguage: z.enum(['fr', 'en']),

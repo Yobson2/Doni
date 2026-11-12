@@ -320,5 +320,74 @@ describe('Corporate actions (e2e)', () => {
         publishedClose: null,
       });
     });
+
+    it('explains, rather than fails, a ledger that a later corporate action makes oversold', async () => {
+      await http()
+        .post('/api/securities')
+        .set('Authorization', as(admin))
+        .send({
+          ticker: 'TREV',
+          name: 'Test Reverse SA',
+          sectorCode: 'TST',
+          country: 'CI',
+        })
+        .expect(201);
+      const portfolio = (
+        await http()
+          .post('/api/portfolios')
+          .set('Authorization', as(member))
+          .send({ name: 'Reverse' })
+          .expect(201)
+      ).body.id as string;
+      const record = (entry: object) =>
+        http()
+          .post(`/api/portfolios/${portfolio}/entries`)
+          .set('Authorization', as(member))
+          .send({ sgi: SGI, ticker: 'TREV', ...entry })
+          .expect(201);
+      await record({
+        kind: 'buy',
+        date: '2026-01-05',
+        quantity: '100',
+        price: '400',
+      });
+      await record({
+        kind: 'sell',
+        date: '2026-06-01',
+        quantity: '100',
+        price: '450',
+      });
+
+      // Entered afterwards: 10:1 from 2026-05-01 leaves 10 shares to sell 100.
+      await http()
+        .post(actionsPath('TREV'))
+        .set('Authorization', as(admin))
+        .send({
+          ...split,
+          kind: 'reverse_split',
+          effectiveDate: '2026-05-01',
+          ratioHeld: 10,
+          ratioReceived: 1,
+        })
+        .expect(201);
+
+      const res = await http()
+        .get(`/api/portfolios/${portfolio}/valuation`)
+        .set('Authorization', as(member))
+        .expect(422);
+      expect(res.body).toMatchObject({
+        code: 'LEDGER_ENTRY_001',
+        errors: [
+          expect.objectContaining({
+            context: {
+              ticker: 'TREV',
+              date: '2026-06-01',
+              held: '10',
+              sold: '100',
+            },
+          }),
+        ],
+      });
+    });
   });
 });

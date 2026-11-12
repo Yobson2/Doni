@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react'
-import { LineSeries, createChart } from 'lightweight-charts'
+import {
+  LineSeries,
+  createChart,
+  createSeriesMarkers,
+} from 'lightweight-charts'
 import { useTheme } from '@/context/theme-context'
 import type { EndOfDayPrice } from '../api'
 
@@ -17,15 +21,28 @@ function isDark(theme: string) {
   return theme === 'dark'
 }
 
+const NO_MARKERS: ChartMarker[] = []
+
 interface PriceHistoryChartProps {
   /** Published end-of-day prices, oldest first. */
   prices: EndOfDayPrice[]
   /** Accessible name; the same data is also given as a table. */
   label: string
+  /** Days to mark on the chart, such as corporate actions' effective dates. */
+  markers?: ChartMarker[]
+}
+
+interface ChartMarker {
+  date: string
+  text: string
 }
 
 /** Closing prices over time, one point per trading day. */
-export function PriceHistoryChart({ prices, label }: PriceHistoryChartProps) {
+export function PriceHistoryChart({
+  prices,
+  label,
+  markers = NO_MARKERS,
+}: PriceHistoryChartProps) {
   const container = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
 
@@ -57,9 +74,21 @@ export function PriceHistoryChart({ prices, label }: PriceHistoryChartProps) {
     series.setData(
       prices.map((price) => ({ time: price.date, value: Number(price.close) }))
     )
+    if (markers.length > 0) {
+      createSeriesMarkers(
+        series,
+        markers.map((marker) => ({
+          time: marker.date,
+          position: 'aboveBar' as const,
+          shape: 'arrowDown' as const,
+          color: colours.text,
+          text: marker.text,
+        }))
+      )
+    }
     chart.timeScale().fitContent()
     return () => chart.remove()
-  }, [prices, theme])
+  }, [prices, markers, theme])
 
   return (
     <div

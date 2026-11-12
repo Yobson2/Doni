@@ -27,6 +27,7 @@ import {
   InsufficientQuantityError,
   InvalidLedgerEntryError,
   type LedgerEntry,
+  type ReplayResult,
   type ValuationPrice,
   replay,
 } from './engine';
@@ -109,8 +110,9 @@ export class PortfoliosService {
         ...ledger,
         { ...candidate, id: NEW_ENTRY, security },
       ];
-      checkReplays(
+      replayLedger(
         withCandidate,
+        new Map(),
         await this.corporateActions.inEffectFor(securityIdsOf(withCandidate)),
       );
 
@@ -147,13 +149,11 @@ export class PortfoliosService {
       ]),
     );
 
-    const result = replay({
-      entries: ledger.map(toEngineEntry),
+    const result = replayLedger(
+      ledger,
       prices,
-      corporateActions: await this.corporateActions.inEffectFor([
-        ...securities.keys(),
-      ]),
-    });
+      await this.corporateActions.inEffectFor([...securities.keys()]),
+    );
     const positions: PositionDto[] = result.positions.map((position) => {
       const security = securities.get(position.securityId) as Security;
       const { securityId: _id, ...figures } = position;
@@ -209,14 +209,15 @@ const securityIdsOf = (ledger: LedgerEntryRecord[]): string[] => [
  * Replays the ledger with the corporate actions in effect, turning a broken
  * rule into an API error.
  */
-function checkReplays(
+function replayLedger(
   ledger: LedgerEntryRecord[],
+  prices: ReadonlyMap<string, ValuationPrice>,
   corporateActions: CorporateAction[],
-): void {
+): ReplayResult {
   try {
-    replay({
+    return replay({
       entries: ledger.map(toEngineEntry),
-      prices: new Map(),
+      prices,
       corporateActions,
     });
   } catch (error) {
