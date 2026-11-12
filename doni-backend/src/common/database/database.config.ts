@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
  * Builds TypeORM configuration for the application database.
  *
  * Reads DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME from environment.
+ * Never synchronizes the schema: run migrations instead.
  * Automatically handles SSL/TLS for managed databases in staging/production.
  *
  * @param config - ConfigService instance
@@ -41,7 +42,9 @@ export const buildDbConfig = (config: ConfigService): TypeOrmModuleOptions => {
     password,
     database,
     autoLoadEntities: true,
-    synchronize: nodeEnv === 'development' || nodeEnv === 'test',
+    // The schema is owned by migrations (`pnpm migration:run`), never by
+    // `synchronize`, in every environment.
+    synchronize: false,
     logging: nodeEnv === 'development' ? ['error', 'warn'] : ['error'],
 
     ssl: sslOptions,
@@ -49,10 +52,7 @@ export const buildDbConfig = (config: ConfigService): TypeOrmModuleOptions => {
     extra: {
       max: config.get<number>('DB_POOL_SIZE', useManagedDB ? 5 : 10),
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: config.get<number>(
-        'DB_CONNECT_TIMEOUT',
-        10000,
-      ),
+      connectionTimeoutMillis: config.get<number>('DB_CONNECT_TIMEOUT', 10000),
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
       ...(useManagedDB && sslOptions ? { ssl: sslOptions } : {}),

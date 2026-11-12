@@ -41,6 +41,18 @@ export function getEnvironmentFile(): string | undefined {
 }
 
 export function getEnvironmentConfig(): EnvironmentConfig {
+  // Tests get their environment from the test runner (see test/setup-env.ts
+  // and CI), never from a developer's .env, so a test run cannot reach the
+  // development database by accident.
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      ignoreEnvFile: true,
+      isGlobal: true,
+      cache: true,
+      expandVariables: false,
+    };
+  }
+
   const runningInDocker = isRunningInDocker();
   const envFilePath = getEnvironmentFile();
 

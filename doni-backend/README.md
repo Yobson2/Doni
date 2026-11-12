@@ -5,7 +5,7 @@ A production-ready NestJS monolithic starter template with battle-tested infrast
 ## Tech Stack
 
 - **NestJS 11** — TypeScript framework
-- **TypeORM + PostgreSQL 16** — Database ORM with auto-sync in development, migration CLI for production
+- **TypeORM + PostgreSQL 16** — Database ORM; the schema is created by migrations only (`synchronize` is off everywhere)
 - **Redis (ioredis)** — Caching and pub/sub
 - **BullMQ** — Background job queues
 - **JWT** — Authentication with access + refresh tokens
@@ -18,20 +18,25 @@ A production-ready NestJS monolithic starter template with battle-tested infrast
 
 ## Quick Start
 
-```bash
-# 1. Install dependencies
-yarn install
+This app is part of the root pnpm workspace. Install from the repo root:
 
-# 2. Create environment file
+```bash
+# 1. Install dependencies (from the repo root)
+pnpm install
+
+# 2. Create environment file (in doni-backend/)
 cp .env.example .env
 
 # 3. Start infrastructure (PostgreSQL, Redis, MinIO)
 docker compose up -d
 
-# 4. Start the application
-yarn start:dev
+# 4. Create the schema
+pnpm migration:run
 
-# 5. Open Swagger docs
+# 5. Start the application
+pnpm start:dev
+
+# 6. Open Swagger docs
 open http://localhost:3000/api/docs
 ```
 
@@ -68,16 +73,44 @@ templates/                         # Handlebars email templates
 ## Available Scripts
 
 ```bash
-yarn start:dev       # Development with hot-reload
-yarn build           # Compile TypeScript
-yarn start:prod      # Run compiled app
-yarn test            # Unit tests
-yarn test:watch      # Tests in watch mode
-yarn test:cov        # Test coverage
-yarn test:e2e        # End-to-end tests
-yarn lint            # ESLint
-yarn format          # Prettier
+pnpm start:dev           # Development with hot-reload
+pnpm build               # Compile TypeScript
+pnpm start:prod          # Run compiled app
+pnpm test                # Unit tests
+pnpm test:watch          # Tests in watch mode
+pnpm test:cov            # Test coverage
+pnpm test:e2e            # End-to-end tests (needs Postgres, see below)
+pnpm lint                # ESLint (check only)
+pnpm lint:fix            # ESLint with autofix
+pnpm typecheck           # TypeScript, no emit
+pnpm format              # Prettier
+pnpm migration:run       # Apply pending migrations
+pnpm migration:revert    # Revert the last migration
+pnpm migration:generate  # Generate a migration from entity changes
 ```
+
+## Migrations
+
+The schema is owned by migrations in `src/common/database/migrations/`;
+`synchronize` is off in every environment. After changing an entity, run
+`pnpm migration:generate`, rename the generated file to describe the change,
+review the SQL and commit it.
+
+## End-to-end tests
+
+The e2e suite boots the whole `AppModule` against a real, disposable Postgres
+database. Each spec drops that database's schema and rebuilds it by running
+every migration, so point it at a database you do not mind losing. It never
+reads `.env`; configure it with environment variables (defaults in
+`test/setup-env.ts`: `localhost:5432`, user/password `postgres`, database
+`doni_test`). For example:
+
+```bash
+docker run -d --name doni-e2e-pg -p 55432:5432   -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=doni_test postgres:16
+DB_PORT=55432 pnpm test:e2e
+```
+
+Redis is replaced by an in-memory stub in e2e (`test/support/test-app.ts`).
 
 ## Docker
 
