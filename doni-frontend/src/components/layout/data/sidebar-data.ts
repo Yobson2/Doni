@@ -4,6 +4,7 @@ import {
   IconDatabaseEdit,
   IconLayoutDashboard,
   IconPalette,
+  IconStar,
 } from '@tabler/icons-react'
 import { type NavGroup } from '../types'
 
@@ -26,6 +27,11 @@ const navGroups: NavGroup[] = [
         title: 'nav.securities',
         url: '/securities',
         icon: IconBuildingBank,
+      },
+      {
+        title: 'nav.watchlist',
+        url: '/watchlist',
+        icon: IconStar,
       },
     ],
   },

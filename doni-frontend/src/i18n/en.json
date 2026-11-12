@@ -18,7 +18,8 @@
     "skipToMain": "Skip to main content",
     "securities": "Securities",
     "adminCatalogue": "Catalogue and prices",
-    "portfolio": "My portfolio"
+    "portfolio": "My portfolio",
+    "watchlist": "My watchlist"
   },
   "command": {
     "search": "Search",
@@ -379,6 +380,16 @@
       }
     },
     "disclaimer": "Closing prices from the BRVM Bulletin Officiel de la Cote, published after each session. Information only, not investment advice."
+  },
+  "watchlist": {
+    "title": "My watchlist",
+    "description": "Securities you follow without necessarily holding them, with their latest published closing price.",
+    "empty": "You are not following any securities yet.",
+    "browse": "Browse listed securities",
+    "add": "Watch",
+    "watching": "Watching",
+    "remove": "Stop watching {{ticker}}",
+    "actions": "Actions"
   },
   "admin": {
     "catalogue": {

@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { WatchButton } from '@/features/watchlist/watch-button'
 import {
   type EndOfDayPrice,
   type Security,
@@ -98,9 +99,12 @@ function CompanyHeader({ security }: { security: Security }) {
           {sector} · {country}
         </span>
       </div>
-      <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
-        {security.name}
-      </h1>
+      <div className='flex flex-wrap items-start justify-between gap-3'>
+        <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
+          {security.name}
+        </h1>
+        <WatchButton ticker={security.ticker} />
+      </div>
       {security.latestPrice ? (
         <div className='space-y-1'>
           <p className='text-3xl font-semibold tabular-nums'>
