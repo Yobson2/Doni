@@ -50,6 +50,14 @@ const action =
     cashInLieuPrice,
   });
 const split = action('split');
+const opening = (date: string, quantity: string, pmp: string): LedgerEntry => ({
+  id: `e${++nextId}`,
+  kind: 'opening_position',
+  securityId: SNTS,
+  date,
+  quantity,
+  pmp,
+});
 const reverseSplit = action('reverse_split');
 const freeShares = action('free_shares');
 
@@ -380,6 +388,36 @@ describe('ledger engine corporate actions', () => {
       const result = run([], [split('2026-04-02', '1', '5')]);
 
       expect(result.positions).toEqual([]);
+    });
+  });
+
+  describe('with opening positions', () => {
+    it('adjusts an opening position dated before a split, then sells on the new basis', () => {
+      // opening 100 at PMP 20000 = 2000000; 1:5 split → 500 at 4000
+      // sell 200 at 4500: realised 200 × (4500 − 4000) = 100000; 300 left at 4000
+      const result = run(
+        [
+          opening('2026-01-02', '100', '20000'),
+          sell('2026-05-11', '200', '4500'),
+        ],
+        [split('2026-04-02', '1', '5')],
+      );
+
+      expect(position(result)).toMatchObject({
+        quantity: '300',
+        pmp: '4000',
+        realisedGain: '100000',
+      });
+    });
+
+    it('takes an opening position dated on the effective date as already in new shares', () => {
+      // the action applies before that day's entries, so 500 at 4000 stands
+      const result = run(
+        [opening('2026-04-02', '500', '4000')],
+        [split('2026-04-02', '1', '5')],
+      );
+
+      expect(position(result)).toMatchObject({ quantity: '500', pmp: '4000' });
     });
   });
 });

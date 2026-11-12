@@ -194,7 +194,11 @@ export class PortfoliosService {
     );
 
     const entries = ledger.map(toEngineEntry);
-    const result = replay({ entries, prices });
+    const result = replayLedger(
+      ledger,
+      prices,
+      await this.corporateActions.inEffectFor([...securities.keys()]),
+    );
     const positions: PositionDto[] = result.positions.map((position) => {
       const security = securities.get(position.securityId) as Security;
       const { securityId: _id, ...figures } = position;
