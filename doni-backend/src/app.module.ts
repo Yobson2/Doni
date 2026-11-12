@@ -14,6 +14,7 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { HealthModule } from '@modules/health/health.module';
 import { SecuritiesModule } from '@modules/securities/securities.module';
 import { LedgerModule } from '@modules/ledger/ledger.module';
+import { WatchlistModule } from '@modules/watchlist/watchlist.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { LedgerModule } from '@modules/ledger/ledger.module';
     HealthModule,
     SecuritiesModule,
     LedgerModule,
+    WatchlistModule,
   ],
   providers: [
     {
