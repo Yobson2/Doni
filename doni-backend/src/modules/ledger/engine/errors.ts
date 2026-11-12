@@ -47,6 +47,27 @@ export class InsufficientQuantityError extends LedgerRuleViolation {
 }
 
 /**
+ * Two opening positions state the holding of the same security at the start
+ * of the same day. They contradict each other, and which one to believe
+ * would depend on the order they were recorded in, so the ledger refuses
+ * the second: correcting an opening position means editing it.
+ */
+export class ConflictingOpeningPositionsError extends LedgerRuleViolation {
+  override readonly name = 'ConflictingOpeningPositionsError';
+
+  constructor(
+    /** The opening position that comes second in replay order. */
+    readonly entryId: string,
+    readonly securityId: string,
+    readonly date: string,
+  ) {
+    super(
+      `Two opening positions for ${securityId} on ${date}: correct the first instead`,
+    );
+  }
+}
+
+/**
  * A corporate action whose terms the engine cannot use: a ratio that is not
  * a whole number greater than zero, or a negative cash-in-lieu price. Not a
  * ledger rule violation: it names a corporate action, not a ledger entry.

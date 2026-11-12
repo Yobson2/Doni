@@ -1,6 +1,10 @@
 import { CorporateActionTimeline } from './corporate-actions';
 import { Decimal, ZERO, toDecimalString } from './decimal';
-import { InsufficientQuantityError, InvalidLedgerEntryError } from './errors';
+import {
+  ConflictingOpeningPositionsError,
+  InsufficientQuantityError,
+  InvalidLedgerEntryError,
+} from './errors';
 import type {
   LedgerEntry,
   OpeningPositionEntry,
@@ -12,14 +16,24 @@ import type {
   ValuationPrice,
 } from './types';
 
-/** Running state of one security while the ledger is replayed. */
+/**
+ * Running state of one security while the ledger is replayed. It keeps the
+ * exact total cost of the shares held rather than the PMP: the PMP is that
+ * cost divided by the quantity, and dividing only when the PMP is needed
+ * keeps the result independent of the order of same-day entries.
+ */
 export interface Holding {
   quantity: Decimal;
-  pmp: Decimal;
+  /** Total cost of the shares held, fees included (quantity × PMP). */
+  cost: Decimal;
   realisedGain: Decimal;
 }
 
-const EMPTY: Holding = { quantity: ZERO, pmp: ZERO, realisedGain: ZERO };
+const EMPTY: Holding = { quantity: ZERO, cost: ZERO, realisedGain: ZERO };
+
+/** A holding's PMP: its cost per share, 0 when nothing is held. */
+const pmpOf = (holding: Holding): Decimal =>
+  holding.quantity.eq(ZERO) ? ZERO : holding.cost.div(holding.quantity);
 
 /**
  * Within one day, an opening position comes first (it states the holding at
@@ -45,15 +59,30 @@ const byReplayOrder = (a: LedgerEntry, b: LedgerEntry): number =>
  * Cost basis is the PMP, fees included (ADR 0006): a buy recomputes the PMP,
  * a sale realises its net proceeds minus PMP × quantity sold and leaves the
  * PMP unchanged. All arithmetic is decimal (ADR 0005); the only rounding is
- * the PMP division, to 30 decimal places.
+ * the PMP division (cost / quantity), to 30 decimal places, done only when a
+ * sale or the result needs the PMP.
  *
  * @throws InsufficientQuantityError if, at any date, a sale exceeds the
  * shares then held.
+ * @throws ConflictingOpeningPositionsError if two opening positions state
+ * the same security's holding on the same day.
  */
 export function replay(input: ReplayInput): ReplayResult {
   const holdings = new Map<string, Holding>();
   const corporateActions = new CorporateActionTimeline(input.corporateActions);
+  const openings = new Set<string>();
   for (const entry of [...input.entries].sort(byReplayOrder)) {
+    if (entry.kind === 'opening_position') {
+      const key = `${entry.securityId}@${entry.date}`;
+      if (openings.has(key)) {
+        throw new ConflictingOpeningPositionsError(
+          entry.id,
+          entry.securityId,
+          entry.date,
+        );
+      }
+      openings.add(key);
+    }
     corporateActions.applyUpTo(holdings, entry.date);
     const holding = holdings.get(entry.securityId) ?? EMPTY;
     holdings.set(
@@ -101,11 +130,9 @@ const nonNegative = (value: Decimal) => value.gte(ZERO);
  * quantity × PMP. Gains already realised on the security are kept.
  */
 function applyOpening(holding: Holding, entry: OpeningPositionEntry): Holding {
-  return {
-    ...holding,
-    quantity: parse(entry, 'quantity', positive),
-    pmp: parse(entry, 'pmp', nonNegative),
-  };
+  const quantity = parse(entry, 'quantity', positive);
+  const pmp = parse(entry, 'pmp', nonNegative);
+  return { ...holding, quantity, cost: quantity.times(pmp) };
 }
 
 function applyTrade(holding: Holding, entry: TradeEntry): Holding {
@@ -115,12 +142,11 @@ function applyTrade(holding: Holding, entry: TradeEntry): Holding {
   const gross = quantity.times(price);
 
   if (entry.kind === 'buy') {
-    const held = holding.quantity.plus(quantity);
-    const totalCost = holding.quantity
-      .times(holding.pmp)
-      .plus(gross)
-      .plus(fees);
-    return { ...holding, quantity: held, pmp: totalCost.div(held) };
+    return {
+      ...holding,
+      quantity: holding.quantity.plus(quantity),
+      cost: holding.cost.plus(gross).plus(fees),
+    };
   }
 
   if (quantity.gt(holding.quantity)) {
@@ -132,13 +158,15 @@ function applyTrade(holding: Holding, entry: TradeEntry): Holding {
       toDecimalString(quantity),
     );
   }
+  // The shares kept cost held × PMP, so their PMP stays exactly the same.
+  const pmp = pmpOf(holding);
   const held = holding.quantity.minus(quantity);
   const proceeds = gross.minus(fees);
   return {
     quantity: held,
-    pmp: held.eq(ZERO) ? ZERO : holding.pmp,
+    cost: held.times(pmp),
     realisedGain: holding.realisedGain.plus(
-      proceeds.minus(quantity.times(holding.pmp)),
+      proceeds.minus(quantity.times(pmp)),
     ),
   };
 }
@@ -148,7 +176,7 @@ function toPosition(
   holding: Holding,
   price: ValuationPrice | undefined,
 ): Position {
-  const costBasis = holding.quantity.times(holding.pmp);
+  const costBasis = holding.cost;
   let valuation: PositionValuation | null = null;
   if (price && holding.quantity.gt(ZERO)) {
     const marketValue = holding.quantity.times(price.close);
@@ -162,7 +190,7 @@ function toPosition(
   return {
     securityId,
     quantity: toDecimalString(holding.quantity),
-    pmp: toDecimalString(holding.pmp),
+    pmp: toDecimalString(pmpOf(holding)),
     costBasis: toDecimalString(costBasis),
     realisedGain: toDecimalString(holding.realisedGain),
     valuation,

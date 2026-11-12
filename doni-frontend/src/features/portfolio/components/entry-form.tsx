@@ -6,8 +6,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { ApiError } from '@/api/client'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -25,8 +23,15 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { securitiesQuery } from '@/features/securities/api'
-import { addLedgerEntry } from '../api'
-import { DATE, DECIMAL, SHARES, selectClass } from './form-fields'
+import { type LedgerEntry, addLedgerEntry, editLedgerEntry } from '../api'
+import {
+  DATE,
+  DECIMAL,
+  SHARES,
+  ledgerRefusal,
+  selectClass,
+} from './form-fields'
+import { SubmitButtons } from './submit-buttons'
 
 const entrySchema = (t: TFunction) => {
   const required = t('portfolio.form.validation.required')
@@ -57,55 +62,71 @@ const TEXT_FIELDS = [
   { name: 'fees', inputMode: 'decimal' },
 ] as const
 
-interface InsufficientBody {
-  errors?: { context?: { held?: string; date?: string } }[]
-}
+/** The form's values for an entry being corrected. */
+const valuesOf = (entry: LedgerEntry): EntryValues => ({
+  kind: entry.kind === 'sell' ? 'sell' : 'buy',
+  ticker: entry.ticker,
+  date: entry.date,
+  quantity: entry.quantity,
+  price: entry.price,
+  fees: entry.fees,
+  sgi: entry.sgi,
+})
 
-/** Why the API refused the entry, in the user's language. */
-function refusal(error: unknown, t: TFunction): string {
-  if (error instanceof ApiError && error.status === 422) {
-    const context = (error.body as InsufficientBody)?.errors?.[0]?.context
-    return t('portfolio.form.errors.insufficient', {
-      held: context?.held ?? '0',
-    })
-  }
-  if (error instanceof ApiError && error.status === 400) {
-    return t('portfolio.form.errors.invalid')
-  }
-  return t('errors.toast.generic')
-}
-
-/** Records a buy or a sell, with its fees and SGI. */
-export function EntryForm({ portfolioId }: { portfolioId: string }) {
+/**
+ * Records a buy or a sell, with its fees and SGI. Given an `entry`, corrects
+ * that entry instead, then calls `onDone` (also called on cancel).
+ */
+export function EntryForm({
+  portfolioId,
+  entry,
+  onDone,
+}: {
+  portfolioId: string
+  entry?: LedgerEntry
+  onDone?: () => void
+}) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const securities = useQuery(securitiesQuery())
   const schema = useMemo(() => entrySchema(t), [t])
   const form = useForm<EntryValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      kind: 'buy',
-      ticker: '',
-      date: '',
-      quantity: '',
-      price: '',
-      fees: '',
-      sgi: '',
-    },
+    defaultValues: entry
+      ? valuesOf(entry)
+      : {
+          kind: 'buy',
+          ticker: '',
+          date: '',
+          quantity: '',
+          price: '',
+          fees: '',
+          sgi: '',
+        },
   })
 
   const mutation = useMutation({
-    mutationFn: ({ fees, ...values }: EntryValues) =>
-      addLedgerEntry(portfolioId, { ...values, fees: fees || '0' }),
+    mutationFn: ({ fees, ...values }: EntryValues) => {
+      const body = { ...values, fees: fees || '0' }
+      return entry
+        ? editLedgerEntry(portfolioId, entry.id, body)
+        : addLedgerEntry(portfolioId, body)
+    },
     onSuccess: async (_, values) => {
-      toast.success(t('portfolio.form.saved'))
+      toast.success(
+        t(entry ? 'portfolio.correction.saved' : 'portfolio.form.saved')
+      )
       await queryClient.invalidateQueries({
         queryKey: ['portfolios', portfolioId],
       })
+      if (entry) return onDone?.()
       // Keep the SGI: the next entry usually goes through the same one.
       form.reset({ ...form.formState.defaultValues, sgi: values.sgi })
     },
-    onError: (error) => form.setError('root', { message: refusal(error, t) }),
+    onError: (error) =>
+      form.setError('root', {
+        message: ledgerRefusal(error, t, 'portfolio.form.errors.insufficient'),
+      }),
   })
 
   const rootError = form.formState.errors.root?.message
@@ -114,9 +135,17 @@ export function EntryForm({ portfolioId }: { portfolioId: string }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>{t('portfolio.form.title')}</h2>
+          <h2>
+            {t(entry ? 'portfolio.correction.title' : 'portfolio.form.title')}
+          </h2>
         </CardTitle>
-        <CardDescription>{t('portfolio.form.description')}</CardDescription>
+        <CardDescription>
+          {t(
+            entry
+              ? 'portfolio.correction.description'
+              : 'portfolio.form.description'
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -195,9 +224,13 @@ export function EntryForm({ portfolioId }: { portfolioId: string }) {
                 {rootError}
               </p>
             )}
-            <Button disabled={mutation.isPending}>
-              {t('portfolio.form.submit')}
-            </Button>
+            <SubmitButtons
+              pending={mutation.isPending}
+              label={t(
+                entry ? 'portfolio.correction.submit' : 'portfolio.form.submit'
+              )}
+              onCancel={entry ? onDone : undefined}
+            />
           </form>
         </Form>
       </CardContent>

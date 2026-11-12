@@ -544,7 +544,26 @@
       "price": "Price",
       "fees": "Fees",
       "sgi": "SGI",
-      "pmp": "PMP"
+      "pmp": "PMP",
+      "actions": "Actions",
+      "name": "{{ticker}} of {{date}}",
+      "edit": "Edit ledger entry {{entry}}",
+      "delete": "Delete ledger entry {{entry}}"
+    },
+    "correction": {
+      "title": "Correct the ledger entry",
+      "openingTitle": "Correct the opening position",
+      "description": "However old the entry, the portfolio is recomputed from the corrected ledger: PMP, realised and unrealised gains.",
+      "submit": "Save the correction",
+      "cancel": "Cancel",
+      "saved": "Correction saved: the portfolio has been recomputed"
+    },
+    "delete": {
+      "title": "Delete this ledger entry?",
+      "description": "The ledger entry {{entry}} will no longer count, and the portfolio will be recomputed without it.",
+      "confirm": "Delete",
+      "done": "Ledger entry deleted: the portfolio has been recomputed",
+      "insufficient": "Deletion refused: a sale recorded later would exceed the {{held}} shares then held."
     },
     "form": {
       "title": "Record a buy or a sell",
@@ -567,7 +586,8 @@
       },
       "errors": {
         "insufficient": "Sale refused: you held only {{held}} shares at that date.",
-        "invalid": "Check the values entered (date, security, amounts)."
+        "invalid": "Check the values entered (date, security, amounts).",
+        "gone": "This ledger entry has already been corrected or deleted. Reload the page."
       }
     },
     "performanceSince": "Performance measured since {{date}}: no return is computed before that date.",
@@ -596,7 +616,8 @@
       "pmp": "PMP (XOF, fees included)",
       "submit": "Record position",
       "saved": "Opening position recorded",
-      "insufficient": "Position refused: a sale recorded after that date would exceed the {{held}} shares then held."
+      "insufficient": "Position refused: a sale recorded after that date would exceed the {{held}} shares then held.",
+      "duplicate": "An opening position for this security is already recorded on that date: correct it instead."
     }
   }
 }

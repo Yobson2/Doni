@@ -9,6 +9,7 @@ export { performanceStart } from './performance-start';
 export { replay } from './replay';
 export { adjustPrice } from './corporate-actions';
 export {
+  ConflictingOpeningPositionsError,
   InvalidCorporateActionError,
   InsufficientQuantityError,
   InvalidLedgerEntryError,

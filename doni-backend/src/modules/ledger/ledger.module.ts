@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Security } from '@modules/securities/entities/security.entity';
 import { SecuritiesModule } from '@modules/securities/securities.module';
+import { LedgerEntryVoid } from './entities/ledger-entry-void.entity';
 import { LedgerEntryRecord } from './entities/ledger-entry.entity';
 import { Portfolio } from './entities/portfolio.entity';
 import { PortfoliosController } from './portfolios.controller';
@@ -14,7 +15,12 @@ import { PortfoliosService } from './portfolios.service';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Portfolio, LedgerEntryRecord, Security]),
+    TypeOrmModule.forFeature([
+      Portfolio,
+      LedgerEntryRecord,
+      LedgerEntryVoid,
+      Security,
+    ]),
     SecuritiesModule,
   ],
   controllers: [PortfoliosController],

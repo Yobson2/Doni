@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import {
+  ConflictingOpeningPositionsException,
   FutureTradeDateError,
   InsufficientQuantityException,
   InvalidLedgerEntryException,
+  LedgerEntryNotFoundError,
   PortfolioNotFoundError,
   UnknownLedgerSecurityError,
 } from '@common/exceptions/ledger.exceptions';
@@ -24,6 +26,7 @@ import {
   PositionDto,
 } from './dto/portfolio.dto';
 import {
+  ConflictingOpeningPositionsError,
   type CorporateAction,
   InsufficientQuantityError,
   InvalidLedgerEntryError,
@@ -37,6 +40,7 @@ import {
   LedgerEntryKind,
   LedgerEntryRecord,
 } from './entities/ledger-entry.entity';
+import { LedgerEntryVoid } from './entities/ledger-entry-void.entity';
 import { Portfolio } from './entities/portfolio.entity';
 
 /**
@@ -76,93 +80,172 @@ export class PortfoliosService {
     ownerId: string,
     portfolioId: string,
   ): Promise<LedgerEntryDto[]> {
-    await this.findOwned(this.portfolios.manager, ownerId, portfolioId);
-    const entries = await this.ledgerOf(this.portfolios.manager, portfolioId);
-    return entries.map(toLedgerEntryDto);
+    const manager = this.portfolios.manager;
+    await this.findOwned(manager, ownerId, portfolioId);
+    const entries = await this.ledgerOf(manager, portfolioId);
+    const replaced =
+      entries.length === 0
+        ? []
+        : await manager.find(LedgerEntryVoid, {
+            where: { replacementId: In(entries.map((e) => e.id)) },
+          });
+    const replacesOf = new Map(
+      replaced.map((v) => [v.replacementId, v.entryId]),
+    );
+    return entries.map((entry) =>
+      toLedgerEntryDto(entry, replacesOf.get(entry.id) ?? null),
+    );
   }
 
-  /** Appends a buy or a sell to the ledger (see `append`). */
-  addEntry(
+  /** Appends a buy or a sell to the ledger (see `change`). */
+  async addEntry(
     ownerId: string,
     portfolioId: string,
     dto: CreateLedgerEntryDto,
   ): Promise<LedgerEntryDto> {
-    return this.append(ownerId, portfolioId, {
-      ...dto,
-      fees: dto.fees ?? '0',
-    });
+    return (await this.change(ownerId, portfolioId, {
+      entry: tradeValues(dto),
+    }))!;
   }
 
   /**
-   * Appends an opening position to the ledger (see `append`): the quantity
-   * held and its PMP as of a date. Its PMP is stored as the entry's price,
-   * with no fees, since the PMP already includes them.
+   * Appends an opening position to the ledger (see `change`): the quantity
+   * held and its PMP as of a date.
    */
-  addOpeningPosition(
+  async addOpeningPosition(
     ownerId: string,
     portfolioId: string,
     dto: CreateOpeningPositionDto,
   ): Promise<LedgerEntryDto> {
-    const { pmp, ...rest } = dto;
-    return this.append(ownerId, portfolioId, {
-      ...rest,
-      kind: LedgerEntryKind.OPENING_POSITION,
-      price: pmp,
-      fees: '0',
+    return (await this.change(ownerId, portfolioId, {
+      entry: openingValues(dto),
+    }))!;
+  }
+
+  /**
+   * Corrects a buy or a sell (see `change`): a new entry with the corrected
+   * values replaces it. Returns the new entry.
+   */
+  async editEntry(
+    ownerId: string,
+    portfolioId: string,
+    entryId: string,
+    dto: CreateLedgerEntryDto,
+  ): Promise<LedgerEntryDto> {
+    return (await this.change(ownerId, portfolioId, {
+      voids: { id: entryId, kinds: TRADE_KINDS },
+      entry: tradeValues(dto),
+    }))!;
+  }
+
+  /** Corrects an opening position, like `editEntry`. */
+  async editOpeningPosition(
+    ownerId: string,
+    portfolioId: string,
+    entryId: string,
+    dto: CreateOpeningPositionDto,
+  ): Promise<LedgerEntryDto> {
+    return (await this.change(ownerId, portfolioId, {
+      voids: { id: entryId, kinds: [LedgerEntryKind.OPENING_POSITION] },
+      entry: openingValues(dto),
+    }))!;
+  }
+
+  /** Deletes a ledger entry of any kind (see `change`). */
+  async deleteEntry(
+    ownerId: string,
+    portfolioId: string,
+    entryId: string,
+  ): Promise<void> {
+    await this.change(ownerId, portfolioId, {
+      voids: { id: entryId, kinds: Object.values(LedgerEntryKind) },
     });
   }
 
   /**
-   * Appends a ledger entry, after checking that replaying the ledger with it
-   * still holds: no sale, at any date, may exceed the shares held. The
-   * portfolio row is locked meanwhile, so two entries recorded at once are
-   * checked one after the other.
+   * The one way the ledger changes (ADR 0004): appends `entry`, voids the
+   * entry `voids` names (a deletion), or both (an edit: the new entry
+   * replaces the voided one). Nothing is ever overwritten.
+   *
+   * The change is refused unless the ledger it leaves still replays, with
+   * the corporate actions in effect: no sale, at any date, may exceed the
+   * shares then held, and no two opening positions may state the same
+   * security on the same day. The portfolio row is locked meanwhile, so two
+   * changes made at once are checked one after the other.
+   *
+   * @returns the new entry, or null for a deletion.
    */
-  private async append(
+  private async change(
     ownerId: string,
     portfolioId: string,
-    entry: {
-      kind: LedgerEntryKind;
-      ticker: string;
-      date: string;
-      quantity: string;
-      price: string;
-      fees: string;
-      sgi: string;
+    change: {
+      voids?: { id: string; kinds: readonly LedgerEntryKind[] };
+      entry?: EntryValues;
     },
-  ): Promise<LedgerEntryDto> {
+  ): Promise<LedgerEntryDto | null> {
     return this.dataSource.transaction(async (manager) => {
       await this.findOwned(manager, ownerId, portfolioId, { lock: true });
-      if (entry.date > today()) throw new FutureTradeDateError(entry.date);
-      const security = await manager.findOneBy(Security, {
-        ticker: entry.ticker,
-      });
-      if (!security) throw new UnknownLedgerSecurityError(entry.ticker);
-
-      const candidate = manager.create(LedgerEntryRecord, {
-        portfolioId,
-        kind: entry.kind,
-        securityId: security.id,
-        tradeDate: entry.date,
-        quantity: entry.quantity,
-        price: entry.price,
-        fees: entry.fees,
-        sgi: entry.sgi,
-      });
       const ledger = await this.ledgerOf(manager, portfolioId);
-      const withCandidate = [
-        ...ledger,
-        { ...candidate, id: NEW_ENTRY, security },
-      ];
+
+      let voided: LedgerEntryRecord | undefined;
+      if (change.voids) {
+        const { id, kinds } = change.voids;
+        voided = ledger.find(
+          (e) => e.id === id.toLowerCase() && kinds.includes(e.kind),
+        );
+        if (!voided) throw new LedgerEntryNotFoundError(id);
+      }
+      const candidate =
+        change.entry &&
+        (await this.newEntry(manager, portfolioId, change.entry));
+
+      const next = ledger.filter((entry) => entry !== voided);
+      if (candidate) next.push({ ...candidate, id: NEW_ENTRY });
       replayLedger(
-        withCandidate,
+        next,
         new Map(),
-        await this.corporateActions.inEffectFor(securityIdsOf(withCandidate)),
+        await this.corporateActions.inEffectFor(securityIdsOf(next)),
       );
 
-      const saved = await manager.save(candidate);
-      return toLedgerEntryDto({ ...saved, security });
+      const saved = candidate && (await manager.save(candidate));
+      if (voided) {
+        await manager.insert(LedgerEntryVoid, {
+          entryId: voided.id,
+          replacementId: saved?.id ?? null,
+        });
+      }
+      return saved
+        ? toLedgerEntryDto(
+            { ...saved, security: candidate.security },
+            voided?.id ?? null,
+          )
+        : null;
     });
+  }
+
+  /** A ledger entry not yet saved, checked for a known security and date. */
+  private async newEntry(
+    manager: EntityManager,
+    portfolioId: string,
+    entry: EntryValues,
+  ): Promise<LedgerEntryRecord> {
+    if (entry.date > today()) throw new FutureTradeDateError(entry.date);
+    const security = await manager.findOneBy(Security, {
+      ticker: entry.ticker,
+    });
+    if (!security) throw new UnknownLedgerSecurityError(entry.ticker);
+    const record = manager.create(LedgerEntryRecord, {
+      portfolioId,
+      kind: entry.kind,
+      securityId: security.id,
+      tradeDate: entry.date,
+      quantity: entry.quantity,
+      price: entry.price,
+      fees: entry.fees,
+      sgi: entry.sgi,
+    });
+    record.security = security;
+    return record;
   }
 
   /**
@@ -232,20 +315,62 @@ export class PortfoliosService {
     return portfolio;
   }
 
+  /**
+   * The portfolio's ledger as it stands: every entry not voided by a
+   * correction, oldest trade first.
+   */
   private ledgerOf(
     manager: EntityManager,
     portfolioId: string,
   ): Promise<LedgerEntryRecord[]> {
-    return manager.find(LedgerEntryRecord, {
-      where: { portfolioId },
-      relations: { security: true },
-      order: { tradeDate: 'ASC', createdAt: 'ASC', id: 'ASC' },
-    });
+    return manager
+      .createQueryBuilder(LedgerEntryRecord, 'entry')
+      .innerJoinAndSelect('entry.security', 'security')
+      .where('entry.portfolioId = :portfolioId', { portfolioId })
+      .andWhere(
+        `NOT EXISTS (SELECT 1 FROM "ledger_entry_voids" "void" WHERE "void"."entryId" = "entry"."id")`,
+      )
+      .orderBy('entry.tradeDate', 'ASC')
+      .addOrderBy('entry.createdAt', 'ASC')
+      .addOrderBy('entry.id', 'ASC')
+      .getMany();
   }
 }
 
 /** Stands in for the id of an entry not yet saved. */
 const NEW_ENTRY = 'new';
+
+const TRADE_KINDS = [LedgerEntryKind.BUY, LedgerEntryKind.SELL] as const;
+
+/** A ledger entry's values as the API receives them. */
+interface EntryValues {
+  kind: LedgerEntryKind;
+  ticker: string;
+  date: string;
+  quantity: string;
+  price: string;
+  fees: string;
+  sgi: string;
+}
+
+const tradeValues = (dto: CreateLedgerEntryDto): EntryValues => ({
+  ...dto,
+  fees: dto.fees ?? '0',
+});
+
+/**
+ * An opening position's PMP is stored as the entry's price, with no fees,
+ * since the PMP already includes them.
+ */
+const openingValues = ({
+  pmp,
+  ...rest
+}: CreateOpeningPositionDto): EntryValues => ({
+  ...rest,
+  kind: LedgerEntryKind.OPENING_POSITION,
+  price: pmp,
+  fees: '0',
+});
 
 const securityIdsOf = (ledger: LedgerEntryRecord[]): string[] => [
   ...new Set(ledger.map((entry) => entry.securityId)),
@@ -274,6 +399,13 @@ function replayLedger(
         date: error.date,
         held: error.held,
         sold: error.sold,
+      });
+    }
+    if (error instanceof ConflictingOpeningPositionsError) {
+      const entry = ledger.find((e) => e.id === error.entryId);
+      throw new ConflictingOpeningPositionsException({
+        ticker: entry?.security?.ticker ?? '',
+        date: error.date,
       });
     }
     if (error instanceof InvalidLedgerEntryError) {
@@ -309,7 +441,10 @@ function toPortfolioDto(portfolio: Portfolio): PortfolioDto {
   };
 }
 
-function toLedgerEntryDto(record: LedgerEntryRecord): LedgerEntryDto {
+function toLedgerEntryDto(
+  record: LedgerEntryRecord,
+  replacesId: string | null,
+): LedgerEntryDto {
   return {
     id: record.id,
     kind: record.kind,
@@ -321,6 +456,7 @@ function toLedgerEntryDto(record: LedgerEntryRecord): LedgerEntryDto {
     fees: record.fees,
     sgi: record.sgi,
     recordedAt: record.createdAt.toISOString(),
+    replacesId,
   };
 }
 

@@ -6,8 +6,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { ApiError } from '@/api/client'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -25,8 +23,19 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { securitiesQuery } from '@/features/securities/api'
-import { addOpeningPosition } from '../api'
-import { DATE, DECIMAL, SHARES, selectClass } from './form-fields'
+import {
+  type LedgerEntry,
+  addOpeningPosition,
+  editOpeningPosition,
+} from '../api'
+import {
+  DATE,
+  DECIMAL,
+  SHARES,
+  ledgerRefusal,
+  selectClass,
+} from './form-fields'
+import { SubmitButtons } from './submit-buttons'
 
 const openingSchema = (t: TFunction) =>
   z.object({
@@ -56,44 +65,52 @@ const TEXT_FIELDS = [
   { name: 'pmp', inputMode: 'decimal' },
 ] as const
 
-interface InsufficientBody {
-  errors?: { context?: { held?: string } }[]
-}
-
-/** Why the API refused the opening position, in the user's language. */
-function refusal(error: unknown, t: TFunction): string {
-  if (error instanceof ApiError && error.status === 422) {
-    const context = (error.body as InsufficientBody)?.errors?.[0]?.context
-    return t('portfolio.opening.insufficient', { held: context?.held ?? '0' })
-  }
-  if (error instanceof ApiError && error.status === 400) {
-    return t('portfolio.form.errors.invalid')
-  }
-  return t('errors.toast.generic')
-}
-
 /**
  * Records an opening position: the quantity of a security held and its PMP
  * as of a date, copied from an SGI statement, instead of every past trade.
+ * Given an `entry`, corrects that opening position instead, then calls
+ * `onDone` (also called on cancel).
  */
-export function OpeningPositionForm({ portfolioId }: { portfolioId: string }) {
+export function OpeningPositionForm({
+  portfolioId,
+  entry,
+  onDone,
+}: {
+  portfolioId: string
+  entry?: LedgerEntry
+  onDone?: () => void
+}) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const securities = useQuery(securitiesQuery())
   const schema = useMemo(() => openingSchema(t), [t])
   const form = useForm<OpeningValues>({
     resolver: zodResolver(schema),
-    defaultValues: { ticker: '', date: '', quantity: '', pmp: '', sgi: '' },
+    defaultValues: entry
+      ? {
+          ticker: entry.ticker,
+          date: entry.date,
+          quantity: entry.quantity,
+          // An opening position's price is its PMP.
+          pmp: entry.price,
+          sgi: entry.sgi,
+        }
+      : { ticker: '', date: '', quantity: '', pmp: '', sgi: '' },
   })
 
   const mutation = useMutation({
     mutationFn: (values: OpeningValues) =>
-      addOpeningPosition(portfolioId, values),
+      entry
+        ? editOpeningPosition(portfolioId, entry.id, values)
+        : addOpeningPosition(portfolioId, values),
     onSuccess: async (_, values) => {
-      toast.success(t('portfolio.opening.saved'))
+      toast.success(
+        t(entry ? 'portfolio.correction.saved' : 'portfolio.opening.saved')
+      )
       await queryClient.invalidateQueries({
         queryKey: ['portfolios', portfolioId],
       })
+      if (entry) return onDone?.()
       // Keep the date and SGI: the next security is usually on the same
       // statement.
       form.reset({
@@ -102,7 +119,10 @@ export function OpeningPositionForm({ portfolioId }: { portfolioId: string }) {
         sgi: values.sgi,
       })
     },
-    onError: (error) => form.setError('root', { message: refusal(error, t) }),
+    onError: (error) =>
+      form.setError('root', {
+        message: ledgerRefusal(error, t, 'portfolio.opening.insufficient'),
+      }),
   })
 
   const rootError = form.formState.errors.root?.message
@@ -111,7 +131,13 @@ export function OpeningPositionForm({ portfolioId }: { portfolioId: string }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>{t('portfolio.opening.title')}</h2>
+          <h2>
+            {t(
+              entry
+                ? 'portfolio.correction.openingTitle'
+                : 'portfolio.opening.title'
+            )}
+          </h2>
         </CardTitle>
         <CardDescription>{t('portfolio.opening.description')}</CardDescription>
       </CardHeader>
@@ -177,9 +203,15 @@ export function OpeningPositionForm({ portfolioId }: { portfolioId: string }) {
                 {rootError}
               </p>
             )}
-            <Button disabled={mutation.isPending}>
-              {t('portfolio.opening.submit')}
-            </Button>
+            <SubmitButtons
+              pending={mutation.isPending}
+              label={t(
+                entry
+                  ? 'portfolio.correction.submit'
+                  : 'portfolio.opening.submit'
+              )}
+              onCancel={entry ? onDone : undefined}
+            />
           </form>
         </Form>
       </CardContent>

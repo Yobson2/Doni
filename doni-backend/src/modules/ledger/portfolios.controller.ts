@@ -1,15 +1,20 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -29,6 +34,8 @@ import {
 import { PortfoliosService } from './portfolios.service';
 
 const NOT_FOUND = 'No portfolio with that id belongs to you';
+const ENTRY_NOT_FOUND =
+  'No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included)';
 
 /**
  * The signed-in user's portfolios and their ledgers. A user only ever sees
@@ -126,7 +133,8 @@ export class PortfoliosController {
   })
   @ApiNotFoundResponse({ description: NOT_FOUND })
   @ApiUnprocessableEntityResponse({
-    description: 'A later sale would then exceed the shares held at its date',
+    description:
+      'A later sale would then exceed the shares held at its date, or an opening position for the security already has that date (edit it instead)',
   })
   addOpeningPosition(
     @GetUserId() userId: string,
@@ -134,5 +142,74 @@ export class PortfoliosController {
     @Body() dto: CreateOpeningPositionDto,
   ): Promise<LedgerEntryDto> {
     return this.portfolios.addOpeningPosition(userId, id, dto);
+  }
+
+  @Put(':id/entries/:entryId')
+  @ApiOperation({
+    operationId: 'editLedgerEntry',
+    summary:
+      'Correct a buy or a sell, however old: a new entry replaces it and the portfolio is recomputed',
+  })
+  @ApiOkResponse({ type: LedgerEntryDto, description: 'The new entry' })
+  @ApiBadRequestResponse({
+    description: 'Invalid values, unknown ticker or a trade date after today',
+  })
+  @ApiNotFoundResponse({ description: ENTRY_NOT_FOUND })
+  @ApiUnprocessableEntityResponse({
+    description:
+      'With the correction, a sale at some date would exceed the shares then held',
+  })
+  editEntry(
+    @GetUserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('entryId', ParseUUIDPipe) entryId: string,
+    @Body() dto: CreateLedgerEntryDto,
+  ): Promise<LedgerEntryDto> {
+    return this.portfolios.editEntry(userId, id, entryId, dto);
+  }
+
+  @Put(':id/opening-positions/:entryId')
+  @ApiOperation({
+    operationId: 'editOpeningPosition',
+    summary:
+      'Correct an opening position: a new entry replaces it and the portfolio is recomputed',
+  })
+  @ApiOkResponse({ type: LedgerEntryDto, description: 'The new entry' })
+  @ApiBadRequestResponse({
+    description: 'Invalid values, unknown ticker or a date after today',
+  })
+  @ApiNotFoundResponse({ description: ENTRY_NOT_FOUND })
+  @ApiUnprocessableEntityResponse({
+    description:
+      'A later sale would then exceed the shares held, or another opening position for the security has that date',
+  })
+  editOpeningPosition(
+    @GetUserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('entryId', ParseUUIDPipe) entryId: string,
+    @Body() dto: CreateOpeningPositionDto,
+  ): Promise<LedgerEntryDto> {
+    return this.portfolios.editOpeningPosition(userId, id, entryId, dto);
+  }
+
+  @Delete(':id/entries/:entryId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    operationId: 'deleteLedgerEntry',
+    summary:
+      'Delete a ledger entry of any kind: it stops counting and the portfolio is recomputed',
+  })
+  @ApiNoContentResponse({ description: 'Deleted' })
+  @ApiNotFoundResponse({ description: ENTRY_NOT_FOUND })
+  @ApiUnprocessableEntityResponse({
+    description:
+      'Without the entry, a sale at some date would exceed the shares then held',
+  })
+  deleteEntry(
+    @GetUserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('entryId', ParseUUIDPipe) entryId: string,
+  ): Promise<void> {
+    return this.portfolios.deleteEntry(userId, id, entryId);
   }
 }
