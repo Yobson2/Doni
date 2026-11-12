@@ -1780,6 +1780,76 @@
           "Watchlist"
         ]
       }
+    },
+    "/api/account/export": {
+      "get": {
+        "operationId": "exportMyData",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountExportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Download all my data as JSON",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/api/account/deletion": {
+      "post": {
+        "description": "Requires the current password. Deletes the account, its portfolios and ledgers, watchlist and every other section of the export, and ends every session. Cannot be undone.",
+        "operationId": "deleteMyAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Account deleted; the refresh cookie is cleared"
+          },
+          "400": {
+            "description": "Password missing"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Password confirmation failed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete my account and all my data",
+        "tags": [
+          "Account"
+        ]
+      }
     }
   },
   "info": {
@@ -3014,6 +3084,47 @@
           "name",
           "addedAt",
           "latestPrice"
+        ]
+      },
+      "AccountExportDto": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "example": "doni-account-export"
+          },
+          "version": {
+            "type": "number",
+            "example": 1,
+            "description": "Version of this export format"
+          },
+          "exportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sections": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "One entry per kind of data, keyed by section: `account` (profile), `portfolios` (each portfolio with its whole ledger: buys, sells, opening positions and, once recorded, user dividends), `sessions`, `watchlist`. Modules added later (such as alert settings) add their own section. Amounts are XOF, as decimal strings."
+          }
+        },
+        "required": [
+          "format",
+          "version",
+          "exportedAt",
+          "sections"
+        ]
+      },
+      "DeleteAccountDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "The account’s current password"
+          }
+        },
+        "required": [
+          "password"
         ]
       }
     }

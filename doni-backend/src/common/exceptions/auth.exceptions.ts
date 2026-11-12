@@ -42,3 +42,17 @@ export class UnauthorizedRoleError extends BaseAppException {
     );
   }
 }
+
+/**
+ * A sensitive account action (such as deleting the account) was sent without
+ * the account's current password. 403, not 401: the session itself is valid.
+ */
+export class ReauthenticationFailedError extends BaseAppException {
+  constructor() {
+    super(
+      'Password confirmation failed',
+      HttpStatus.FORBIDDEN,
+      AuthErrorCode.REAUTHENTICATION_FAILED,
+    );
+  }
+}

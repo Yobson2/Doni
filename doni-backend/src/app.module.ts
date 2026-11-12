@@ -8,6 +8,7 @@ import { getEnvironmentConfig } from '@common/config/environment.loader';
 import { buildDbConfig } from '@common/database/database.config';
 import { MailModule } from '@common/mail/mail.module';
 import { JobsModule } from '@common/jobs/jobs.module';
+import { UserDataModule } from '@common/user-data/user-data.module';
 
 import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
@@ -15,6 +16,7 @@ import { HealthModule } from '@modules/health/health.module';
 import { SecuritiesModule } from '@modules/securities/securities.module';
 import { LedgerModule } from '@modules/ledger/ledger.module';
 import { WatchlistModule } from '@modules/watchlist/watchlist.module';
+import { AccountModule } from '@modules/account/account.module';
 
 @Module({
   imports: [
@@ -52,6 +54,7 @@ import { WatchlistModule } from '@modules/watchlist/watchlist.module';
     // ─── Infrastructure ─────────────────────────────────────
     MailModule,
     JobsModule,
+    UserDataModule,
 
     // ─── Feature Modules ────────────────────────────────────
     UsersModule,
@@ -60,6 +63,7 @@ import { WatchlistModule } from '@modules/watchlist/watchlist.module';
     SecuritiesModule,
     LedgerModule,
     WatchlistModule,
+    AccountModule,
   ],
   providers: [
     {

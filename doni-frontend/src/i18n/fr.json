@@ -58,6 +58,30 @@
         "system": "Police du système"
       },
       "themeDescription": "Choisissez un thème clair ou sombre."
+    },
+    "account": {
+      "title": "Compte et données",
+      "description": "Téléchargez vos données ou supprimez votre compte.",
+      "export": {
+        "title": "Télécharger mes données",
+        "description": "Obtenez une copie de tout ce que Doni conserve à votre sujet (compte, portefeuilles et leurs écritures, liste de suivi, sessions) dans un fichier JSON lisible par d’autres outils.",
+        "submit": "Télécharger mes données (JSON)",
+        "pending": "Préparation de votre fichier…",
+        "error": "Vos données n’ont pas pu être téléchargées. Veuillez réessayer."
+      },
+      "delete": {
+        "title": "Supprimer mon compte",
+        "description": "Supprime définitivement votre compte, vos portefeuilles et leurs écritures, votre liste de suivi et toutes vos autres données, et vous déconnecte sur tous vos appareils. Cette action est irréversible : téléchargez d’abord vos données si vous souhaitez en garder une copie.",
+        "open": "Supprimer mon compte…",
+        "confirmTitle": "Supprimer votre compte ?",
+        "confirmDescription": "Votre compte et toutes vos données seront supprimés définitivement et vous serez déconnecté partout. Saisissez votre mot de passe pour confirmer qu’il s’agit bien de vous.",
+        "password": "Mot de passe",
+        "understand": "Je comprends que mon compte et toutes mes données seront supprimés définitivement.",
+        "wrongPassword": "Mot de passe incorrect.",
+        "cancel": "Annuler",
+        "submit": "Supprimer définitivement mon compte",
+        "success": "Votre compte et vos données ont été supprimés."
+      }
     }
   },
   "auth": {

@@ -58,6 +58,30 @@
         "system": "System font"
       },
       "themeDescription": "Choose a light or dark theme."
+    },
+    "account": {
+      "title": "Account & data",
+      "description": "Download your data or delete your account.",
+      "export": {
+        "title": "Download my data",
+        "description": "Get a copy of everything Doni holds about you (account, portfolios and their ledger entries, watchlist, sessions) as a JSON file you can open in other tools.",
+        "submit": "Download my data (JSON)",
+        "pending": "Preparing your file…",
+        "error": "Your data could not be downloaded. Please try again."
+      },
+      "delete": {
+        "title": "Delete my account",
+        "description": "Permanently deletes your account, your portfolios and their ledger entries, your watchlist and every other piece of your data, and signs you out on all your devices. This cannot be undone: download your data first if you want to keep a copy.",
+        "open": "Delete my account…",
+        "confirmTitle": "Delete your account?",
+        "confirmDescription": "Your account and all your data will be deleted for good and you will be signed out everywhere. Enter your password to confirm it is you.",
+        "password": "Password",
+        "understand": "I understand that my account and all my data will be permanently deleted.",
+        "wrongPassword": "Incorrect password.",
+        "cancel": "Cancel",
+        "submit": "Delete my account permanently",
+        "success": "Your account and your data have been deleted."
+      }
     }
   },
   "auth": {

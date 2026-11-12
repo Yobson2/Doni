@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticat
 import { Route as AuthenticatedSecuritiesIndexImport } from './routes/_authenticated/securities/index'
 import { Route as AuthenticatedPortfolioIndexImport } from './routes/_authenticated/portfolio/index'
 import { Route as AuthenticatedDashboardIndexImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedSecuritiesTickerImport } from './routes/_authenticated/securities/$ticker'
 import { Route as AuthenticatedAdminCatalogueImport } from './routes/_authenticated/admin/catalogue'
 
@@ -139,6 +140,13 @@ const AuthenticatedDashboardIndexRoute =
     id: '/dashboard/',
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
+const AuthenticatedSettingsAccountRoute =
+  AuthenticatedSettingsAccountImport.update({
+    id: '/account',
+    path: '/account',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 
 const AuthenticatedSecuritiesTickerRoute =
@@ -257,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecuritiesTickerImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/settings/account': {
+      id: '/_authenticated/settings/account'
+      path: '/account'
+      fullPath: '/settings/account'
+      preLoaderRoute: typeof AuthenticatedSettingsAccountImport
+      parentRoute: typeof AuthenticatedSettingsRouteImport
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
@@ -298,11 +313,13 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AuthenticatedSettingsRouteRouteChildren {
+  AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteChildren =
   {
+    AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   }
 
@@ -360,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
+  '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
@@ -380,6 +398,7 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
+  '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
@@ -403,6 +422,7 @@ export interface FileRoutesById {
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/_authenticated/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
+  '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/portfolio/': typeof AuthenticatedPortfolioIndexRoute
   '/_authenticated/securities/': typeof AuthenticatedSecuritiesIndexRoute
@@ -426,6 +446,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/catalogue'
     | '/securities/$ticker'
+    | '/settings/account'
     | '/dashboard'
     | '/portfolio'
     | '/securities'
@@ -445,6 +466,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/catalogue'
     | '/securities/$ticker'
+    | '/settings/account'
     | '/dashboard'
     | '/portfolio'
     | '/securities'
@@ -466,6 +488,7 @@ export interface FileRouteTypes {
     | '/_public/'
     | '/_authenticated/admin/catalogue'
     | '/_authenticated/securities/$ticker'
+    | '/_authenticated/settings/account'
     | '/_authenticated/dashboard/'
     | '/_authenticated/portfolio/'
     | '/_authenticated/securities/'
@@ -544,6 +567,7 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/settings/route.tsx",
       "parent": "/_authenticated",
       "children": [
+        "/_authenticated/settings/account",
         "/_authenticated/settings/"
       ]
     },
@@ -582,6 +606,10 @@ export const routeTree = rootRoute
     "/_authenticated/securities/$ticker": {
       "filePath": "_authenticated/securities/$ticker.tsx",
       "parent": "/_authenticated"
+    },
+    "/_authenticated/settings/account": {
+      "filePath": "_authenticated/settings/account.tsx",
+      "parent": "/_authenticated/settings"
     },
     "/_authenticated/dashboard/": {
       "filePath": "_authenticated/dashboard/index.tsx",
