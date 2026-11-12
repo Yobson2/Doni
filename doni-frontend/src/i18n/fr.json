@@ -18,7 +18,8 @@
     "skipToMain": "Aller au contenu principal",
     "securities": "Valeurs",
     "adminCatalogue": "Catalogue et cours",
-    "portfolio": "Mon portefeuille"
+    "portfolio": "Mon portefeuille",
+    "watchlist": "Ma liste de suivi"
   },
   "command": {
     "search": "Rechercher",
@@ -406,6 +407,16 @@
       "cashInLieu": "Rompus indemnisés à {{price}} par action.",
       "rightsNote": "Vos positions ne changent pas d’elles-mêmes : si vous souscrivez, enregistrez les actions nouvelles comme un achat au prix de souscription."
     }
+  },
+  "watchlist": {
+    "title": "Ma liste de suivi",
+    "description": "Les valeurs que vous suivez sans forcément les détenir, avec leur dernier cours de clôture publié.",
+    "empty": "Vous ne suivez aucune valeur pour le moment.",
+    "browse": "Parcourir les valeurs cotées",
+    "add": "Suivre",
+    "watching": "Suivie",
+    "remove": "Ne plus suivre {{ticker}}",
+    "actions": "Actions"
   },
   "admin": {
     "catalogue": {

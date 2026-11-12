@@ -1438,6 +1438,114 @@
           "Portfolios"
         ]
       }
+    },
+    "/api/watchlist": {
+      "get": {
+        "operationId": "listWatchlist",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WatchlistItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "My watched securities with their latest end-of-day price and its date",
+        "tags": [
+          "Watchlist"
+        ]
+      }
+    },
+    "/api/watchlist/{ticker}": {
+      "put": {
+        "operationId": "addToWatchlist",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistItemDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown ticker"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Watch a security (no change if already watched)",
+        "tags": [
+          "Watchlist"
+        ]
+      },
+      "delete": {
+        "operationId": "removeFromWatchlist",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The security is no longer watched"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown ticker"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Stop watching a security (no change if not watched)",
+        "tags": [
+          "Watchlist"
+        ]
+      }
     }
   },
   "info": {
@@ -2576,6 +2684,39 @@
           "quantity",
           "price",
           "sgi"
+        ]
+      },
+      "WatchlistItemDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "SONATEL SN"
+          },
+          "addedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user added the security"
+          },
+          "latestPrice": {
+            "nullable": true,
+            "description": "Most recent published end-of-day price, with the date it applies to; null when there is none",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EndOfDayPriceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "addedAt",
+          "latestPrice"
         ]
       }
     }

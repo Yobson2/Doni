@@ -23,6 +23,7 @@ import { Route as authSignUpImport } from './routes/(auth)/sign-up'
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
 import { Route as authForgotPasswordImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedWatchlistIndexImport } from './routes/_authenticated/watchlist/index'
 import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSecuritiesIndexImport } from './routes/_authenticated/securities/index'
 import { Route as AuthenticatedPortfolioIndexImport } from './routes/_authenticated/portfolio/index'
@@ -103,6 +104,13 @@ const AuthenticatedSettingsRouteRoute = AuthenticatedSettingsRouteImport.update(
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any,
 )
+
+const AuthenticatedWatchlistIndexRoute =
+  AuthenticatedWatchlistIndexImport.update({
+    id: '/watchlist/',
+    path: '/watchlist/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 const AuthenticatedSettingsIndexRoute = AuthenticatedSettingsIndexImport.update(
   {
@@ -277,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexImport
       parentRoute: typeof AuthenticatedSettingsRouteImport
     }
+    '/_authenticated/watchlist/': {
+      id: '/_authenticated/watchlist/'
+      path: '/watchlist'
+      fullPath: '/watchlist'
+      preLoaderRoute: typeof AuthenticatedWatchlistIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
   }
 }
 
@@ -303,6 +318,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedPortfolioIndexRoute: typeof AuthenticatedPortfolioIndexRoute
   AuthenticatedSecuritiesIndexRoute: typeof AuthenticatedSecuritiesIndexRoute
+  AuthenticatedWatchlistIndexRoute: typeof AuthenticatedWatchlistIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -312,6 +328,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedPortfolioIndexRoute: AuthenticatedPortfolioIndexRoute,
   AuthenticatedSecuritiesIndexRoute: AuthenticatedSecuritiesIndexRoute,
+  AuthenticatedWatchlistIndexRoute: AuthenticatedWatchlistIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -347,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/watchlist': typeof AuthenticatedWatchlistIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -366,6 +384,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/watchlist': typeof AuthenticatedWatchlistIndexRoute
 }
 
 export interface FileRoutesById {
@@ -388,6 +407,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio/': typeof AuthenticatedPortfolioIndexRoute
   '/_authenticated/securities/': typeof AuthenticatedSecuritiesIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/watchlist/': typeof AuthenticatedWatchlistIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -410,6 +430,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/securities'
     | '/settings/'
+    | '/watchlist'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -428,6 +449,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/securities'
     | '/settings'
+    | '/watchlist'
   id:
     | '__root__'
     | '/_authenticated'
@@ -448,6 +470,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio/'
     | '/_authenticated/securities/'
     | '/_authenticated/settings/'
+    | '/_authenticated/watchlist/'
   fileRoutesById: FileRoutesById
 }
 
@@ -507,7 +530,8 @@ export const routeTree = rootRoute
         "/_authenticated/securities/$ticker",
         "/_authenticated/dashboard/",
         "/_authenticated/portfolio/",
-        "/_authenticated/securities/"
+        "/_authenticated/securities/",
+        "/_authenticated/watchlist/"
       ]
     },
     "/_public": {
@@ -574,6 +598,10 @@ export const routeTree = rootRoute
     "/_authenticated/settings/": {
       "filePath": "_authenticated/settings/index.tsx",
       "parent": "/_authenticated/settings"
+    },
+    "/_authenticated/watchlist/": {
+      "filePath": "_authenticated/watchlist/index.tsx",
+      "parent": "/_authenticated"
     }
   }
 }

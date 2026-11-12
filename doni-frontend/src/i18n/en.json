@@ -18,7 +18,8 @@
     "skipToMain": "Skip to main content",
     "securities": "Securities",
     "adminCatalogue": "Catalogue and prices",
-    "portfolio": "My portfolio"
+    "portfolio": "My portfolio",
+    "watchlist": "My watchlist"
   },
   "command": {
     "search": "Search",
@@ -406,6 +407,16 @@
       "cashInLieu": "Fractions of a share paid at {{price}} per share.",
       "rightsNote": "Your positions do not change on their own: if you subscribe, record the new shares as a buy at the subscription price."
     }
+  },
+  "watchlist": {
+    "title": "My watchlist",
+    "description": "Securities you follow without necessarily holding them, with their latest published closing price.",
+    "empty": "You are not following any securities yet.",
+    "browse": "Browse listed securities",
+    "add": "Watch",
+    "watching": "Watching",
+    "remove": "Stop watching {{ticker}}",
+    "actions": "Actions"
   },
   "admin": {
     "catalogue": {
