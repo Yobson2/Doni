@@ -1221,6 +1221,64 @@
           "Portfolios"
         ]
       }
+    },
+    "/api/portfolios/{id}/opening-positions": {
+      "post": {
+        "operationId": "addOpeningPosition",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOpeningPositionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, unknown ticker or a date after today"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          },
+          "422": {
+            "description": "A later sale would then exceed the shares held at its date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Record an opening position: the quantity held and its PMP as of a date, instead of the past trades",
+        "tags": [
+          "Portfolios"
+        ]
+      }
     }
   },
   "info": {
@@ -2052,19 +2110,28 @@
           },
           "totals": {
             "$ref": "#/components/schemas/PortfolioTotalsDto"
+          },
+          "performanceSince": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "example": "2026-01-02",
+            "description": "Performance is measured from this day only: the latest opening position, or the first entry when the full trade history was entered. Null for an empty ledger."
           }
         },
         "required": [
           "portfolio",
           "positions",
-          "totals"
+          "totals",
+          "performanceSince"
         ]
       },
       "LedgerEntryKind": {
         "type": "string",
         "enum": [
           "buy",
-          "sell"
+          "sell",
+          "opening_position"
         ]
       },
       "LedgerEntryDto": {
@@ -2100,11 +2167,13 @@
           },
           "price": {
             "type": "string",
-            "example": "4000"
+            "example": "4000",
+            "description": "Price per share excluding fees; for an opening position, its PMP"
           },
           "fees": {
             "type": "string",
-            "example": "2000"
+            "example": "2000",
+            "description": "0 for an opening position"
           },
           "sgi": {
             "type": "string",
@@ -2129,13 +2198,20 @@
           "recordedAt"
         ]
       },
+      "TradeKind": {
+        "type": "string",
+        "enum": [
+          "buy",
+          "sell"
+        ]
+      },
       "CreateLedgerEntryDto": {
         "type": "object",
         "properties": {
           "kind": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/LedgerEntryKind"
+                "$ref": "#/components/schemas/TradeKind"
               }
             ]
           },
@@ -2177,6 +2253,44 @@
           "date",
           "quantity",
           "price",
+          "sgi"
+        ]
+      },
+      "CreateOpeningPositionDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-01-02",
+            "description": "Day the holding is stated for (at the start of that day); not after today"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "200",
+            "description": "Whole number of shares held"
+          },
+          "pmp": {
+            "type": "string",
+            "example": "3850.25",
+            "description": "PMP of the shares held, fees included, XOF"
+          },
+          "sgi": {
+            "type": "string",
+            "example": "SGI Example",
+            "description": "The SGI the shares are held with",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "ticker",
+          "date",
+          "quantity",
+          "pmp",
           "sgi"
         ]
       }

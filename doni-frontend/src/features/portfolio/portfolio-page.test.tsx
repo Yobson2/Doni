@@ -46,6 +46,7 @@ const valuation = {
     marketValue: '377100',
     unrealisedGain: '6255',
   },
+  performanceSince: '2026-01-05',
 }
 
 const entry = {
@@ -228,6 +229,149 @@ describe('portfolio page', () => {
     expect((await screen.findByRole('alert')).textContent).toBe(
       'Vente refusée : vous ne déteniez que 90 titres à cette date.'
     )
+  })
+
+  it('states the date performance is measured from, and that nothing is computed before it', async () => {
+    portfolioApi({
+      [VALUATION]: () =>
+        json(200, { ...valuation, performanceSince: '2026-01-02' }),
+    })
+    renderApp('/portfolio')
+
+    const summary = await screen.findByRole('region', {
+      name: 'Synthèse du portefeuille',
+    })
+    expect(summary.textContent).toContain(
+      'Performance mesurée depuis le 2 janvier 2026 : aucun rendement n’est calculé avant cette date.'
+    )
+  })
+
+  it('lists an opening position with its PMP and no fees', async () => {
+    portfolioApi({
+      [`GET ${ENTRIES}`]: () =>
+        json(200, [
+          {
+            ...entry,
+            kind: 'opening_position',
+            date: '2026-01-02',
+            quantity: '200',
+            price: '3850.25',
+            fees: '0',
+          },
+        ]),
+    })
+    renderApp('/portfolio')
+
+    const heading = await screen.findByRole('heading', { name: 'Écritures' })
+    const card = within(heading.closest('[data-slot="card"]') as HTMLElement)
+    const row = text(
+      (await card.findByText('SGI Test Bourse')).closest('tr')!.textContent
+    )
+    expect(row).toContain('02/01/2026')
+    expect(row).toContain('Position d’ouverture')
+    expect(row).toContain('3 850,25 F CFAPMP')
+    expect(row).toContain('—')
+  })
+
+  describe('onboarding an empty portfolio', () => {
+    const emptyPortfolioApi = (routes = {}) =>
+      portfolioApi({
+        [VALUATION]: () =>
+          json(200, {
+            portfolio,
+            positions: [],
+            totals: {
+              costBasis: '0',
+              realisedGain: '0',
+              marketValue: '0',
+              unrealisedGain: '0',
+            },
+            performanceSince: null,
+          }),
+        [`GET ${ENTRIES}`]: () => json(200, []),
+        ...routes,
+      })
+
+    it('offers the opening position first and the full trade history second', async () => {
+      emptyPortfolioApi()
+      renderApp('/portfolio')
+
+      const heading = await screen.findByRole('heading', {
+        name: 'Comment voulez-vous commencer ?',
+      })
+      const card = within(heading.closest('[data-slot="card"]') as HTMLElement)
+      expect(card.getAllByRole('button').map((b) => b.textContent)).toEqual([
+        'J’ai déjà des actions',
+        'Saisir tout mon historique',
+      ])
+      // No form until the user has chosen how to start.
+      expect(screen.queryByRole('button', { name: 'Enregistrer' })).toBeNull()
+    })
+
+    it('records an opening position: quantity and PMP as of a date', async () => {
+      let sent: unknown
+      emptyPortfolioApi({
+        [`POST /api/portfolios/${PORTFOLIO_ID}/opening-positions`]: async (
+          request: Request
+        ) => {
+          sent = await request.json()
+          return json(201, { ...entry, kind: 'opening_position' })
+        },
+      })
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'J’ai déjà des actions' })
+      )
+      await screen.findByRole('heading', {
+        name: 'Saisir une position d’ouverture',
+      })
+      await screen.findByRole('option', { name: 'SNTS · SONATEL' })
+      fireEvent.change(screen.getByLabelText('Valeur'), {
+        target: { value: 'SNTS' },
+      })
+      fireEvent.change(screen.getByLabelText('Détenu au'), {
+        target: { value: '2026-01-02' },
+      })
+      fireEvent.change(screen.getByLabelText('Quantité détenue'), {
+        target: { value: '200' },
+      })
+      fireEvent.change(screen.getByLabelText('PMP (F CFA, frais inclus)'), {
+        target: { value: '3850.25' },
+      })
+      fireEvent.change(screen.getByLabelText('SGI'), {
+        target: { value: 'SGI Test Bourse' },
+      })
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Enregistrer la position' })
+      )
+
+      await waitFor(() =>
+        expect(sent).toEqual({
+          ticker: 'SNTS',
+          date: '2026-01-02',
+          quantity: '200',
+          pmp: '3850.25',
+          sgi: 'SGI Test Bourse',
+        })
+      )
+    })
+
+    it('can start from the full trade history instead', async () => {
+      emptyPortfolioApi()
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Saisir tout mon historique',
+        })
+      )
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Enregistrer un achat ou une vente',
+        })
+      ).toBeTruthy()
+    })
   })
 
   it('offers to create the first portfolio', async () => {

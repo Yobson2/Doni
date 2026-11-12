@@ -33,6 +33,19 @@ const trade =
   });
 const buy = trade('buy');
 const sell = trade('sell');
+const opening = (
+  date: string,
+  quantity: string,
+  pmp: string,
+  securityId = SNTS,
+): LedgerEntry => ({
+  id: `e${++nextId}`,
+  kind: 'opening_position',
+  securityId,
+  date,
+  quantity,
+  pmp,
+});
 
 const run = (
   entries: LedgerEntry[],
@@ -320,6 +333,180 @@ describe('ledger engine replay', () => {
           sell('2026-03-16', '1', '4500', '0', SNTS),
         ]),
       ).toThrow(expect.objectContaining({ securityId: SNTS }));
+    });
+  });
+
+  describe('opening positions', () => {
+    it('an opening position alone: holds its quantity at its PMP, with no gain realised', () => {
+      // 200 × 3850.25 = 770050
+      const result = run([opening('2026-01-02', '200', '3850.25')]);
+
+      expect(position(result)).toEqual({
+        securityId: SNTS,
+        quantity: '200',
+        pmp: '3850.25',
+        costBasis: '770050',
+        realisedGain: '0',
+        valuation: null,
+      });
+    });
+
+    it('opening position + later buy: the buy averages into the opening PMP', () => {
+      // 200 × 3850.25 = 770050; buy 50 × 4100 + 1450 = 206450
+      // 976500 / 250 = 3906
+      const result = run([
+        opening('2026-01-02', '200', '3850.25'),
+        buy('2026-02-10', '50', '4100', '1450'),
+      ]);
+
+      expect(position(result)).toMatchObject({
+        quantity: '250',
+        pmp: '3906',
+        costBasis: '976500',
+        realisedGain: '0',
+      });
+    });
+
+    it('opening position + partial sale: realises the gain against the opening PMP', () => {
+      // proceeds 80 × 4200 − 1680 = 334320; cost 80 × 3850.25 = 308020
+      // realised 26300; 120 left at 3850.25 = 462030
+      const result = run([
+        opening('2026-01-02', '200', '3850.25'),
+        sell('2026-03-16', '80', '4200', '1680'),
+      ]);
+
+      expect(position(result)).toMatchObject({
+        quantity: '120',
+        pmp: '3850.25',
+        costBasis: '462030',
+        realisedGain: '26300',
+      });
+    });
+
+    it('opening position + full sale: closes the position and keeps its realised gain', () => {
+      // 200 × 4000 − 4000 = 796000; 796000 − 770050 = 25950
+      const result = run([
+        opening('2026-01-02', '200', '3850.25'),
+        sell('2026-04-20', '200', '4000', '4000'),
+      ]);
+
+      expect(position(result)).toEqual({
+        securityId: SNTS,
+        quantity: '0',
+        pmp: '0',
+        costBasis: '0',
+        realisedGain: '25950',
+        valuation: null,
+      });
+    });
+
+    it('opening position + buy + two sales: realised gain is what was received minus the opening cost and what was paid', () => {
+      // opening 770050 + buy 206450 = 976500 for 250 shares (PMP 3906)
+      // sell 100: 420000 − 2100 = 417900 − 390600 = 27300; 150 left, 585900
+      // sell 150: 570000 − 2850 = 567150 − 585900 = −18750
+      // realised 8550 (= 985050 received − 976500 cost)
+      const result = run([
+        opening('2026-01-02', '200', '3850.25'),
+        buy('2026-02-10', '50', '4100', '1450'),
+        sell('2026-03-16', '100', '4200', '2100'),
+        sell('2026-04-20', '150', '3800', '2850'),
+      ]);
+
+      expect(position(result)).toMatchObject({
+        quantity: '0',
+        realisedGain: '8550',
+      });
+    });
+
+    it('is valued at end-of-day prices like any position', () => {
+      // 200 × 4190 = 838000; 838000 − 770050 = 67950
+      const result = run([opening('2026-01-02', '200', '3850.25')], {
+        [SNTS]: { close: '4190', date: '2026-11-11' },
+      });
+
+      expect(position(result)?.valuation).toEqual({
+        price: '4190',
+        priceDate: '2026-11-11',
+        marketValue: '838000',
+        unrealisedGain: '67950',
+      });
+    });
+
+    it("states the holding at the start of its day: the same day's buys and sales apply on top, whatever the order given", () => {
+      // opening 100 at 4000 = 400000; buy 25 × 4200 = 105000
+      // 505000 / 125 = 4040; sell 30 × 4300 = 129000 − 30 × 4040 = 7800
+      // 95 left at 4040 = 383800
+      const result = run([
+        sell('2026-01-02', '30', '4300'),
+        buy('2026-01-02', '25', '4200'),
+        opening('2026-01-02', '100', '4000'),
+      ]);
+
+      expect(position(result)).toMatchObject({
+        quantity: '95',
+        pmp: '4040',
+        costBasis: '383800',
+        realisedGain: '7800',
+      });
+    });
+
+    it('supersedes the quantity and PMP of earlier entries for its security, and keeps gains they realised', () => {
+      // buy 50 × 3000; sell 20 × 3500 = 70000 − 60000 = 10000 realised
+      // the opening position then states 200 held at 3850.25
+      const result = run([
+        buy('2025-06-02', '50', '3000'),
+        sell('2025-09-01', '20', '3500'),
+        opening('2026-01-02', '200', '3850.25'),
+      ]);
+
+      expect(position(result)).toMatchObject({
+        quantity: '200',
+        pmp: '3850.25',
+        costBasis: '770050',
+        realisedGain: '10000',
+      });
+    });
+
+    it('does not cover a sale dated before it', () => {
+      expect(() =>
+        run([
+          sell('2025-12-31', '10', '4000'),
+          opening('2026-01-02', '200', '3850.25'),
+        ]),
+      ).toThrow(
+        expect.objectContaining({
+          name: 'InsufficientQuantityError',
+          held: '0',
+        }),
+      );
+    });
+
+    it('only sets the holding of its own security', () => {
+      // ORAC: 20 × 15000 + 3000 = 303000 (PMP 15150), untouched
+      const result = run([
+        buy('2025-05-04', '20', '15000', '3000', ORAC),
+        opening('2026-01-02', '200', '3850.25'),
+      ]);
+
+      expect(position(result, ORAC)).toMatchObject({
+        quantity: '20',
+        pmp: '15150',
+      });
+      expect(result.totals.costBasis).toBe('1073050'); // 303000 + 770050
+    });
+
+    it.each([
+      ['a zero quantity', '0', '4000'],
+      ['a negative PMP', '10', '-4000'],
+      ['a PMP that is not a decimal', '10', '4,000'],
+    ])('rejects %s', (_case, quantity, pmp) => {
+      const entry = opening('2026-01-02', quantity, pmp);
+      expect(() => run([entry])).toThrow(
+        expect.objectContaining({
+          name: 'InvalidLedgerEntryError',
+          entryId: entry.id,
+        }),
+      );
     });
   });
 });

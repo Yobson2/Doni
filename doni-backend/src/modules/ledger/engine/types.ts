@@ -25,8 +25,26 @@ export interface TradeEntry {
   fees: string;
 }
 
+/**
+ * An opening position: the user held `quantity` shares at this `pmp` on
+ * `date`, entered instead of the trades that led there (ADR 0001). It is a
+ * snapshot of the holding at the start of that day: it sets the quantity and
+ * PMP, superseding the security's earlier entries, and realises nothing.
+ */
+export interface OpeningPositionEntry {
+  id: string;
+  kind: 'opening_position';
+  securityId: string;
+  /** The day the holding is stated for. */
+  date: string;
+  /** Number of shares held, greater than zero. */
+  quantity: string;
+  /** PMP of the shares held, fees included (ADR 0006). */
+  pmp: string;
+}
+
 /** One dated, immutable record of a portfolio's ledger. */
-export type LedgerEntry = TradeEntry;
+export type LedgerEntry = TradeEntry | OpeningPositionEntry;
 
 /** The end-of-day price a position is valued at, with the day it applies to. */
 export interface ValuationPrice {

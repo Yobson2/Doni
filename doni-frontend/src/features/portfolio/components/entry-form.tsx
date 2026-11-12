@@ -7,7 +7,6 @@ import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -27,15 +26,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { securitiesQuery } from '@/features/securities/api'
 import { addLedgerEntry } from '../api'
-
-const SHARES = /^[1-9]\d{0,14}$/
-const DECIMAL = /^\d{1,15}(\.\d{1,6})?$/
-const DATE = /^\d{4}-\d{2}-\d{2}$/
-
-const selectClass = cn(
-  'border-input dark:bg-input/30 flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none md:text-sm',
-  'focus-visible:border-ring focus-visible:ring-ring/80 focus-visible:ring-[3px]'
-)
+import { DATE, DECIMAL, SHARES, selectClass } from './form-fields'
 
 const entrySchema = (t: TFunction) => {
   const required = t('portfolio.form.validation.required')

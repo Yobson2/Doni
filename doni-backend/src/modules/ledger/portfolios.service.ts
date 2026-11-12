@@ -15,6 +15,7 @@ import {
 } from '@modules/securities/prices/price-source';
 import {
   CreateLedgerEntryDto,
+  CreateOpeningPositionDto,
   CreatePortfolioDto,
   LedgerEntryDto,
   PortfolioDto,
@@ -26,9 +27,13 @@ import {
   InvalidLedgerEntryError,
   type LedgerEntry,
   type ValuationPrice,
+  performanceStart,
   replay,
 } from './engine';
-import { LedgerEntryRecord } from './entities/ledger-entry.entity';
+import {
+  LedgerEntryKind,
+  LedgerEntryRecord,
+} from './entities/ledger-entry.entity';
 import { Portfolio } from './entities/portfolio.entity';
 
 /**
@@ -72,34 +77,73 @@ export class PortfoliosService {
     return entries.map(toLedgerEntryDto);
   }
 
-  /**
-   * Appends a buy or a sell to the ledger, after checking that replaying the
-   * ledger with it still holds: no sale, at any date, may exceed the shares
-   * held. The portfolio row is locked meanwhile, so two entries recorded at
-   * once are checked one after the other.
-   */
-  async addEntry(
+  /** Appends a buy or a sell to the ledger (see `append`). */
+  addEntry(
     ownerId: string,
     portfolioId: string,
     dto: CreateLedgerEntryDto,
   ): Promise<LedgerEntryDto> {
+    return this.append(ownerId, portfolioId, {
+      ...dto,
+      fees: dto.fees ?? '0',
+    });
+  }
+
+  /**
+   * Appends an opening position to the ledger (see `append`): the quantity
+   * held and its PMP as of a date. Its PMP is stored as the entry's price,
+   * with no fees, since the PMP already includes them.
+   */
+  addOpeningPosition(
+    ownerId: string,
+    portfolioId: string,
+    dto: CreateOpeningPositionDto,
+  ): Promise<LedgerEntryDto> {
+    const { pmp, ...rest } = dto;
+    return this.append(ownerId, portfolioId, {
+      ...rest,
+      kind: LedgerEntryKind.OPENING_POSITION,
+      price: pmp,
+      fees: '0',
+    });
+  }
+
+  /**
+   * Appends a ledger entry, after checking that replaying the ledger with it
+   * still holds: no sale, at any date, may exceed the shares held. The
+   * portfolio row is locked meanwhile, so two entries recorded at once are
+   * checked one after the other.
+   */
+  private async append(
+    ownerId: string,
+    portfolioId: string,
+    entry: {
+      kind: LedgerEntryKind;
+      ticker: string;
+      date: string;
+      quantity: string;
+      price: string;
+      fees: string;
+      sgi: string;
+    },
+  ): Promise<LedgerEntryDto> {
     return this.dataSource.transaction(async (manager) => {
       await this.findOwned(manager, ownerId, portfolioId, { lock: true });
-      if (dto.date > today()) throw new FutureTradeDateError(dto.date);
+      if (entry.date > today()) throw new FutureTradeDateError(entry.date);
       const security = await manager.findOneBy(Security, {
-        ticker: dto.ticker,
+        ticker: entry.ticker,
       });
-      if (!security) throw new UnknownLedgerSecurityError(dto.ticker);
+      if (!security) throw new UnknownLedgerSecurityError(entry.ticker);
 
       const candidate = manager.create(LedgerEntryRecord, {
         portfolioId,
-        kind: dto.kind,
+        kind: entry.kind,
         securityId: security.id,
-        tradeDate: dto.date,
-        quantity: dto.quantity,
-        price: dto.price,
-        fees: dto.fees ?? '0',
-        sgi: dto.sgi,
+        tradeDate: entry.date,
+        quantity: entry.quantity,
+        price: entry.price,
+        fees: entry.fees,
+        sgi: entry.sgi,
       });
       const ledger = await this.ledgerOf(manager, portfolioId);
       checkReplays([...ledger, { ...candidate, id: NEW_ENTRY, security }]);
@@ -137,7 +181,8 @@ export class PortfoliosService {
       ]),
     );
 
-    const result = replay({ entries: ledger.map(toEngineEntry), prices });
+    const entries = ledger.map(toEngineEntry);
+    const result = replay({ entries, prices });
     const positions: PositionDto[] = result.positions.map((position) => {
       const security = securities.get(position.securityId) as Security;
       const { securityId: _id, ...figures } = position;
@@ -152,6 +197,7 @@ export class PortfoliosService {
       portfolio: toPortfolioDto(portfolio),
       positions,
       totals: result.totals,
+      performanceSince: performanceStart(entries),
     };
   }
 
@@ -207,12 +253,18 @@ function checkReplays(ledger: LedgerEntryRecord[]): void {
 }
 
 function toEngineEntry(record: LedgerEntryRecord): LedgerEntry {
-  return {
+  const common = {
     id: record.id,
-    kind: record.kind,
     securityId: record.securityId,
     date: record.tradeDate,
     quantity: record.quantity,
+  };
+  if (record.kind === LedgerEntryKind.OPENING_POSITION) {
+    return { ...common, kind: 'opening_position', pmp: record.price };
+  }
+  return {
+    ...common,
+    kind: record.kind,
     price: record.price,
     fees: record.fees,
   };

@@ -5,6 +5,7 @@ import type { components } from '@/api/schema'
 export type Portfolio = components['schemas']['PortfolioDto']
 export type PortfolioValuation = components['schemas']['PortfolioValuationDto']
 type NewLedgerEntry = components['schemas']['CreateLedgerEntryDto']
+type NewOpeningPosition = components['schemas']['CreateOpeningPositionDto']
 
 export const portfoliosQuery = () =>
   queryOptions({
@@ -36,6 +37,16 @@ export const entriesQuery = (id: string) =>
 
 export async function createPortfolio(name: string) {
   return unwrap(await api.POST('/api/portfolios', { body: { name } }))
+}
+
+/** Records an opening position: the quantity held and its PMP as of a date. */
+export async function addOpeningPosition(id: string, body: NewOpeningPosition) {
+  return unwrap(
+    await api.POST('/api/portfolios/{id}/opening-positions', {
+      params: { path: { id } },
+      body,
+    })
+  )
 }
 
 /** Records a buy or a sell in the portfolio's ledger. */

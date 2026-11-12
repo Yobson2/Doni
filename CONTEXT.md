@@ -44,7 +44,7 @@ One dated, immutable record in a portfolio's ledger: a buy, a sell, an opening p
 _Avoid_: transaction, operation, movement, trade (when meaning any ledger entry)
 
 **Opening position**:
-A ledger entry stating that the user held a given quantity of a security at a given PMP on a given date, used instead of entering the full trade history. Performance is only measured from that date.
+A ledger entry stating that the user held a given quantity of a security at a given PMP on a given date, used instead of entering the full trade history. It states the holding at the start of that day: buys and sells on the same date apply on top of it, and it replaces what earlier entries say about that security's quantity and PMP. Performance is only measured from that date.
 _Avoid_: initial balance, starting holding, import
 
 **Position**:
