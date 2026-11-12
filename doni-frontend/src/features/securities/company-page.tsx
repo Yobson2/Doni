@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { IconArrowLeft, IconLanguage } from '@tabler/icons-react'
@@ -15,12 +16,16 @@ import {
 } from '@/components/ui/table'
 import { WatchButton } from '@/features/watchlist/watch-button'
 import {
+  type CorporateAction,
   type EndOfDayPrice,
+  type HistoryPrice,
   type Security,
+  corporateActionsQuery,
   securityPricesQuery,
   securityQuery,
 } from './api'
 import { AsOfLabel } from './components/as-of-label'
+import { CorporateActions } from './components/corporate-actions'
 import { PageShell } from './components/page-shell'
 import { PriceHistoryChart } from './components/price-history-chart'
 import { formatQuantity, formatShortDate, formatXof } from './format'
@@ -30,6 +35,14 @@ export function CompanyPage({ ticker }: { ticker: string }) {
   const { t } = useTranslation()
   const security = useQuery(securityQuery(ticker))
   const prices = useQuery(securityPricesQuery(ticker))
+  // Corporate actions add to the page: if they fail to load, the rest of
+  // the page still shows.
+  const corporateActions = useQuery(corporateActionsQuery(ticker))
+  const actions = useMemo(
+    () => corporateActions.data ?? [],
+    [corporateActions.data]
+  )
+  const markers = useChartMarkers(actions)
 
   return (
     <PageShell>
@@ -65,19 +78,39 @@ export function CompanyPage({ ticker }: { ticker: string }) {
                 <div className='space-y-6'>
                   <PriceHistoryChart
                     prices={prices.data}
+                    markers={markers}
                     label={t('securities.history.chartLabel', {
                       name: security.data.name,
                     })}
                   />
+                  {prices.data.some((p) => p.publishedClose !== null) && (
+                    <p className='text-muted-foreground text-sm'>
+                      {t('securities.history.restated')}
+                    </p>
+                  )}
                   <PriceTable prices={prices.data} />
                 </div>
               )}
             </CardContent>
           </Card>
+          <CorporateActions actions={actions} />
           <Profile security={security.data} />
         </div>
       )}
     </PageShell>
+  )
+}
+
+/** One marker per corporate action, on its effective date. */
+function useChartMarkers(actions: CorporateAction[]) {
+  const { t } = useTranslation()
+  return useMemo(
+    () =>
+      actions.map((action) => ({
+        date: action.effectiveDate,
+        text: t(`securities.corporateActions.markers.${action.kind}`),
+      })),
+    [actions, t]
   )
 }
 
@@ -122,7 +155,7 @@ function CompanyHeader({ security }: { security: Security }) {
 }
 
 /** The same data as the chart, readable without it; newest first. */
-function PriceTable({ prices }: { prices: EndOfDayPrice[] }) {
+function PriceTable({ prices }: { prices: HistoryPrice[] }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
   return (
@@ -148,6 +181,13 @@ function PriceTable({ prices }: { prices: EndOfDayPrice[] }) {
               <TableCell>{formatShortDate(price.date, lang)}</TableCell>
               <TableCell className='text-right tabular-nums'>
                 {formatXof(price.close, lang)}
+                {price.publishedClose !== null && (
+                  <span className='text-muted-foreground block text-xs'>
+                    {t('securities.history.publishedClose', {
+                      price: formatXof(price.publishedClose, lang),
+                    })}
+                  </span>
+                )}
               </TableCell>
               <TableCell className='text-right tabular-nums'>
                 {price.volume ? formatQuantity(price.volume, lang) : '—'}

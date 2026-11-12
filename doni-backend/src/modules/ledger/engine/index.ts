@@ -7,12 +7,16 @@
  */
 export { performanceStart } from './performance-start';
 export { replay } from './replay';
+export { adjustPrice } from './corporate-actions';
 export {
+  InvalidCorporateActionError,
   InsufficientQuantityError,
   InvalidLedgerEntryError,
   LedgerRuleViolation,
 } from './errors';
 export type {
+  CorporateAction,
+  CorporateActionKind,
   LedgerEntry,
   OpeningPositionEntry,
   PortfolioTotals,

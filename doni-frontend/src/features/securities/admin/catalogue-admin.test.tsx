@@ -62,7 +62,7 @@ describe('catalogue admin', () => {
     })
 
     renderApp('/admin/catalogue')
-    await screen.findByRole('option', { name: /SNTS/ })
+    await screen.findAllByRole('option', { name: /SNTS/ })
 
     const fill = (label: RegExp, value: string) =>
       fireEvent.change(screen.getByLabelText(label), { target: { value } })
@@ -88,6 +88,115 @@ describe('catalogue admin', () => {
     })
   })
 
+  describe('corporate actions', () => {
+    // Test data only: not a real BRVM notice.
+    const NOTICE = 'https://www.brvm.org/fr/avis/test-split'
+    const existing = {
+      id: '0b6c1d8e-7f2a-4c11-9d3e-5a8b7c6d5e4f',
+      ticker: 'SNTS',
+      kind: 'free_shares',
+      effectiveDate: '2026-06-15',
+      ratioHeld: 10,
+      ratioReceived: 1,
+      cashInLieuPrice: null,
+      subscriptionPrice: null,
+      sourceNoticeUrl: NOTICE,
+    }
+
+    function openWithActions(routes = {}) {
+      return fakeApi({
+        'POST /api/auth/refresh': adminSession,
+        'GET /api/securities': () => json(200, [sonatel]),
+        'GET /api/sectors': () => json(200, [sonatel.sector]),
+        'GET /api/securities/SNTS/corporate-actions': () =>
+          json(200, [existing]),
+        ...routes,
+      })
+    }
+
+    it('enters a split with its ratio, effective date and source notice', async () => {
+      let saved: unknown
+      openWithActions({
+        'POST /api/securities/SNTS/corporate-actions': async (
+          request: Request
+        ) => {
+          saved = await request.json()
+          return json(201, { ...existing, id: 'new', kind: 'split' })
+        },
+      })
+
+      renderApp('/admin/catalogue')
+      await screen.findAllByRole('option', { name: /SNTS/ })
+      const fill = (label: RegExp, value: string) =>
+        fireEvent.change(screen.getByLabelText(label), { target: { value } })
+      fill(/^Valeur concernée$/, 'SNTS')
+      fill(/^Type d’opération$/, 'split')
+      fill(/^Date d’effet$/, '2026-04-02')
+      fill(/^Actions détenues/, '1')
+      fill(/^Actions reçues/, '5')
+      fill(/^Avis BRVM/, NOTICE)
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Enregistrer l’opération' })
+      )
+
+      await waitFor(() => expect(saved).toBeDefined())
+      expect(saved).toEqual({
+        kind: 'split',
+        effectiveDate: '2026-04-02',
+        ratioHeld: 1,
+        ratioReceived: 5,
+        sourceNoticeUrl: NOTICE,
+      })
+    })
+
+    it('will not save a corporate action without its source notice', async () => {
+      const { requests } = openWithActions()
+
+      renderApp('/admin/catalogue')
+      await screen.findAllByRole('option', { name: /SNTS/ })
+      const fill = (label: RegExp, value: string) =>
+        fireEvent.change(screen.getByLabelText(label), { target: { value } })
+      fill(/^Valeur concernée$/, 'SNTS')
+      fill(/^Type d’opération$/, 'split')
+      fill(/^Date d’effet$/, '2026-04-02')
+      fill(/^Actions détenues/, '1')
+      fill(/^Actions reçues/, '5')
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Enregistrer l’opération' })
+      )
+
+      expect(
+        await screen.findByText('Saisissez le lien de l’avis BRVM.')
+      ).toBeTruthy()
+      expect(
+        requests.some((r) => r.method === 'POST' && r.url.includes('corporate'))
+      ).toBe(false)
+    })
+
+    it('lists the security’s corporate actions with their notice and removes one', async () => {
+      let deleted = false
+      openWithActions({
+        'DELETE /api/securities/SNTS/corporate-actions/0b6c1d8e-7f2a-4c11-9d3e-5a8b7c6d5e4f':
+          () => {
+            deleted = true
+            return new Response(null, { status: 204 })
+          },
+      })
+
+      renderApp('/admin/catalogue')
+      await screen.findAllByRole('option', { name: /SNTS/ })
+      fireEvent.change(screen.getByLabelText(/^Valeur concernée$/), {
+        target: { value: 'SNTS' },
+      })
+
+      const notice = await screen.findByRole('link', { name: /Avis BRVM/ })
+      expect(notice.getAttribute('href')).toBe(NOTICE)
+      fireEvent.click(screen.getByRole('button', { name: /Supprimer/ }))
+
+      await waitFor(() => expect(deleted).toBe(true))
+    })
+  })
+
   it('will not save a price without its source document', async () => {
     const { requests } = fakeApi({
       'POST /api/auth/refresh': adminSession,
@@ -96,7 +205,7 @@ describe('catalogue admin', () => {
     })
 
     renderApp('/admin/catalogue')
-    await screen.findByRole('option', { name: /SNTS/ })
+    await screen.findAllByRole('option', { name: /SNTS/ })
     fireEvent.change(screen.getByLabelText(/^Valeur$/), {
       target: { value: 'SNTS' },
     })

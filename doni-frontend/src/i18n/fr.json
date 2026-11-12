@@ -370,7 +370,9 @@
       "close": "Clôture",
       "volume": "Volume",
       "source": "Source",
-      "sourceLabel": "BOC du {{date}}"
+      "sourceLabel": "BOC du {{date}}",
+      "restated": "Les cours antérieurs à une division, un regroupement ou une attribution d’actions gratuites sont ajustés des opérations sur titres, pour rester comparables aux cours actuels et à vos positions. Le cours publié dans le BOC est indiqué sous le cours ajusté.",
+      "publishedClose": "publié {{price}}"
     },
     "profile": {
       "title": "Profil de la société",
@@ -379,7 +381,32 @@
         "en": "Traduit de l'anglais"
       }
     },
-    "disclaimer": "Cours de clôture issus du Bulletin Officiel de la Cote de la BRVM, publiés après chaque séance. Information uniquement, pas un conseil en investissement."
+    "disclaimer": "Cours de clôture issus du Bulletin Officiel de la Cote de la BRVM, publiés après chaque séance. Information uniquement, pas un conseil en investissement.",
+    "corporateActions": {
+      "title": "Opérations sur titres",
+      "effective": "Effet le {{date}}",
+      "notice": "Avis BRVM",
+      "kinds": {
+        "split": "Division du nominal",
+        "reverse_split": "Regroupement d’actions",
+        "free_shares": "Attribution d’actions gratuites",
+        "rights_issue": "Augmentation de capital avec droit préférentiel de souscription"
+      },
+      "markers": {
+        "split": "Division",
+        "reverse_split": "Regroupement",
+        "free_shares": "Actions gratuites",
+        "rights_issue": "Augmentation de capital"
+      },
+      "terms": {
+        "split": "{{received}} actions pour {{held}}",
+        "reverse_split": "{{received}} action pour {{held}}",
+        "free_shares": "{{received}} action gratuite pour {{held}} détenues",
+        "rights_issue": "{{received}} action nouvelle pour {{held}} détenues, au prix de {{price}}"
+      },
+      "cashInLieu": "Rompus indemnisés à {{price}} par action.",
+      "rightsNote": "Vos positions ne changent pas d’elles-mêmes : si vous souscrivez, enregistrez les actions nouvelles comme un achat au prix de souscription."
+    }
   },
   "watchlist": {
     "title": "Ma liste de suivi",
@@ -432,11 +459,40 @@
         "decimal": "Saisissez un nombre, par exemple 4190 ou 517.17.",
         "date": "Saisissez une date.",
         "ticker": "Lettres majuscules et chiffres, par exemple SNTS.",
-        "country": "Deux lettres majuscules, par exemple SN."
+        "country": "Deux lettres majuscules, par exemple SN.",
+        "whole": "Saisissez un nombre entier, par exemple 5.",
+        "notice": "Saisissez le lien de l’avis BRVM."
       },
       "errors": {
         "exists": "Cette valeur existe déjà.",
         "invalid": "Certaines informations sont invalides."
+      },
+      "corporateAction": {
+        "title": "Saisir une opération sur titres",
+        "description": "Division, regroupement, attribution d’actions gratuites ou augmentation de capital, recopiée d’un avis BRVM. Les positions de tous les détenteurs sont recalculées à partir de la date d’effet.",
+        "ratioHelp": "Le ratio se lit « actions reçues pour actions détenues » : division 1 pour 5 = 1 détenue, 5 reçues ; regroupement 10 pour 1 = 10 détenues, 1 reçue ; 1 action gratuite pour 10 = 10 détenues, 1 reçue.",
+        "submit": "Enregistrer l’opération",
+        "saved": "Opération enregistrée.",
+        "removed": "Opération supprimée.",
+        "remove": "Supprimer",
+        "exists": "Une opération de ce type existe déjà à cette date pour cette valeur.",
+        "invalidTerms": "Les conditions ne correspondent pas au type d’opération.",
+        "entered": "Opérations saisies sur {{ticker}}",
+        "none": "Aucune opération saisie.",
+        "fields": {
+          "ticker": "Valeur concernée",
+          "kind": "Type d’opération",
+          "effectiveDate": "Date d’effet",
+          "effectiveDateHelp": "Première séance où la valeur cote sur la nouvelle base.",
+          "ratioHeld": "Actions détenues",
+          "ratioReceived": "Actions reçues",
+          "cashInLieuPrice": "Indemnisation des rompus (XOF par action, facultatif)",
+          "cashInLieuPriceHelp": "Seulement si l’avis l’indique. Sinon, le coût des rompus reste dans les actions conservées.",
+          "subscriptionPrice": "Prix de souscription (XOF, augmentation de capital)",
+          "subscriptionPriceHelp": "Obligatoire pour une augmentation de capital, vide sinon.",
+          "sourceNoticeUrl": "Avis BRVM (lien)",
+          "sourceNoticeUrlHelp": "Le lien de l’avis publié sur brvm.org, montré aux utilisateurs."
+        }
       }
     }
   },

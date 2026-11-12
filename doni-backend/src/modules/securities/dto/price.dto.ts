@@ -58,6 +58,23 @@ export class EndOfDayPriceDto {
   publishedOn: string;
 }
 
+/**
+ * One day of a security's price history, restated in today's shares: a
+ * price dated before a split, reverse split or free-share allotment is
+ * divided by its quantity factor, so the series compares directly with
+ * adjusted positions. Volumes are as published.
+ */
+export class AdjustedEndOfDayPriceDto extends EndOfDayPriceDto {
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: '20500',
+    description:
+      'The close as published in the BOC when a later corporate action restated it; null when close is the published close',
+  })
+  publishedClose: string | null;
+}
+
 /** A stored price as an admin sees it, with its review status. */
 export class StoredPriceDto extends EndOfDayPriceDto {
   @ApiProperty({ enum: PriceStatus, enumName: 'PriceStatus' })

@@ -33,7 +33,9 @@ import {
   UpdateSecurityDto,
   UpdateSectorDto,
 } from './dto/catalogue.dto';
+import { CorporateActionsService } from './corporate-actions/corporate-actions.service';
 import {
+  AdjustedEndOfDayPriceDto,
   EndOfDayPriceDto,
   IndexPriceDayParamsDto,
   PriceHistoryQueryDto,
@@ -98,6 +100,7 @@ export class SecuritiesController {
   constructor(
     private readonly catalogue: CatalogueService,
     private readonly priceEntry: PriceEntryService,
+    private readonly corporateActions: CorporateActionsService,
     @Inject(PRICE_SOURCE) private readonly priceSource: PriceSource,
   ) {}
 
@@ -122,16 +125,21 @@ export class SecuritiesController {
   @Get(':ticker/prices')
   @ApiOperation({
     operationId: 'getSecurityPrices',
-    summary: 'End-of-day price history, oldest first',
+    summary:
+      'End-of-day price history, oldest first, restated in today’s shares',
   })
-  @ApiOkResponse({ type: [EndOfDayPriceDto] })
+  @ApiOkResponse({ type: [AdjustedEndOfDayPriceDto] })
   @ApiNotFoundResponse({ description: 'Unknown ticker' })
   async history(
     @Param('ticker') ticker: string,
     @Query() range: PriceHistoryQueryDto,
-  ): Promise<EndOfDayPriceDto[]> {
+  ): Promise<AdjustedEndOfDayPriceDto[]> {
     const security = await this.catalogue.findSecurity(ticker);
-    return this.priceSource.getHistory({ securityId: security.id }, range);
+    const prices = await this.priceSource.getHistory(
+      { securityId: security.id },
+      range,
+    );
+    return this.corporateActions.adjustHistory(security.id, prices);
   }
 
   @Post()

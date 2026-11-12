@@ -370,7 +370,9 @@
       "close": "Close",
       "volume": "Volume",
       "source": "Source",
-      "sourceLabel": "BOC of {{date}}"
+      "sourceLabel": "BOC of {{date}}",
+      "restated": "Prices before a split, reverse split or free-share allotment are adjusted for corporate actions, so they compare with today’s prices and your positions. The price published in the BOC is shown under the adjusted price.",
+      "publishedClose": "published {{price}}"
     },
     "profile": {
       "title": "Company profile",
@@ -379,7 +381,32 @@
         "en": "Translated from English"
       }
     },
-    "disclaimer": "Closing prices from the BRVM Bulletin Officiel de la Cote, published after each session. Information only, not investment advice."
+    "disclaimer": "Closing prices from the BRVM Bulletin Officiel de la Cote, published after each session. Information only, not investment advice.",
+    "corporateActions": {
+      "title": "Corporate actions",
+      "effective": "Effective {{date}}",
+      "notice": "BRVM notice",
+      "kinds": {
+        "split": "Stock split",
+        "reverse_split": "Reverse split",
+        "free_shares": "Free-share allotment",
+        "rights_issue": "Rights issue"
+      },
+      "markers": {
+        "split": "Split",
+        "reverse_split": "Reverse split",
+        "free_shares": "Free shares",
+        "rights_issue": "Rights issue"
+      },
+      "terms": {
+        "split": "{{received}} shares for {{held}}",
+        "reverse_split": "{{received}} share for {{held}}",
+        "free_shares": "{{received}} free share for {{held}} held",
+        "rights_issue": "{{received}} new share for {{held}} held, at {{price}}"
+      },
+      "cashInLieu": "Fractions of a share paid at {{price}} per share.",
+      "rightsNote": "Your positions do not change on their own: if you subscribe, record the new shares as a buy at the subscription price."
+    }
   },
   "watchlist": {
     "title": "My watchlist",
@@ -432,11 +459,40 @@
         "decimal": "Enter a number, for example 4190 or 517.17.",
         "date": "Enter a date.",
         "ticker": "Upper-case letters and digits, for example SNTS.",
-        "country": "Two upper-case letters, for example SN."
+        "country": "Two upper-case letters, for example SN.",
+        "whole": "Enter a whole number, for example 5.",
+        "notice": "Enter the link to the BRVM notice."
       },
       "errors": {
         "exists": "This security already exists.",
         "invalid": "Some of the information is invalid."
+      },
+      "corporateAction": {
+        "title": "Enter a corporate action",
+        "description": "A split, reverse split, free-share allotment or rights issue, copied from a BRVM notice. Every holder’s positions are recomputed from the effective date.",
+        "ratioHelp": "The ratio reads “shares received for shares held”: a 1-for-5 split is 1 held, 5 received; a 10-to-1 reverse split is 10 held, 1 received; one free share for 10 is 10 held, 1 received.",
+        "submit": "Save the corporate action",
+        "saved": "Corporate action saved.",
+        "removed": "Corporate action removed.",
+        "remove": "Remove",
+        "exists": "This security already has a corporate action of this kind on that date.",
+        "invalidTerms": "The terms do not fit this kind of corporate action.",
+        "entered": "Corporate actions on {{ticker}}",
+        "none": "No corporate action entered.",
+        "fields": {
+          "ticker": "Security",
+          "kind": "Kind of corporate action",
+          "effectiveDate": "Effective date",
+          "effectiveDateHelp": "First trading day on the new basis.",
+          "ratioHeld": "Shares held",
+          "ratioReceived": "Shares received",
+          "cashInLieuPrice": "Cash for fractions (XOF per share, optional)",
+          "cashInLieuPriceHelp": "Only if the notice states it. Otherwise the cost of fractions stays in the whole shares kept.",
+          "subscriptionPrice": "Subscription price (XOF, rights issue)",
+          "subscriptionPriceHelp": "Required for a rights issue, empty otherwise.",
+          "sourceNoticeUrl": "BRVM notice (link)",
+          "sourceNoticeUrlHelp": "The link to the notice on brvm.org, shown to users."
+        }
       }
     }
   },
