@@ -34,6 +34,36 @@ export class InsufficientQuantityException extends BaseAppException {
   }
 }
 
+/**
+ * The portfolio already has an opening position for that security on that
+ * date: the user corrects it rather than recording a second one.
+ */
+export class ConflictingOpeningPositionsException extends BaseAppException {
+  constructor(context: { ticker: string; date: string }) {
+    super(
+      `An opening position for ${context.ticker} on ${context.date} is already recorded: edit it instead`,
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      LedgerErrorCode.CONFLICTING_OPENING_POSITIONS,
+      context,
+    );
+  }
+}
+
+/**
+ * No ledger entry of that kind with that id counts in the portfolio: it
+ * does not exist, belongs to another portfolio, or was already corrected.
+ */
+export class LedgerEntryNotFoundError extends BaseAppException {
+  constructor(id: string) {
+    super(
+      `Ledger entry not found: ${id}`,
+      HttpStatus.NOT_FOUND,
+      LedgerErrorCode.ENTRY_NOT_FOUND,
+      { id },
+    );
+  }
+}
+
 /** The ledger entry's values cannot be replayed. */
 export class InvalidLedgerEntryException extends BaseAppException {
   constructor(field: string, value: string) {

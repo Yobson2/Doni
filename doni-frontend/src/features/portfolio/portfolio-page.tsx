@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Pencil, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ import {
   formatXof,
 } from '@/features/securities/format'
 import {
+  type LedgerEntry,
   type Portfolio,
   type PortfolioValuation,
   entriesQuery,
@@ -35,6 +37,7 @@ import {
   valuationQuery,
 } from './api'
 import { CreatePortfolio } from './components/create-portfolio'
+import { DeleteEntryDialog } from './components/delete-entry-dialog'
 import { EntryForm } from './components/entry-form'
 import { ENTRY_MODES, type EntryMode } from './components/form-fields'
 import { Onboarding } from './components/onboarding'
@@ -106,6 +109,7 @@ function Ledger({ portfolioId }: { portfolioId: string }) {
   const { t } = useTranslation()
   const entries = useQuery(entriesQuery(portfolioId))
   const [chosen, setChosen] = useState<EntryMode | null>(null)
+  const [editing, setEditing] = useState<LedgerEntry | null>(null)
 
   if (entries.isPending) return <Skeleton className='h-48 w-full' />
   if (entries.data?.length === 0 && chosen === null) {
@@ -113,33 +117,55 @@ function Ledger({ portfolioId }: { portfolioId: string }) {
   }
 
   const mode = chosen ?? 'trade'
+  const stopEditing = () => setEditing(null)
   return (
     <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
       <div className='space-y-3'>
-        <div
-          role='group'
-          aria-label={t('portfolio.mode.label')}
-          className='flex flex-wrap gap-2'
-        >
-          {ENTRY_MODES.map((m) => (
-            <Button
-              key={m}
-              size='sm'
-              variant={m === mode ? 'secondary' : 'ghost'}
-              aria-pressed={m === mode}
-              onClick={() => setChosen(m)}
-            >
-              {t(`portfolio.mode.${m}`)}
-            </Button>
-          ))}
-        </div>
-        {mode === 'opening' ? (
-          <OpeningPositionForm portfolioId={portfolioId} />
+        {editing ? (
+          // Keyed by entry, so the form refills when another one is chosen.
+          editing.kind === 'opening_position' ? (
+            <OpeningPositionForm
+              key={editing.id}
+              portfolioId={portfolioId}
+              entry={editing}
+              onDone={stopEditing}
+            />
+          ) : (
+            <EntryForm
+              key={editing.id}
+              portfolioId={portfolioId}
+              entry={editing}
+              onDone={stopEditing}
+            />
+          )
         ) : (
-          <EntryForm portfolioId={portfolioId} />
+          <>
+            <div
+              role='group'
+              aria-label={t('portfolio.mode.label')}
+              className='flex flex-wrap gap-2'
+            >
+              {ENTRY_MODES.map((m) => (
+                <Button
+                  key={m}
+                  size='sm'
+                  variant={m === mode ? 'secondary' : 'ghost'}
+                  aria-pressed={m === mode}
+                  onClick={() => setChosen(m)}
+                >
+                  {t(`portfolio.mode.${m}`)}
+                </Button>
+              ))}
+            </div>
+            {mode === 'opening' ? (
+              <OpeningPositionForm portfolioId={portfolioId} />
+            ) : (
+              <EntryForm portfolioId={portfolioId} />
+            )}
+          </>
         )}
       </div>
-      <Entries portfolioId={portfolioId} />
+      <Entries portfolioId={portfolioId} onEdit={setEditing} />
     </div>
   )
 }
@@ -331,10 +357,22 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
   )
 }
 
-function Entries({ portfolioId }: { portfolioId: string }) {
+function Entries({
+  portfolioId,
+  onEdit,
+}: {
+  portfolioId: string
+  onEdit: (entry: LedgerEntry) => void
+}) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
   const entries = useQuery(entriesQuery(portfolioId))
+  const [deleting, setDeleting] = useState<LedgerEntry | null>(null)
+  const nameOf = (entry: LedgerEntry) =>
+    t('portfolio.entries.name', {
+      ticker: entry.ticker,
+      date: formatShortDate(entry.date, lang),
+    })
 
   return (
     <Card>
@@ -370,6 +408,11 @@ function Entries({ portfolioId }: { portfolioId: string }) {
                   {t('portfolio.entries.fees')}
                 </TableHead>
                 <TableHead>{t('portfolio.entries.sgi')}</TableHead>
+                <TableHead className='text-right'>
+                  <span className='sr-only'>
+                    {t('portfolio.entries.actions')}
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -402,12 +445,40 @@ function Entries({ portfolioId }: { portfolioId: string }) {
                       {opening ? '—' : formatXof(entry.fees, lang)}
                     </TableCell>
                     <TableCell>{entry.sgi}</TableCell>
+                    <TableCell className='text-right whitespace-nowrap'>
+                      <Button
+                        size='icon'
+                        variant='ghost'
+                        aria-label={t('portfolio.entries.edit', {
+                          entry: nameOf(entry),
+                        })}
+                        onClick={() => onEdit(entry)}
+                      >
+                        <Pencil />
+                      </Button>
+                      <Button
+                        size='icon'
+                        variant='ghost'
+                        aria-label={t('portfolio.entries.delete', {
+                          entry: nameOf(entry),
+                        })}
+                        onClick={() => setDeleting(entry)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 )
               })}
             </TableBody>
           </Table>
         )}
+        <DeleteEntryDialog
+          portfolioId={portfolioId}
+          entry={deleting}
+          label={deleting ? nameOf(deleting) : ''}
+          onClose={() => setDeleting(null)}
+        />
       </CardContent>
     </Card>
   )

@@ -304,6 +304,67 @@ describe('Corporate actions (e2e)', () => {
       ]);
     });
 
+    it('checks an edit or a deletion of a ledger entry against the corporate actions in effect', async () => {
+      const portfolio = (
+        await http()
+          .post('/api/portfolios')
+          .set('Authorization', as(member))
+          .send({ name: 'Split corrections' })
+          .expect(201)
+      ).body.id as string;
+      const entries = `/api/portfolios/${portfolio}/entries`;
+      const buy = {
+        sgi: SGI,
+        ticker: 'TSPL',
+        kind: 'buy',
+        date: '2026-01-05',
+        quantity: '100',
+        price: '20000',
+      };
+      const bought = (
+        await http()
+          .post(entries)
+          .set('Authorization', as(member))
+          .send(buy)
+          .expect(201)
+      ).body.id as string;
+      // 300 sold: only covered by the 500 shares held after the split.
+      await http()
+        .post(entries)
+        .set('Authorization', as(member))
+        .send({ ...buy, kind: 'sell', date: '2026-05-11', quantity: '300' })
+        .expect(201);
+      const extra = (
+        await http()
+          .post(entries)
+          .set('Authorization', as(member))
+          .send({ ...buy, date: '2026-05-20', quantity: '10' })
+          .expect(201)
+      ).body.id as string;
+
+      // Accepted: with the split, 500 shares cover the sale of 300.
+      const edited = await http()
+        .put(`${entries}/${bought}`)
+        .set('Authorization', as(member))
+        .send({ ...buy, fees: '5000' })
+        .expect(200);
+      await http()
+        .delete(`${entries}/${extra}`)
+        .set('Authorization', as(member))
+        .expect(204);
+
+      // Refused: 50 bought are 250 after the split, short of the 300 sold.
+      const res = await http()
+        .put(`${entries}/${edited.body.id}`)
+        .set('Authorization', as(member))
+        .send({ ...buy, quantity: '50' })
+        .expect(422);
+      expect(res.body.errors[0]).toMatchObject({
+        code: 'LEDGER_ENTRY_001',
+        context: { ticker: 'TSPL', held: '250', sold: '300' },
+      });
+    });
+
     it('does not apply an announced action before its effective date', async () => {
       await http()
         .post(actionsPath())

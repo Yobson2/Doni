@@ -279,6 +279,33 @@ describe('ledger engine replay', () => {
         realisedGain: '800',
       });
     });
+
+    it('gives the same PMP for buys of the same day, whatever their order, even when it does not divide exactly', () => {
+      // 1 × 0.01 then 17 × 4098 + 32131.31 and 1 × 0 + 25460.11:
+      // cost 0.01 + 69666 + 32131.31 + 25460.11 = 127257.43 for 19 shares,
+      // PMP 127257.43 / 19 = 6697.75947368421052631578947368421052…
+      const day = '2024-01-03';
+      const entries = [
+        buy(day, '1', '0.01'),
+        buy(day, '17', '4098', '32131.31'),
+        buy(day, '1', '0', '25460.11'),
+      ];
+      const results = [
+        run(entries),
+        run([...entries].reverse()),
+        run([entries[1], entries[2], entries[0]]),
+        // The same entries recorded under ids that sort the other way.
+        run(entries.map((e, i) => ({ ...e, id: `z${entries.length - i}` }))),
+      ];
+
+      for (const result of results) {
+        expect(position(result)).toMatchObject({
+          quantity: '19',
+          pmp: '6697.759473684210526315789473684211',
+          costBasis: '127257.43',
+        });
+      }
+    });
   });
 
   describe('malformed entries', () => {
@@ -493,6 +520,37 @@ describe('ledger engine replay', () => {
         pmp: '15150',
       });
       expect(result.totals.costBasis).toBe('1073050'); // 303000 + 770050
+    });
+
+    it('refuses two opening positions for the same security on the same day: they would contradict each other', () => {
+      // The second in replay order (by id, within a day) is the one refused.
+      const first = { ...opening('2026-01-02', '200', '3850.25'), id: 'a' };
+      const second = { ...opening('2026-01-02', '150', '3900'), id: 'b' };
+
+      for (const entries of [
+        [first, second],
+        [second, first],
+      ]) {
+        expect(() => run(entries)).toThrow(
+          expect.objectContaining({
+            name: 'ConflictingOpeningPositionsError',
+            entryId: second.id,
+            securityId: SNTS,
+            date: '2026-01-02',
+          }),
+        );
+      }
+    });
+
+    it('accepts opening positions for the same security on different days, and for different securities on the same day', () => {
+      const result = run([
+        opening('2026-01-02', '200', '3850.25'),
+        opening('2026-01-03', '150', '3900'),
+        opening('2026-01-03', '10', '15000', ORAC),
+      ]);
+
+      expect(position(result)).toMatchObject({ quantity: '150', pmp: '3900' });
+      expect(position(result, ORAC)).toMatchObject({ quantity: '10' });
     });
 
     it.each([
