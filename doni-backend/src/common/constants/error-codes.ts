@@ -67,7 +67,20 @@ export enum SystemErrorCode {
   OPERATION_FAILED = 'SYSTEM_INTERNAL_002',
 }
 
-export type ErrorCode = AuthErrorCode | UserErrorCode | SystemErrorCode;
+export enum CatalogueErrorCode {
+  SECURITY_NOT_FOUND = 'CATALOGUE_SECURITY_001',
+  SECURITY_ALREADY_EXISTS = 'CATALOGUE_SECURITY_002',
+  SECTOR_NOT_FOUND = 'CATALOGUE_SECTOR_001',
+  SECTOR_ALREADY_EXISTS = 'CATALOGUE_SECTOR_002',
+  INDEX_NOT_FOUND = 'CATALOGUE_INDEX_001',
+  INDEX_ALREADY_EXISTS = 'CATALOGUE_INDEX_002',
+}
+
+export type ErrorCode =
+  | AuthErrorCode
+  | UserErrorCode
+  | CatalogueErrorCode
+  | SystemErrorCode;
 
 export interface ErrorCodeMetadata {
   code: ErrorCode;

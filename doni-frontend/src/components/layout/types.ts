@@ -22,6 +22,8 @@ type NavItem = NavCollapsible | NavLink
 interface NavGroup {
   title: string
   items: NavItem[]
+  /** Shown only to admins. The API enforces the role; this only hides the link. */
+  adminOnly?: boolean
 }
 
 export type { NavGroup, NavItem, NavCollapsible, NavLink }

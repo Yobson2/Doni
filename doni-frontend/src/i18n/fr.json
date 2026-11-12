@@ -8,13 +8,16 @@
   "nav": {
     "groups": {
       "general": "Général",
-      "other": "Autres"
+      "other": "Autres",
+      "admin": "Administration"
     },
     "dashboard": "Tableau de bord",
     "settings": "Paramètres",
     "account": "Mon compte",
     "signOut": "Se déconnecter",
-    "skipToMain": "Aller au contenu principal"
+    "skipToMain": "Aller au contenu principal",
+    "securities": "Valeurs",
+    "adminCatalogue": "Catalogue et cours"
   },
   "command": {
     "search": "Rechercher",
@@ -340,6 +343,89 @@
       "title": "Navigation",
       "description": "Menu de navigation principal.",
       "toggle": "Afficher ou masquer la barre latérale"
+    }
+  },
+  "securities": {
+    "title": "Valeurs cotées",
+    "description": "Les titres cotés à la BRVM et leur dernier cours de clôture, issu du Bulletin Officiel de la Cote (BOC).",
+    "empty": "Aucune valeur au catalogue pour le moment.",
+    "loadError": "Impossible de charger ces données. Réessayez plus tard.",
+    "columns": {
+      "ticker": "Symbole",
+      "name": "Société",
+      "sector": "Secteur",
+      "close": "Cours de clôture",
+      "asOf": "Au"
+    },
+    "asOf": "Cours de clôture au {{date}}",
+    "noPrice": "Aucun cours de clôture publié pour cette valeur.",
+    "backToList": "Toutes les valeurs",
+    "history": {
+      "title": "Historique des cours de clôture",
+      "empty": "Aucun cours publié pour le moment.",
+      "chartLabel": "Graphique des cours de clôture de {{name}}",
+      "date": "Séance",
+      "close": "Clôture",
+      "volume": "Volume",
+      "source": "Source",
+      "sourceLabel": "BOC du {{date}}"
+    },
+    "profile": {
+      "title": "Profil de la société",
+      "translatedFrom": {
+        "fr": "Traduit du français",
+        "en": "Traduit de l'anglais"
+      }
+    },
+    "disclaimer": "Cours de clôture issus du Bulletin Officiel de la Cote de la BRVM, publiés après chaque séance. Information uniquement, pas un conseil en investissement."
+  },
+  "admin": {
+    "catalogue": {
+      "title": "Catalogue et cours",
+      "description": "Ajoutez des valeurs et saisissez les cours de clôture recopiés d’un BOC. Chaque cours garde son document source et sa date de publication.",
+      "price": {
+        "title": "Saisir un cours de clôture",
+        "description": "Recopiez le cours tel qu’imprimé dans le BOC. Saisir à nouveau la même séance corrige le cours.",
+        "submit": "Enregistrer le cours",
+        "saved": "Cours enregistré."
+      },
+      "security": {
+        "title": "Ajouter une valeur",
+        "description": "Une valeur cotée à la BRVM, avec son profil en français et en anglais.",
+        "submit": "Ajouter la valeur",
+        "saved": "Valeur ajoutée."
+      },
+      "fields": {
+        "security": "Valeur",
+        "choose": "Choisir…",
+        "date": "Séance",
+        "close": "Cours de clôture (XOF)",
+        "open": "Cours d'ouverture (XOF, facultatif)",
+        "volume": "Volume (facultatif)",
+        "sourceDocument": "Document source (BOC)",
+        "sourceDocumentHelp": "Lien vers le PDF du BOC sur brvm.org, ou sa référence.",
+        "sourceDocumentPlaceholder": "https://www.brvm.org/sites/default/files/boc_….pdf",
+        "publishedOn": "Date de publication du BOC",
+        "ticker": "Symbole",
+        "country": "Pays (code ISO, ex. SN)",
+        "name": "Nom de la société",
+        "sector": "Secteur",
+        "profileFr": "Profil en français",
+        "profileEn": "Profil en anglais",
+        "profileOriginalLanguage": "Langue de rédaction du profil",
+        "profileOriginalLanguageHelp": "L'autre version est affichée comme une traduction."
+      },
+      "validation": {
+        "required": "Champ obligatoire.",
+        "decimal": "Saisissez un nombre, par exemple 4190 ou 517.17.",
+        "date": "Saisissez une date.",
+        "ticker": "Lettres majuscules et chiffres, par exemple SNTS.",
+        "country": "Deux lettres majuscules, par exemple SN."
+      },
+      "errors": {
+        "exists": "Cette valeur existe déjà.",
+        "invalid": "Certaines informations sont invalides."
+      }
     }
   }
 }

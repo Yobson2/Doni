@@ -143,6 +143,163 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sectors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List sectors */
+        get: operations["listSectors"];
+        put?: never;
+        /** Add a sector */
+        post: operations["createSector"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sectors/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename a sector */
+        patch: operations["updateSector"];
+        trace?: never;
+    };
+    "/api/securities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List securities with their latest end-of-day price */
+        get: operations["listSecurities"];
+        put?: never;
+        /** Add a security */
+        post: operations["createSecurity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/securities/{ticker}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a security */
+        get: operations["getSecurity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit a security */
+        patch: operations["updateSecurity"];
+        trace?: never;
+    };
+    "/api/securities/{ticker}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** End-of-day price history, oldest first */
+        get: operations["getSecurityPrices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/securities/{ticker}/prices/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Enter or correct one day’s end-of-day price from a BOC */
+        put: operations["putSecurityPrice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/indices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List indices */
+        get: operations["listIndices"];
+        put?: never;
+        /** Add an index */
+        post: operations["createIndex"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/indices/{code}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Index value history, oldest first */
+        get: operations["getIndexPrices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/indices/{code}/prices/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Enter or correct one day’s index value from a BOC */
+        put: operations["putIndexPrice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -211,6 +368,182 @@ export interface components {
             email: string;
             /** @example StrongP@ss1 */
             password: string;
+        };
+        SectorDto: {
+            /** @example TEL */
+            code: string;
+            /** @example Télécommunications */
+            nameFr: string;
+            /** @example Telecommunications */
+            nameEn: string;
+        };
+        CreateSectorDto: {
+            /** @example TEL */
+            code: string;
+            /** @example Télécommunications */
+            nameFr: string;
+            /** @example Telecommunications */
+            nameEn: string;
+        };
+        UpdateSectorDto: {
+            /** @example Télécommunications */
+            nameFr?: string;
+            /** @example Telecommunications */
+            nameEn?: string;
+        };
+        /**
+         * @description Language the profile was written in; the other one is a translation
+         * @enum {string}
+         */
+        ProfileLanguage: "fr" | "en";
+        EndOfDayPriceDto: {
+            /**
+             * Format: date
+             * @description Trading day the price applies to
+             * @example 2026-11-11
+             */
+            date: string;
+            /**
+             * @description Closing price, XOF
+             * @example 4190
+             */
+            close: string;
+            /** @example 4000 */
+            open: string | null;
+            high: string | null;
+            low: string | null;
+            /** @example 85624 */
+            volume: string | null;
+            /**
+             * @description The BOC the price was read from
+             * @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf
+             */
+            sourceDocument: string;
+            /**
+             * Format: date
+             * @description Date the BOC was published
+             * @example 2026-11-11
+             */
+            publishedOn: string;
+        };
+        SecurityDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example SONATEL SN */
+            name: string;
+            /** @example null */
+            isin: string | null;
+            sector: components["schemas"]["SectorDto"];
+            /**
+             * @description ISO 3166-1 alpha-2
+             * @example SN
+             */
+            country: string;
+            profileFr: string | null;
+            profileEn: string | null;
+            /** @description Language the profile was written in; the other one is a translation */
+            profileOriginalLanguage: components["schemas"]["ProfileLanguage"];
+            /** @description Most recent published end-of-day price */
+            latestPrice: components["schemas"]["EndOfDayPriceDto"] | null;
+        };
+        CreateSecurityDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example SONATEL SN */
+            name: string;
+            isin?: string | null;
+            /** @example TEL */
+            sectorCode: string;
+            /** @example SN */
+            country: string;
+            profileFr?: string | null;
+            profileEn?: string | null;
+            /** @description Defaults to fr */
+            profileOriginalLanguage?: components["schemas"]["ProfileLanguage"];
+        };
+        UpdateSecurityDto: {
+            /** @example SONATEL SN */
+            name?: string;
+            isin?: string | null;
+            /** @example TEL */
+            sectorCode?: string;
+            /** @example SN */
+            country?: string;
+            profileFr?: string | null;
+            profileEn?: string | null;
+            /** @description Defaults to fr */
+            profileOriginalLanguage?: components["schemas"]["ProfileLanguage"];
+        };
+        /**
+         * @description Defaults to published; pending_review holds the price back from users
+         * @enum {string}
+         */
+        PriceStatus: "published" | "pending_review";
+        PutPriceDto: {
+            /** @example 4190 */
+            close: string;
+            /** @example 4000 */
+            open?: string;
+            high?: string;
+            low?: string;
+            /** @example 85624 */
+            volume?: string;
+            /**
+             * @description The BOC the price was read from (URL or reference)
+             * @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf
+             */
+            sourceDocument: string;
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            publishedOn: string;
+            /** @description Defaults to published; pending_review holds the price back from users */
+            status?: components["schemas"]["PriceStatus"];
+        };
+        StoredPriceDto: {
+            /**
+             * Format: date
+             * @description Trading day the price applies to
+             * @example 2026-11-11
+             */
+            date: string;
+            /**
+             * @description Closing price, XOF
+             * @example 4190
+             */
+            close: string;
+            /** @example 4000 */
+            open: string | null;
+            high: string | null;
+            low: string | null;
+            /** @example 85624 */
+            volume: string | null;
+            /**
+             * @description The BOC the price was read from
+             * @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf
+             */
+            sourceDocument: string;
+            /**
+             * Format: date
+             * @description Date the BOC was published
+             * @example 2026-11-11
+             */
+            publishedOn: string;
+            status: components["schemas"]["PriceStatus"];
+        };
+        MarketIndexDto: {
+            /** @example BRVM-C */
+            code: string;
+            /** @example BRVM Composite */
+            name: string;
+            latestPrice: components["schemas"]["EndOfDayPriceDto"] | null;
+        };
+        CreateMarketIndexDto: {
+            /** @example BRVM-C */
+            code: string;
+            /** @example BRVM Composite */
+            name: string;
         };
     };
     responses: never;
@@ -538,6 +871,478 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listSectors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectorDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createSector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSectorDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectorDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateSector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSectorDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SectorDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listSecurities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecurityDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createSecurity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSecurityDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecurityDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getSecurity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecurityDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateSecurity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSecurityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecurityDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getSecurityPrices: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EndOfDayPriceDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    putSecurityPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoredPriceDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listIndices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketIndexDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMarketIndexDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketIndexDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getIndexPrices: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EndOfDayPriceDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown index */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    putIndexPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoredPriceDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown index */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

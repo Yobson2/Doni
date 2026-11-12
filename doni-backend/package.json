@@ -24,6 +24,7 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
+    "seed:catalogue": "ts-node -P tsconfig.json -r tsconfig-paths/register scripts/seed-catalogue.ts",
     "typeorm": "ts-node -P tsconfig.json -r tsconfig-paths/register node_modules/typeorm/cli.js -d src/common/database/data-source.ts",
     "migration:generate": "pnpm typeorm migration:generate src/common/database/migrations/Migration",
     "migration:run": "pnpm typeorm migration:run",

@@ -8,13 +8,16 @@
   "nav": {
     "groups": {
       "general": "General",
-      "other": "Other"
+      "other": "Other",
+      "admin": "Administration"
     },
     "dashboard": "Dashboard",
     "settings": "Settings",
     "account": "My account",
     "signOut": "Sign out",
-    "skipToMain": "Skip to main content"
+    "skipToMain": "Skip to main content",
+    "securities": "Securities",
+    "adminCatalogue": "Catalogue and prices"
   },
   "command": {
     "search": "Search",
@@ -340,6 +343,89 @@
       "title": "Navigation",
       "description": "Main navigation menu.",
       "toggle": "Toggle sidebar"
+    }
+  },
+  "securities": {
+    "title": "Listed securities",
+    "description": "Securities listed on the BRVM and their latest closing price, from the Bulletin Officiel de la Cote (BOC).",
+    "empty": "No securities in the catalogue yet.",
+    "loadError": "This data could not be loaded. Please try again later.",
+    "columns": {
+      "ticker": "Symbol",
+      "name": "Company",
+      "sector": "Sector",
+      "close": "Closing price",
+      "asOf": "As of"
+    },
+    "asOf": "End-of-day price as of {{date}}",
+    "noPrice": "No closing price has been published for this security.",
+    "backToList": "All securities",
+    "history": {
+      "title": "Closing price history",
+      "empty": "No prices published yet.",
+      "chartLabel": "Chart of {{name}} closing prices",
+      "date": "Session",
+      "close": "Close",
+      "volume": "Volume",
+      "source": "Source",
+      "sourceLabel": "BOC of {{date}}"
+    },
+    "profile": {
+      "title": "Company profile",
+      "translatedFrom": {
+        "fr": "Translated from French",
+        "en": "Translated from English"
+      }
+    },
+    "disclaimer": "Closing prices from the BRVM Bulletin Officiel de la Cote, published after each session. Information only, not investment advice."
+  },
+  "admin": {
+    "catalogue": {
+      "title": "Catalogue and prices",
+      "description": "Add securities and enter closing prices copied from a BOC. Every price keeps its source document and publication date.",
+      "price": {
+        "title": "Enter a closing price",
+        "description": "Copy the price as printed in the BOC. Entering the same session again corrects it.",
+        "submit": "Save price",
+        "saved": "Price saved."
+      },
+      "security": {
+        "title": "Add a security",
+        "description": "A security listed on the BRVM, with its profile in French and English.",
+        "submit": "Add security",
+        "saved": "Security added."
+      },
+      "fields": {
+        "security": "Security",
+        "choose": "Choose…",
+        "date": "Session",
+        "close": "Closing price (XOF)",
+        "open": "Opening price (XOF, optional)",
+        "volume": "Volume (optional)",
+        "sourceDocument": "Source document (BOC)",
+        "sourceDocumentHelp": "Link to the BOC PDF on brvm.org, or its reference.",
+        "sourceDocumentPlaceholder": "https://www.brvm.org/sites/default/files/boc_….pdf",
+        "publishedOn": "BOC publication date",
+        "ticker": "Symbol",
+        "country": "Country (ISO code, e.g. SN)",
+        "name": "Company name",
+        "sector": "Sector",
+        "profileFr": "Profile in French",
+        "profileEn": "Profile in English",
+        "profileOriginalLanguage": "Language the profile was written in",
+        "profileOriginalLanguageHelp": "The other version is shown as a translation."
+      },
+      "validation": {
+        "required": "Required.",
+        "decimal": "Enter a number, for example 4190 or 517.17.",
+        "date": "Enter a date.",
+        "ticker": "Upper-case letters and digits, for example SNTS.",
+        "country": "Two upper-case letters, for example SN."
+      },
+      "errors": {
+        "exists": "This security already exists.",
+        "invalid": "Some of the information is invalid."
+      }
     }
   }
 }

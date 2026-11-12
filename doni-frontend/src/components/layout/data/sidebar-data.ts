@@ -1,8 +1,13 @@
-import { IconLayoutDashboard, IconPalette } from '@tabler/icons-react'
+import {
+  IconBuildingBank,
+  IconDatabaseEdit,
+  IconLayoutDashboard,
+  IconPalette,
+} from '@tabler/icons-react'
 import { type NavGroup } from '../types'
 
 // Titles are i18n keys, translated where they are rendered.
-export const navGroups: NavGroup[] = [
+const navGroups: NavGroup[] = [
   {
     title: 'nav.groups.general',
     items: [
@@ -10,6 +15,22 @@ export const navGroups: NavGroup[] = [
         title: 'nav.dashboard',
         url: '/dashboard',
         icon: IconLayoutDashboard,
+      },
+      {
+        title: 'nav.securities',
+        url: '/securities',
+        icon: IconBuildingBank,
+      },
+    ],
+  },
+  {
+    title: 'nav.groups.admin',
+    adminOnly: true,
+    items: [
+      {
+        title: 'nav.adminCatalogue',
+        url: '/admin/catalogue',
+        icon: IconDatabaseEdit,
       },
     ],
   },
@@ -24,3 +45,8 @@ export const navGroups: NavGroup[] = [
     ],
   },
 ]
+
+/** The groups a user sees: admin groups only for admins. */
+export function navGroupsFor(isAdmin: boolean): NavGroup[] {
+  return navGroups.filter((group) => !group.adminOnly || isAdmin)
+}
