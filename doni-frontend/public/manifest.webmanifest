@@ -1,7 +1,8 @@
 {
   "name": "Doni",
   "short_name": "Doni",
-  "description": "Research BRVM stocks and track your portfolio, little by little.",
+  "description": "Suivez vos titres de la BRVM et votre portefeuille, petit à petit.",
+  "lang": "fr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -1,6 +1,136 @@
 {
-  "welcome": "Welcome to our app!",
-  "language": "Language",
+  "language": {
+    "name": {
+      "fr": "Français",
+      "en": "English"
+    }
+  },
+  "nav": {
+    "groups": {
+      "general": "General",
+      "other": "Other"
+    },
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "account": "My account",
+    "signOut": "Sign out",
+    "skipToMain": "Skip to main content"
+  },
+  "command": {
+    "search": "Search",
+    "placeholder": "Type a command or search…",
+    "empty": "No results found.",
+    "title": "Command menu",
+    "description": "Search for a page or command."
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "empty": {
+      "title": "Your portfolio will appear here",
+      "description": "Once you record your positions, Doni will show what your holdings are worth at the latest end-of-day prices and how they have performed."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your preferences.",
+    "appearance": {
+      "title": "Appearance",
+      "description": "Choose the language, font and theme of the app.",
+      "language": "Language",
+      "languageDescription": "The language used throughout the app.",
+      "font": "Font",
+      "fontDescription": "The font used throughout the app.",
+      "fonts": {
+        "inter": "Inter",
+        "manrope": "Manrope",
+        "system": "System font"
+      },
+      "themeDescription": "Choose a light or dark theme."
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "validation": {
+      "emailRequired": "Please enter your email.",
+      "emailInvalid": "Invalid email address.",
+      "passwordRequired": "Please enter your password.",
+      "passwordMin": "Password must be at least {{min}} characters long.",
+      "passwordMismatch": "Passwords don't match."
+    },
+    "signIn": {
+      "title": "Sign in",
+      "success": "Signed in",
+      "subtitle": "Welcome back. Enter your email and password.",
+      "submit": "Sign in",
+      "forgot": "Forgot password?",
+      "noAccount": "New to Doni?",
+      "createAccount": "Create an account"
+    },
+    "signUp": {
+      "title": "Create your account",
+      "haveAccount": "Already have an account?",
+      "submit": "Create account",
+      "subtitle": "Start with one position. You can add the rest later.",
+      "signIn": "Sign in"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "description": "Enter the email you signed up with and we will send you a link to reset your password.",
+      "backToSignIn": "Back to sign in",
+      "submit": "Continue"
+    },
+    "panelTitle": "Little by little, see what your portfolio really earns.",
+    "points": {
+      "pmp": "Average cost and gains worked out for every position",
+      "dividends": "Dividends suggested from the shares you held",
+      "dated": "End-of-day prices from the official bulletin, always dated"
+    },
+    "disclaimer": "Information and education only. Not investment advice.",
+    "backHome": "Back to home"
+  },
+  "errors": {
+    "goBack": "Go back",
+    "backHome": "Back to home",
+    "unauthorized": {
+      "title": "Unauthorized",
+      "description": "Please sign in to access this page."
+    },
+    "forbidden": {
+      "title": "Access forbidden",
+      "description": "You don't have permission to view this page."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist or has been moved."
+    },
+    "general": {
+      "title": "Something went wrong",
+      "description": "Sorry for the inconvenience. Please try again later."
+    },
+    "maintenance": {
+      "title": "Doni is under maintenance",
+      "description": "The app is not available right now. We will be back shortly."
+    },
+    "toast": {
+      "generic": "Something went wrong.",
+      "notFound": "Content not found.",
+      "notModified": "Content not modified.",
+      "sessionExpired": "Your session has expired.",
+      "serverError": "Server error."
+    }
+  },
   "landing": {
     "nav": {
       "features": "Features",
@@ -200,32 +330,12 @@
       }
     }
   },
-  "auth": {
-    "panelTitle": "Little by little, see what your portfolio really earns.",
-    "points": {
-      "pmp": "Average cost and gains worked out for every position",
-      "dividends": "Dividends suggested from the shares you held",
-      "dated": "End-of-day prices from the official bulletin, always dated"
-    },
-    "disclaimer": "Information and education only. Not investment advice.",
-    "backHome": "Back to home",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm password",
-    "signIn": {
-      "title": "Sign in",
-      "subtitle": "Welcome back. Enter your email and password.",
-      "submit": "Sign in",
-      "forgot": "Forgot password?",
-      "noAccount": "New to Doni?",
-      "createAccount": "Create an account"
-    },
-    "signUp": {
-      "title": "Create your account",
-      "subtitle": "Start with one position. You can add the rest later.",
-      "submit": "Create account",
-      "haveAccount": "Already have an account?",
-      "signIn": "Sign in"
+  "ui": {
+    "close": "Close",
+    "sidebar": {
+      "title": "Navigation",
+      "description": "Main navigation menu.",
+      "toggle": "Toggle sidebar"
     }
   }
 }

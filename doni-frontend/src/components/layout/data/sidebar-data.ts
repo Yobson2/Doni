@@ -1,92 +1,26 @@
-import {
-  IconBrowserCheck,
-  IconChecklist,
-  IconLayoutDashboard,
-  IconNotification,
-  IconPackages,
-  IconPalette,
-  IconSettings,
-  IconTool,
-  IconUserCog,
-  IconUsers,
-} from '@tabler/icons-react'
-import { LogoSmall } from '@/components/logo'
-import { type SidebarData } from '../types'
+import { IconLayoutDashboard, IconPalette } from '@tabler/icons-react'
+import { type NavGroup } from '../types'
 
-export const sidebarData: SidebarData = {
-  user: {
-    name: 'Admin',
-    email: 'admin@example.com',
-    avatar: '/avatars/shadcn.jpg',
+// Titles are i18n keys, translated where they are rendered.
+export const navGroups: NavGroup[] = [
+  {
+    title: 'nav.groups.general',
+    items: [
+      {
+        title: 'nav.dashboard',
+        url: '/dashboard',
+        icon: IconLayoutDashboard,
+      },
+    ],
   },
-  teams: [
-    {
-      name: 'Doni',
-      logo: LogoSmall,
-      plan: 'BRVM portfolio',
-    },
-  ],
-  navGroups: [
-    {
-      title: 'General',
-      items: [
-        {
-          title: 'Dashboard',
-          url: '/dashboard',
-          icon: IconLayoutDashboard,
-        },
-        {
-          title: 'Users',
-          url: '/users',
-          icon: IconUsers,
-        },
-        {
-          title: 'Tasks',
-          url: '/tasks',
-          icon: IconChecklist,
-        },
-        {
-          title: 'Apps',
-          url: '/apps',
-          icon: IconPackages,
-        },
-      ],
-    },
-    {
-      title: 'Other',
-      items: [
-        {
-          title: 'Settings',
-          icon: IconSettings,
-          items: [
-            {
-              title: 'Profile',
-              url: '/settings',
-              icon: IconUserCog,
-            },
-            {
-              title: 'Account',
-              url: '/settings/account',
-              icon: IconTool,
-            },
-            {
-              title: 'Appearance',
-              url: '/settings/appearance',
-              icon: IconPalette,
-            },
-            {
-              title: 'Notifications',
-              url: '/settings/notifications',
-              icon: IconNotification,
-            },
-            {
-              title: 'Display',
-              url: '/settings/display',
-              icon: IconBrowserCheck,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-}
+  {
+    title: 'nav.groups.other',
+    items: [
+      {
+        title: 'nav.settings',
+        url: '/settings',
+        icon: IconPalette,
+      },
+    ],
+  },
+]

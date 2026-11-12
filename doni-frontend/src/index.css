@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+/* Self-hosted fonts (no third-party font CDN). */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/manrope';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -344,8 +347,8 @@
    ======================================== */
 @theme inline {
   /* Font families - Use: font-inter, font-manrope */
-  --font-inter: 'Inter', 'sans-serif';
-  --font-manrope: 'Manrope', 'sans-serif';
+  --font-inter: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-manrope: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 
   /* Dynamic radius values */
   --radius-sm: calc(var(--radius) - 4px);

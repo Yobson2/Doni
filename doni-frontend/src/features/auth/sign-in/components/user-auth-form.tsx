@@ -1,8 +1,9 @@
-import { HTMLAttributes, useState } from 'react'
+import { HTMLAttributes, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -20,27 +21,27 @@ import { PasswordInput } from '@/components/password-input'
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
-const formSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: 'Please enter your email' })
-    .email({ message: 'Invalid email address' }),
-  password: z
-    .string()
-    .min(1, {
-      message: 'Please enter your password',
-    })
-    .min(7, {
-      message: 'Password must be at least 7 characters long',
-    }),
-})
+const createFormSchema = (t: TFunction) =>
+  z.object({
+    email: z
+      .string()
+      .min(1, { message: t('auth.validation.emailRequired') })
+      .email({ message: t('auth.validation.emailInvalid') }),
+    password: z
+      .string()
+      .min(1, { message: t('auth.validation.passwordRequired') })
+      .min(7, { message: t('auth.validation.passwordMin', { min: 7 }) }),
+  })
+
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const formSchema = useMemo(() => createFormSchema(t), [t])
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -48,23 +49,13 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     },
   })
 
-  function onSubmit(_data: z.infer<typeof formSchema>) {
+  function onSubmit(_data: FormValues) {
     setIsLoading(true)
 
-    // TODO: Replace with actual API call
-    // Example: await loginUser(data.email, data.password)
-
-    // Simulate API call
+    // Placeholder until the real sign-in flow is wired to the API (#5).
     setTimeout(() => {
       setIsLoading(false)
-
-      // TODO: Add actual authentication logic here
-      // For now, we'll accept any credentials for demo purposes
-      toast.success('Login successful', {
-        description: 'Redirecting to dashboard...',
-      })
-
-      // Redirect to dashboard after successful login
+      toast.success(t('auth.signIn.success'))
       navigate({ to: '/dashboard' })
     }, 1500)
   }
@@ -86,7 +77,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 <Input
                   type='email'
                   autoComplete='email'
-                  placeholder='name@example.com'
+                  placeholder={t('auth.emailPlaceholder')}
                   {...field}
                 />
               </FormControl>

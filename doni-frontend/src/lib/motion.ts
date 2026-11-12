@@ -1,7 +1,7 @@
 import type { Variants } from 'framer-motion'
 
 // Durations aligned with CSS custom properties (--duration-fast, --duration-normal, etc.)
-export const duration = {
+const duration = {
   fast: 0.15,
   normal: 0.3,
   slow: 0.5,
@@ -9,7 +9,7 @@ export const duration = {
 } as const
 
 // Easings aligned with CSS custom properties (--ease-in, --ease-out, etc.)
-export const ease = {
+const ease = {
   default: [0.4, 0, 0.2, 1] as const,
   in: [0.4, 0, 1, 1] as const,
   out: [0, 0, 0.2, 1] as const,
@@ -17,7 +17,7 @@ export const ease = {
   bounce: [0.68, -0.55, 0.265, 1.55] as const,
 }
 
-export const fadeIn: Variants = {
+const fadeIn: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -25,7 +25,7 @@ export const fadeIn: Variants = {
   },
 }
 
-export const fadeSlideUp: Variants = {
+const fadeSlideUp: Variants = {
   hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
@@ -34,7 +34,7 @@ export const fadeSlideUp: Variants = {
   },
 }
 
-export const fadeSlideDown: Variants = {
+const fadeSlideDown: Variants = {
   hidden: { opacity: 0, y: -16 },
   visible: {
     opacity: 1,
@@ -43,31 +43,11 @@ export const fadeSlideDown: Variants = {
   },
 }
 
-export const scaleIn: Variants = {
+const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: duration.normal, ease: ease.default },
-  },
-}
-
-export const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.05,
-    },
-  },
-}
-
-export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
     transition: { duration: duration.normal, ease: ease.default },
   },
 }

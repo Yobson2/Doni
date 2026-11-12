@@ -55,7 +55,10 @@ export function Logo({
   )
 }
 
-/** Small-size cut as a standalone component (e.g. for `logo: ElementType` props). */
+/**
+ * Small-size cut as a standalone component (e.g. for `logo: ElementType` props).
+ * @public Part of the documented logo API (docs/brand/logo.md).
+ */
 export function LogoSmall(props: LogoProps) {
   return <Logo small {...props} />
 }

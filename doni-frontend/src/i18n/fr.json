@@ -1,6 +1,136 @@
 {
-  "welcome": "Bienvenue dans notre application !",
-  "language": "Langue",
+  "language": {
+    "name": {
+      "fr": "Français",
+      "en": "English"
+    }
+  },
+  "nav": {
+    "groups": {
+      "general": "Général",
+      "other": "Autres"
+    },
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "account": "Mon compte",
+    "signOut": "Se déconnecter",
+    "skipToMain": "Aller au contenu principal"
+  },
+  "command": {
+    "search": "Rechercher",
+    "placeholder": "Saisissez une commande ou une recherche…",
+    "empty": "Aucun résultat.",
+    "title": "Menu de commandes",
+    "description": "Recherchez une page ou une commande."
+  },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "toggle": "Changer de thème"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "empty": {
+      "title": "Votre portefeuille apparaîtra ici",
+      "description": "Une fois vos positions enregistrées, Doni affichera la valeur de vos titres aux derniers cours de clôture et leur performance."
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "description": "Gérez vos préférences.",
+    "appearance": {
+      "title": "Apparence",
+      "description": "Choisissez la langue, la police et le thème de l'application.",
+      "language": "Langue",
+      "languageDescription": "La langue utilisée dans toute l'application.",
+      "font": "Police",
+      "fontDescription": "La police utilisée dans toute l'application.",
+      "fonts": {
+        "inter": "Inter",
+        "manrope": "Manrope",
+        "system": "Police du système"
+      },
+      "themeDescription": "Choisissez un thème clair ou sombre."
+    }
+  },
+  "auth": {
+    "email": "E-mail",
+    "emailPlaceholder": "nom@exemple.com",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "validation": {
+      "emailRequired": "Veuillez saisir votre e-mail.",
+      "emailInvalid": "Adresse e-mail invalide.",
+      "passwordRequired": "Veuillez saisir votre mot de passe.",
+      "passwordMin": "Le mot de passe doit contenir au moins {{min}} caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    },
+    "signIn": {
+      "title": "Se connecter",
+      "success": "Connexion réussie",
+      "subtitle": "Bon retour. Saisissez votre e-mail et votre mot de passe.",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Nouveau sur Doni ?",
+      "createAccount": "Créer un compte"
+    },
+    "signUp": {
+      "title": "Créez votre compte",
+      "haveAccount": "Déjà un compte ?",
+      "submit": "Créer un compte",
+      "subtitle": "Commencez par une position. Vous ajouterez le reste plus tard.",
+      "signIn": "Se connecter"
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié",
+      "description": "Saisissez l'e-mail utilisé à l'inscription et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      "backToSignIn": "Retour à la connexion",
+      "submit": "Continuer"
+    },
+    "panelTitle": "Petit à petit, voyez ce que votre portefeuille rapporte vraiment.",
+    "points": {
+      "pmp": "PMP et plus-values calculés pour chaque position",
+      "dividends": "Dividendes proposés d'après les titres que vous déteniez",
+      "dated": "Cours de clôture du bulletin officiel, toujours datés"
+    },
+    "disclaimer": "Information et pédagogie uniquement. Pas un conseil en investissement.",
+    "backHome": "Retour à l'accueil"
+  },
+  "errors": {
+    "goBack": "Retour",
+    "backHome": "Retour à l'accueil",
+    "unauthorized": {
+      "title": "Non autorisé",
+      "description": "Veuillez vous connecter pour accéder à cette page."
+    },
+    "forbidden": {
+      "title": "Accès refusé",
+      "description": "Vous n'avez pas l'autorisation de consulter cette page."
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "La page que vous cherchez n'existe pas ou a été déplacée."
+    },
+    "general": {
+      "title": "Une erreur est survenue",
+      "description": "Veuillez nous excuser pour la gêne occasionnée. Réessayez plus tard."
+    },
+    "maintenance": {
+      "title": "Doni est en maintenance",
+      "description": "L'application n'est pas disponible pour le moment. Nous revenons très vite."
+    },
+    "toast": {
+      "generic": "Une erreur est survenue.",
+      "notFound": "Contenu introuvable.",
+      "notModified": "Contenu non modifié.",
+      "sessionExpired": "Votre session a expiré.",
+      "serverError": "Erreur du serveur."
+    }
+  },
   "landing": {
     "nav": {
       "features": "Fonctionnalités",
@@ -200,32 +330,12 @@
       }
     }
   },
-  "auth": {
-    "panelTitle": "Petit à petit, voyez ce que votre portefeuille rapporte vraiment.",
-    "points": {
-      "pmp": "PMP et plus-values calculés pour chaque position",
-      "dividends": "Dividendes proposés d'après les titres que vous déteniez",
-      "dated": "Cours de clôture du bulletin officiel, toujours datés"
-    },
-    "disclaimer": "Information et pédagogie uniquement. Pas un conseil en investissement.",
-    "backHome": "Retour à l'accueil",
-    "email": "E-mail",
-    "password": "Mot de passe",
-    "confirmPassword": "Confirmez le mot de passe",
-    "signIn": {
-      "title": "Se connecter",
-      "subtitle": "Bon retour. Saisissez votre e-mail et votre mot de passe.",
-      "submit": "Se connecter",
-      "forgot": "Mot de passe oublié ?",
-      "noAccount": "Nouveau sur Doni ?",
-      "createAccount": "Créer un compte"
-    },
-    "signUp": {
-      "title": "Créez votre compte",
-      "subtitle": "Commencez par une position. Vous ajouterez le reste plus tard.",
-      "submit": "Créer un compte",
-      "haveAccount": "Déjà un compte ?",
-      "signIn": "Se connecter"
+  "ui": {
+    "close": "Fermer",
+    "sidebar": {
+      "title": "Navigation",
+      "description": "Menu de navigation principal.",
+      "toggle": "Afficher ou masquer la barre latérale"
     }
   }
 }

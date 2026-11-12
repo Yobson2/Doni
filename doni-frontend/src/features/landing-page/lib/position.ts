@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
 
 /** Fixed CFA franc / euro parity (1 EUR = 655.957 XOF). */
-export const XOF_PER_EUR = 655.957
+const XOF_PER_EUR = 655.957
 
 export type Currency = 'XOF' | 'EUR'
 
-export interface Buy {
+interface Buy {
   quantity: number
   price: number
 }

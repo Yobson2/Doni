@@ -1,7 +1,8 @@
-import { HTMLAttributes, useState } from 'react'
+import { HTMLAttributes, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -18,32 +19,32 @@ import { PasswordInput } from '@/components/password-input'
 
 type SignUpFormProps = HTMLAttributes<HTMLFormElement>
 
-const formSchema = z
-  .object({
-    email: z
-      .string()
-      .min(1, { message: 'Please enter your email' })
-      .email({ message: 'Invalid email address' }),
-    password: z
-      .string()
-      .min(1, {
-        message: 'Please enter your password',
-      })
-      .min(7, {
-        message: 'Password must be at least 7 characters long',
-      }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
-    path: ['confirmPassword'],
-  })
+const createFormSchema = (t: TFunction) =>
+  z
+    .object({
+      email: z
+        .string()
+        .min(1, { message: t('auth.validation.emailRequired') })
+        .email({ message: t('auth.validation.emailInvalid') }),
+      password: z
+        .string()
+        .min(1, { message: t('auth.validation.passwordRequired') })
+        .min(7, { message: t('auth.validation.passwordMin', { min: 7 }) }),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t('auth.validation.passwordMismatch'),
+      path: ['confirmPassword'],
+    })
+
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>
 
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
+  const formSchema = useMemo(() => createFormSchema(t), [t])
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
@@ -52,11 +53,10 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  function onSubmit(_data: FormValues) {
     setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log(data)
 
+    // Placeholder until the real sign-up flow is wired to the API (#5).
     setTimeout(() => {
       setIsLoading(false)
     }, 3000)
@@ -79,7 +79,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
                 <Input
                   type='email'
                   autoComplete='email'
-                  placeholder='name@example.com'
+                  placeholder={t('auth.emailPlaceholder')}
                   {...field}
                 />
               </FormControl>
