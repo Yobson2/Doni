@@ -6,15 +6,11 @@ A production-ready NestJS monolithic starter template with battle-tested infrast
 
 - **NestJS 11** — TypeScript framework
 - **TypeORM + PostgreSQL 16** — Database ORM; the schema is created by migrations only (`synchronize` is off everywhere)
-- **Redis (ioredis)** — Caching and pub/sub
-- **BullMQ** — Background job queues
+- **pg-boss** — Background and scheduled jobs, stored in Postgres
 - **JWT** — Authentication with access + refresh tokens
-- **Socket.IO** — WebSocket gateway with Redis bridge
-- **S3 Storage** — MinIO (dev) / DigitalOcean Spaces / AWS S3
-- **Firebase Admin** — Push notifications
 - **Nodemailer + Handlebars** — Email templating
 - **Swagger** — Auto-generated API documentation
-- **Docker** — PostgreSQL, Redis, MinIO, Adminer
+- **Docker** — PostgreSQL (the only infrastructure dependency) + Mailpit for local email
 
 ## Quick Start
 
@@ -27,7 +23,7 @@ pnpm install
 # 2. Create environment file (in doni-backend/)
 cp .env.example .env
 
-# 3. Start infrastructure (PostgreSQL, Redis, MinIO)
+# 3. Start infrastructure (PostgreSQL, plus Mailpit to catch emails)
 docker compose up -d
 
 # 4. Create the schema
@@ -49,12 +45,8 @@ src/
 ├── common/                        # Shared infrastructure
 │   ├── config/                    # Environment loader (Docker-aware)
 │   ├── database/                  # TypeORM config, BaseEntity
-│   ├── redis/                     # Redis provider (TLS-aware)
-│   ├── storage/                   # S3-compatible storage
-│   ├── firebase/                  # Push notifications
+│   ├── jobs/                      # Job runner (pg-boss) + sample heartbeat job
 │   ├── mail/                      # Email with Handlebars templates
-│   ├── websockets/                # WebSocket gateway + Redis bridge
-│   ├── queues/                    # BullMQ configuration
 │   ├── constants/                 # Error codes, roles
 │   ├── decorators/                # @GetUser, @Roles, @Public
 │   ├── dto/                       # Pagination DTOs
@@ -66,7 +58,7 @@ src/
 ├── modules/
 │   ├── auth/                      # JWT auth (register, login, refresh)
 │   ├── users/                     # Sample CRUD module
-│   └── health/                    # Health check endpoint
+│   └── health/                    # Health check (database + job runner)
 templates/                         # Handlebars email templates
 ```
 
@@ -89,6 +81,17 @@ pnpm migration:revert    # Revert the last migration
 pnpm migration:generate  # Generate a migration from entity changes
 ```
 
+## Background and scheduled jobs
+
+Jobs run on [pg-boss](https://github.com/timgit/pg-boss), which keeps its
+queue in the application database (schema `pgboss`, created and upgraded by
+pg-boss itself on startup). `JobsService` starts and stops with the app; to
+add a scheduled job, call `jobs.schedule(name, cron, handler)` from a
+provider's `onApplicationBootstrap` (see `src/common/jobs/heartbeat.job.ts`).
+
+Rate limiting (`@nestjs/throttler`) keeps its counters in process memory,
+which suits a single backend instance (ADR 0009).
+
 ## Migrations
 
 The schema is owned by migrations in `src/common/database/migrations/`;
@@ -110,12 +113,14 @@ docker run -d --name doni-e2e-pg -p 55432:5432   -e POSTGRES_PASSWORD=postgres -
 DB_PORT=55432 pnpm test:e2e
 ```
 
-Redis is replaced by an in-memory stub in e2e (`test/support/test-app.ts`).
+The suite needs nothing but Postgres. It also drops the job runner's `pgboss`
+schema so pg-boss reinstalls it on boot, and shortens the schedule-check
+intervals so the sample scheduled job runs within the test.
 
 ## Docker
 
 ```bash
-docker compose up -d      # Start PostgreSQL + Redis + MinIO + Adminer
+docker compose up -d      # Start PostgreSQL + Mailpit
 docker compose down        # Stop all
 docker compose logs -f     # View logs
 ```
@@ -123,15 +128,14 @@ docker compose logs -f     # View logs
 | Service | URL |
 |---------|-----|
 | PostgreSQL | `localhost:5432` |
-| Redis | `localhost:6379` |
-| MinIO Console | `http://localhost:9001` |
-| Adminer | `http://localhost:8080` |
+| Mailpit SMTP | `localhost:1025` |
+| Mailpit UI | `http://localhost:8025` |
 
 ## API Endpoints
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/health` | No | Health check |
+| `GET` | `/health` | No | Health check: database and job runner (503 if either is down) |
 | `POST` | `/api/auth/register` | No | Register user |
 | `POST` | `/api/auth/login` | No | Login |
 | `POST` | `/api/auth/refresh` | No | Refresh tokens |
@@ -194,9 +198,7 @@ See [.env.example](.env.example) for all available variables.
 Key variables:
 - `DB_*` — PostgreSQL connection
 - `JWT_SECRET` / `JWT_REFRESH_SECRET` — Token signing
-- `REDIS_*` — Redis connection
-- `S3_*` — Object storage
-- `FIREBASE_*` — Push notifications
+- `JOBS_*` — Job runner tuning (optional)
 - `MAIL_*` — SMTP email
 
 ## Production Build

@@ -1,6 +1,29 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
+/** Staging and production run against a managed Postgres that requires TLS. */
+export const isManagedDatabase = (config: ConfigService): boolean => {
+  const nodeEnv = config.get<string>('NODE_ENV');
+  return nodeEnv === 'staging' || nodeEnv === 'production';
+};
+
+/**
+ * TLS options for connections to the application database, shared by TypeORM
+ * and the job runner (pg-boss) so both connect the same way.
+ */
+export const buildDbSslOptions = (
+  config: ConfigService,
+): false | { rejectUnauthorized: boolean; ca?: string } =>
+  isManagedDatabase(config)
+    ? {
+        rejectUnauthorized:
+          config.get('DB_SSL_REJECT_UNAUTHORIZED', 'false') === 'true',
+        ...(config.get<string>('DB_CA_CERT') && {
+          ca: config.get<string>('DB_CA_CERT'),
+        }),
+      }
+    : false;
+
 /**
  * Builds TypeORM configuration for the application database.
  *
@@ -22,17 +45,8 @@ export const buildDbConfig = (config: ConfigService): TypeOrmModuleOptions => {
   }
 
   const nodeEnv = config.get<string>('NODE_ENV');
-  const useManagedDB = nodeEnv === 'staging' || nodeEnv === 'production';
-
-  const sslOptions = useManagedDB
-    ? {
-        rejectUnauthorized:
-          config.get('DB_SSL_REJECT_UNAUTHORIZED', 'false') === 'true',
-        ...(config.get<string>('DB_CA_CERT') && {
-          ca: config.get<string>('DB_CA_CERT'),
-        }),
-      }
-    : false;
+  const useManagedDB = isManagedDatabase(config);
+  const sslOptions = buildDbSslOptions(config);
 
   return {
     type: 'postgres',
