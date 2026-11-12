@@ -1,0 +1,18 @@
+packages:
+  - doni-backend
+  - doni-frontend
+
+# Dependencies allowed to run install scripts (pnpm 10 blocks them by default).
+onlyBuiltDependencies:
+  - bcrypt
+
+# Install scripts we deliberately skip (optional native speed-ups, telemetry,
+# version banners). Listed so `pnpm install` does not warn about them.
+ignoredBuiltDependencies:
+  - '@firebase/util'
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - esbuild
+  - msgpackr-extract
+  - protobufjs

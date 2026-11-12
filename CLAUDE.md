@@ -2,6 +2,10 @@
 
 BRVM investment research and portfolio-tracking PWA. `doni-backend/` (NestJS + Postgres) and `doni-frontend/` (React + Vite).
 
+## Commands
+
+One pnpm workspace; run from the repo root: `pnpm install`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e` (backend, needs a disposable Postgres: see `doni-backend/README.md`). CI (`.github/workflows/ci.yml`) runs the same commands. Schema changes go through migrations (`pnpm --filter doni-backend migration:generate`); `synchronize` is off.
+
 ## Agent skills
 
 ### Issue tracker

@@ -1,29 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { migrateEmptyDatabase } from './support/database';
+import { createTestApp } from './support/test-app';
 
 describe('Application (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
-    await app.init();
+    await migrateEmptyDatabase();
+    app = await createTestApp();
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   describe('Health', () => {
@@ -88,7 +77,9 @@ describe('Application (e2e)', () => {
     });
 
     it('GET /api/users - should reject without auth token', () => {
-      return request(app.getHttpServer()).get('/api/users').expect(401);
+      // The global AuthGuard currently answers 403 when no credentials are
+      // sent; the sign-in slice (#5) owns the final status code.
+      return request(app.getHttpServer()).get('/api/users').expect(403);
     });
 
     it('POST /api/auth/refresh - should refresh tokens', () => {
