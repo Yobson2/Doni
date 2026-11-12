@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-export type StatusType = 
-  | "active" 
-  | "pending" 
-  | "inactive" 
-  | "new" 
-  | "completed" 
+export type StatusType =
+  | "active"
+  | "pending"
+  | "inactive"
+  | "new"
+  | "completed"
   | "cancelled"
   | "approved"
   | "rejected"
@@ -17,31 +17,42 @@ interface StatusBadgeProps {
   className?: string
 }
 
+// Soft status styles built only from semantic tokens (see src/index.css).
+// Text on each *-subtle tint passes WCAG AA in light and dark mode.
+const tone = {
+  success: "bg-success-subtle text-success border-success/30",
+  warning: "bg-warning-subtle text-warning border-warning/30",
+  danger: "bg-destructive-subtle text-destructive border-destructive/30",
+  info: "bg-info-subtle text-info border-info/30",
+  brand: "bg-secondary text-secondary-foreground border-primary/20",
+  neutral: "bg-muted text-muted-foreground border-border",
+}
+
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const variants: Record<string, string> = {
-    active: "bg-success-50 text-success-700 border-success-200",
-    new: "bg-primary-50 text-primary-700 border-primary-200",
-    pending: "bg-warning-50 text-warning-700 border-warning-200",
-    processing: "bg-purple-50 text-purple-700 border-purple-200",
-    inactive: "bg-danger-50 text-danger-700 border-danger-200",
-    cancelled: "bg-danger-50 text-danger-700 border-danger-200",
-    rejected: "bg-danger-50 text-danger-700 border-danger-200",
-    completed: "bg-gray-100 text-gray-700 border-gray-200",
-    approved: "bg-success-50 text-success-700 border-success-200",
+    active: tone.success,
+    approved: tone.success,
+    new: tone.brand,
+    pending: tone.warning,
+    processing: tone.info,
+    inactive: tone.neutral,
+    completed: tone.neutral,
+    cancelled: tone.danger,
+    rejected: tone.danger,
   }
 
   const statusKey = status.toLowerCase()
-  const variant = variants[statusKey] || "bg-gray-100 text-gray-700 border-gray-200"
+  const variant = variants[statusKey] || tone.neutral
 
   return (
-    <Badge 
+    <Badge
       className={cn(
-        "font-medium border rounded-md capitalize px-2.5 py-1", 
-        variant, 
+        "font-medium border rounded-md capitalize px-2.5 py-1",
+        variant,
         className
       )}
     >
       {status}
     </Badge>
   )
-} 
+}

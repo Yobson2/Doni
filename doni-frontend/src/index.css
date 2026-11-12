@@ -14,111 +14,132 @@
   --radius: 0.625rem;                /* Base radius (10px) */
 
   /* ========================================
+     DONI COLOR SYSTEM — "Indigo Bogolan"
+     Indigo = trust & action · Ivory = calm surfaces · Kola ochre = rare highlights
+     Every pair below is verified against WCAG 2.2 AA (hex in comments).
+     Rules:
+       - Components use semantic tokens only; never raw Tailwind palette
+         classes (blue-500, gray-100…).
+       - Green/red are reserved for market movement (gain/loss) and status.
+       - Ochre (highlight) is a fill only, never text on light backgrounds.
+     ======================================== */
+
+  /* ========================================
      BASE COLORS
      Use: bg-background, text-foreground
      ======================================== */
-  --background: oklch(1 0 0);        /* Main page background (white) */
-  --foreground: oklch(0.145 0 0);    /* Main text color (black) */
+  --background: oklch(0.970 0.007 88.6);   /* #F7F5F0 Ivory — app canvas */
+  --foreground: oklch(0.237 0.033 278.4);  /* #1B1D2E Ink — 15.5:1 on canvas */
 
   /* ========================================
-     CARD COLORS
-     Use: bg-card, text-card-foreground
+     CARD / POPOVER COLORS
+     Use: bg-card, bg-popover
      ======================================== */
-  --card: oklch(1 0 0);              /* Card backgrounds */
-  --card-foreground: oklch(0.145 0 0); /* Text on cards */
+  --card: oklch(1 0 0);                     /* #FFFFFF Paper */
+  --card-foreground: oklch(0.237 0.033 278.4);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.237 0.033 278.4);
 
   /* ========================================
-     POPOVER COLORS
-     Use: bg-popover, text-popover-foreground
+     PRIMARY — Indigo
+     Use: bg-primary, hover:bg-primary-hover, active:bg-primary-active
      ======================================== */
-  --popover: oklch(1 0 0);           /* Dropdown/popup backgrounds */
-  --popover-foreground: oklch(0.145 0 0); /* Text in dropdowns */
+  --primary: oklch(0.389 0.144 271.1);         /* #2B3990 — white text 9.9:1 */
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.346 0.125 270.7);   /* #233079 */
+  --primary-active: oklch(0.297 0.108 271.2);  /* #1B2562 */
 
   /* ========================================
-     PRIMARY COLORS
-     Use: bg-primary, text-primary-foreground, hover:bg-primary/90
+     SECONDARY — Indigo Mist (tinted button / selected state)
      ======================================== */
-  --primary: oklch(0.205 0 0);       /* Main action buttons (dark) */
-  --primary-foreground: oklch(0.985 0 0); /* Text on primary buttons (white) */
+  --secondary: oklch(0.936 0.018 279.1);       /* #E7E9F6 */
+  --secondary-foreground: oklch(0.389 0.144 271.1); /* indigo text 8.2:1 */
+  --secondary-hover: oklch(0.898 0.027 279.0); /* #D9DCF0 */
 
   /* ========================================
-     SECONDARY COLORS
-     Use: bg-secondary, text-secondary-foreground
+     MUTED — quiet fills and de-emphasized text
      ======================================== */
-  --secondary: oklch(0.97 0 0);      /* Secondary buttons (light gray) */
-  --secondary-foreground: oklch(0.205 0 0); /* Text on secondary buttons */
+  --muted: oklch(0.946 0.008 91.5);            /* #EFEDE7 */
+  --muted-foreground: oklch(0.525 0.032 278.5);/* #66697D — 5.0:1 canvas, 4.6:1 muted */
+  --text-secondary: oklch(0.415 0.037 278.6);  /* #474A60 — labels, descriptions */
 
   /* ========================================
-     MUTED COLORS
-     Use: bg-muted, text-muted-foreground
+     ACCENT (shadcn) — hover background for menu items, ghost buttons
+     Not the brand accent: see --highlight.
      ======================================== */
-  --muted: oklch(0.97 0 0);          /* Subtle backgrounds (light gray) */
-  --muted-foreground: oklch(0.556 0 0); /* Disabled/less important text */
+  --accent: oklch(0.954 0.012 281.1);          /* #EEEFF8 */
+  --accent-foreground: oklch(0.237 0.033 278.4);
 
   /* ========================================
-     ACCENT COLORS
-     Use: bg-accent, text-accent-foreground, hover:bg-accent
+     BRAND EXTRAS
+     --highlight: Kola ochre. Fills only (badges, "new", goal reached).
+     --brand-earth: Bogolan brown. Editorial headings, illustrations.
      ======================================== */
-  --accent: oklch(0.97 0 0);         /* Hover states for items */
-  --accent-foreground: oklch(0.205 0 0); /* Text on accent backgrounds */
+  --highlight: oklch(0.680 0.136 74.4);        /* #C98A1E — ink text 6.0:1 */
+  --highlight-foreground: oklch(0.237 0.033 278.4);
+  --brand-earth: oklch(0.411 0.037 60.1);      /* #5A4636 — 9.2:1 on white */
 
   /* ========================================
      STATUS COLORS
-     Use: bg-destructive, bg-success, bg-warning, bg-info
+     Solid: bg-success text-success-foreground
+     Soft:  bg-success-subtle text-success (badges, rows)
      ======================================== */
-  --destructive: oklch(0.577 0.245 27.325); /* Error/delete actions (red) */
-  --destructive-foreground: oklch(0.985 0 0); /* Text on destructive */
+  --destructive: oklch(0.535 0.184 27.5);      /* #C12F2A — 5.7:1 */
+  --destructive-foreground: oklch(1 0 0);
+  --destructive-subtle: oklch(0.946 0.021 24.8);
 
-  --success: oklch(0.65 0.19 150);   /* Success states (green) */
-  --success-foreground: oklch(0.985 0 0); /* Text on success */
+  --success: oklch(0.511 0.120 155.9);         /* #0F7A48 — 5.4:1 */
+  --success-foreground: oklch(1 0 0);
+  --success-subtle: oklch(0.951 0.018 161.1);
 
-  --warning: oklch(0.75 0.15 85);    /* Warning states (yellow/amber) */
-  --warning-foreground: oklch(0.145 0 0); /* Text on warning */
+  --warning: oklch(0.531 0.119 65.1);          /* #9A5B00 — 5.4:1 */
+  --warning-foreground: oklch(1 0 0);
+  --warning-subtle: oklch(0.958 0.029 82.6);
 
-  --info: oklch(0.6 0.15 250);       /* Info states (blue) */
-  --info-foreground: oklch(0.985 0 0); /* Text on info */
+  --info: oklch(0.499 0.127 251.3);            /* #1F65A8 — 6.1:1 */
+  --info-foreground: oklch(1 0 0);
+  --info-subtle: oklch(0.945 0.017 248.0);
 
   /* ========================================
-     BORDER & INPUT COLORS
-     Use: border-border, bg-input, ring-ring
+     MARKET COLORS — price movement only
+     Always pair with ▲/▼ and a +/− sign (never color alone).
      ======================================== */
-  --border: oklch(0.922 0 0);        /* All borders (light gray) */
-  --input: oklch(0.922 0 0);         /* Input field borders */
-  --ring: oklch(0.708 0 0);          /* Focus ring color */
+  --gain: var(--success);
+  --gain-subtle: var(--success-subtle);
+  --loss: var(--destructive);
+  --loss-subtle: var(--destructive-subtle);
 
   /* ========================================
-     CHART COLORS
-     Use in Recharts: fill="hsl(var(--chart-1))"
+     BORDER, INPUT, FOCUS, DISABLED
+     --border: decorative dividers · --input: control outlines (≥3:1)
      ======================================== */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --border: oklch(0.907 0.014 88.7);           /* #E4E0D6 */
+  --input: oklch(0.632 0.015 97.6);            /* #8C8A80 — 3.5:1 on white */
+  --ring: oklch(0.528 0.185 272.3);            /* #4A5BD4 — 5.6:1 */
+  --disabled: oklch(0.937 0.008 91.5);         /* #ECEAE4 */
+  --disabled-foreground: oklch(0.696 0.015 93.0);
+
+  /* ========================================
+     CHART COLORS — categorical, no green/red (reserved for gain/loss)
+     All ≥3:1 on white. Use: fill="var(--chart-1)"
+     ======================================== */
+  --chart-1: oklch(0.389 0.144 271.1);         /* #2B3990 indigo */
+  --chart-2: oklch(0.611 0.126 73.6);          /* #B07610 ochre */
+  --chart-3: oklch(0.585 0.103 231.8);         /* #2C86AE lagoon */
+  --chart-4: oklch(0.511 0.120 330.6);         /* #8C4A86 plum */
+  --chart-5: oklch(0.503 0.032 75.9);          /* #6F6250 bogolan taupe */
 
   /* ========================================
      SIDEBAR COLORS
-     Use: bg-sidebar, text-sidebar-foreground
      ======================================== */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-
-  /* ========================================
-     BRAND COLORS - Customize These!
-     Use: bg-brand, text-brand-foreground, bg-brand-secondary
-     ======================================== */
-  --brand: oklch(0.65 0.19 30);      /* Orange accent */
-  --brand-foreground: oklch(0.985 0 0); /* White text */
-  --brand-secondary: oklch(0.55 0.20 353); /* Red accent */
-  --brand-secondary-foreground: oklch(0.985 0 0);
-  --brand-dark: oklch(0.35 0.10 212); /* Deep blue */
-  --brand-dark-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.237 0.033 278.4);
+  --sidebar-primary: oklch(0.389 0.144 271.1);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.936 0.018 279.1);  /* Indigo Mist — active item */
+  --sidebar-accent-foreground: oklch(0.389 0.144 271.1);
+  --sidebar-border: oklch(0.907 0.014 88.7);
+  --sidebar-ring: oklch(0.528 0.185 272.3);
 
   /* ========================================
      TYPOGRAPHY SYSTEM
@@ -223,95 +244,87 @@
    ======================================== */
 .dark {
   /* ========================================
-     BASE COLORS
+     BASE COLORS — Indigo night
      ======================================== */
-  --background: oklch(0.145 0 0);    /* Dark background */
-  --foreground: oklch(0.985 0 0);    /* Light text */
+  --background: oklch(0.186 0.023 276.0);  /* #10121D */
+  --foreground: oklch(0.948 0.011 280.5);  /* #ECEDF5 — 16:1 */
+
+  --card: oklch(0.222 0.030 275.0);        /* #171A29 */
+  --card-foreground: oklch(0.948 0.011 280.5);
+  --popover: oklch(0.262 0.036 274.5);     /* #1F2336 elevated */
+  --popover-foreground: oklch(0.948 0.011 280.5);
 
   /* ========================================
-     CARD COLORS
+     PRIMARY — light indigo with dark label
      ======================================== */
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.714 0.128 275.7);         /* #8D9BF2 — label 7.4:1 */
+  --primary-foreground: oklch(0.186 0.023 276.0);
+  --primary-hover: oklch(0.774 0.099 276.8);   /* #A5B0F5 */
+  --primary-active: oklch(0.649 0.148 274.6);  /* #7585E8 */
+
+  --secondary: oklch(0.297 0.048 274.8);       /* #262B45 */
+  --secondary-foreground: oklch(0.948 0.011 280.5);
+  --secondary-hover: oklch(0.345 0.063 275.4); /* #30365A */
+
+  --muted: oklch(0.275 0.037 277.1);           /* #23263A */
+  --muted-foreground: oklch(0.664 0.033 277.3);/* #8E92A8 — 4.8:1 on muted */
+  --text-secondary: oklch(0.792 0.024 277.9);  /* #B7BACB */
+
+  --accent: oklch(0.290 0.062 275.5);          /* #23284A */
+  --accent-foreground: oklch(0.948 0.011 280.5);
+
+  --highlight: oklch(0.769 0.132 77.4);        /* #E2A846 */
+  --highlight-foreground: oklch(0.186 0.023 276.0);
+  --brand-earth: oklch(0.768 0.048 65.9);      /* #C9AE94 */
 
   /* ========================================
-     POPOVER COLORS
+     STATUS COLORS — light hues, dark labels
      ======================================== */
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.735 0.162 25.4);      /* #FF7B73 */
+  --destructive-foreground: oklch(0.186 0.023 276.0);
+  --destructive-subtle: oklch(0.274 0.044 11.2);
+
+  --success: oklch(0.734 0.147 157.1);         /* #45C483 */
+  --success-foreground: oklch(0.186 0.023 276.0);
+  --success-subtle: oklch(0.276 0.040 162.9);
+
+  --warning: oklch(0.792 0.131 78.3);          /* #E9B04E */
+  --warning-foreground: oklch(0.186 0.023 276.0);
+  --warning-subtle: oklch(0.288 0.029 77.3);
+
+  --info: oklch(0.733 0.118 249.4);            /* #6BAEF0 */
+  --info-foreground: oklch(0.186 0.023 276.0);
+  --info-subtle: oklch(0.279 0.049 251.0);
 
   /* ========================================
-     PRIMARY COLORS
+     BORDERS, INPUTS, FOCUS, DISABLED
      ======================================== */
-  --primary: oklch(0.922 0 0);       /* Light primary in dark mode */
-  --primary-foreground: oklch(0.205 0 0); /* Dark text on light button */
+  --border: oklch(0.295 0.037 275.2);          /* #272B3F */
+  --input: oklch(0.538 0.042 278.3);           /* #686C87 — 3.2:1 on card */
+  --ring: oklch(0.774 0.099 276.8);            /* #A5B0F5 */
+  --disabled: oklch(0.249 0.037 274.3);
+  --disabled-foreground: oklch(0.501 0.037 277.2);
 
   /* ========================================
-     SECONDARY & MUTED COLORS
+     CHART COLORS FOR DARK MODE (same hues, lifted)
      ======================================== */
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-
-  /* ========================================
-     ACCENT COLORS
-     ======================================== */
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-
-  /* ========================================
-     STATUS COLORS
-     ======================================== */
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-
-  --success: oklch(0.70 0.20 150);   /* Brighter green for dark mode */
-  --success-foreground: oklch(0.145 0 0);
-
-  --warning: oklch(0.80 0.16 85);    /* Brighter yellow for dark mode */
-  --warning-foreground: oklch(0.145 0 0);
-
-  --info: oklch(0.65 0.16 250);      /* Brighter blue for dark mode */
-  --info-foreground: oklch(0.985 0 0);
-
-  /* ========================================
-     BORDERS & INPUTS
-     ======================================== */
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-
-  /* ========================================
-     CHART COLORS FOR DARK MODE
-     ======================================== */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.714 0.128 275.7);         /* #8D9BF2 */
+  --chart-2: oklch(0.769 0.132 77.4);          /* #E2A846 */
+  --chart-3: oklch(0.730 0.101 228.4);         /* #5BB4DA */
+  --chart-4: oklch(0.716 0.105 330.6);         /* #C98BC2 */
+  --chart-5: oklch(0.732 0.037 78.6);          /* #B5A68F */
 
   /* ========================================
      SIDEBAR IN DARK MODE
      ======================================== */
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-
-  /* ========================================
-     BRAND COLORS ADJUSTED FOR DARK MODE
-     ======================================== */
-  --brand: oklch(0.70 0.20 30);      /* Brighter orange */
-  --brand-foreground: oklch(0.145 0 0);
-  --brand-secondary: oklch(0.60 0.22 353); /* Brighter red */
-  --brand-secondary-foreground: oklch(0.985 0 0);
-  --brand-dark: oklch(0.60 0.12 212); /* Lighter blue (naming paradox) */
-  --brand-dark-foreground: oklch(0.145 0 0);
+  --sidebar: oklch(0.222 0.030 275.0);
+  --sidebar-foreground: oklch(0.948 0.011 280.5);
+  --sidebar-primary: oklch(0.714 0.128 275.7);
+  --sidebar-primary-foreground: oklch(0.186 0.023 276.0);
+  --sidebar-accent: oklch(0.290 0.062 275.5);
+  --sidebar-accent-foreground: oklch(0.948 0.011 280.5);
+  --sidebar-border: oklch(0.295 0.037 275.2);
+  --sidebar-ring: oklch(0.774 0.099 276.8);
 
   /* ========================================
      SHADOWS ADJUSTED FOR DARK MODE
@@ -349,23 +362,40 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-text-secondary: var(--text-secondary);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-brand-earth: var(--brand-earth);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-info-subtle: var(--info-subtle);
+  --color-gain: var(--gain);
+  --color-gain-subtle: var(--gain-subtle);
+  --color-loss: var(--loss);
+  --color-loss-subtle: var(--loss-subtle);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -379,12 +409,6 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
-  --color-brand-secondary: var(--brand-secondary);
-  --color-brand-secondary-foreground: var(--brand-secondary-foreground);
-  --color-brand-dark: var(--brand-dark);
-  --color-brand-dark-foreground: var(--brand-dark-foreground);
 }
 
 /* ========================================
@@ -393,7 +417,7 @@
 @layer base {
   /* Universal styles - borders, focus rings, scrollbars */
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
@@ -458,9 +482,9 @@
 }
 
 /* Faded bottom effect - Use: className="faded-bottom" */
-/* Creates white/black gradient fade at bottom of container */
+/* Fades into the page background at the bottom of a container */
 @utility faded-bottom {
-  @apply after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:hidden after:h-32 after:w-full after:bg-[linear-gradient(180deg,_transparent_10%,_white_70%)] md:after:block dark:after:bg-[linear-gradient(180deg,_transparent_10%,_black_70%)];
+  @apply after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:hidden after:h-32 after:w-full after:bg-[linear-gradient(180deg,_transparent_10%,_var(--background)_70%)] md:after:block;
 }
 
 /* ========================================

@@ -45,7 +45,7 @@ function Calendar({
           buttonVariants({ variant: 'ghost' }),
           'size-8 p-0 font-normal aria-selected:opacity-100'
         ),
-        day_selected: 'opacity-100 bg-yellow-500',
+        day_selected: 'opacity-100 bg-primary text-primary-foreground',
         range_start:
           'day-range-start aria-selected:bg-primary aria-selected:text-primary-foreground',
         range_end:

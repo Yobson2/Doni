@@ -77,12 +77,12 @@ export function DataTable<T extends Record<string, any>>({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50">
+            <TableRow className="bg-muted hover:bg-muted">
               {columns.map((column) => (
                 <TableHead 
                   key={column.id}
                   className={cn(
-                    "py-3 text-xs font-medium uppercase text-gray-600",
+                    "py-3 text-xs font-medium uppercase text-muted-foreground",
                     column.meta?.className
                   )}
                 >
@@ -106,7 +106,7 @@ export function DataTable<T extends Record<string, any>>({
               </TableRow>
             ) : (
               data.map((row, i) => (
-                <TableRow key={i} className="hover:bg-gray-50/50">
+                <TableRow key={i} className="hover:bg-muted/50">
                   {columns.map((column) => (
                     <TableCell
                       key={column.id}
