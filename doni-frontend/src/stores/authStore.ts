@@ -1,56 +1,31 @@
-import Cookies from 'js-cookie'
 import { create } from 'zustand'
+import type { components } from '@/api/schema'
 
-const ACCESS_TOKEN =
-  import.meta.env.VITE_AUTH_TOKEN_KEY ?? 'app_access_token'
-
-interface AuthUser {
-  accountNo: string
-  email: string
-  role: string[]
-  exp: number
-}
+type AuthUser = components['schemas']['UserResponseDto']
+type Session = components['schemas']['SessionResponseDto']
 
 interface AuthState {
   auth: {
     user: AuthUser | null
-    setUser: (user: AuthUser | null) => void
+    /**
+     * Held in memory only (ADR 0011): never written to localStorage,
+     * sessionStorage or a cookie. A reload gets a new one by silent refresh.
+     */
     accessToken: string
-    setAccessToken: (accessToken: string) => void
-    resetAccessToken: () => void
+    setSession: (session: Session) => void
     reset: () => void
   }
 }
 
-export const useAuthStore = create<AuthState>()((set) => {
-  const cookieState = Cookies.get(ACCESS_TOKEN)
-  const initToken = cookieState ? JSON.parse(cookieState) : ''
-  return {
-    auth: {
-      user: null,
-      setUser: (user) =>
-        set((state) => ({ ...state, auth: { ...state.auth, user } })),
-      accessToken: initToken,
-      setAccessToken: (accessToken) =>
-        set((state) => {
-          Cookies.set(ACCESS_TOKEN, JSON.stringify(accessToken))
-          return { ...state, auth: { ...state.auth, accessToken } }
-        }),
-      resetAccessToken: () =>
-        set((state) => {
-          Cookies.remove(ACCESS_TOKEN)
-          return { ...state, auth: { ...state.auth, accessToken: '' } }
-        }),
-      reset: () =>
-        set((state) => {
-          Cookies.remove(ACCESS_TOKEN)
-          return {
-            ...state,
-            auth: { ...state.auth, user: null, accessToken: '' },
-          }
-        }),
-    },
-  }
-})
-
-// export const useAuth = () => useAuthStore((state) => state.auth)
+export const useAuthStore = create<AuthState>()((set) => ({
+  auth: {
+    user: null,
+    accessToken: '',
+    setSession: ({ accessToken, user }) =>
+      set((state) => ({ auth: { ...state.auth, accessToken, user } })),
+    reset: () =>
+      set((state) => ({
+        auth: { ...state.auth, accessToken: '', user: null },
+      })),
+  },
+}))

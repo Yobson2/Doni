@@ -2,8 +2,11 @@ import { HTMLAttributes, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useNavigate } from '@tanstack/react-router'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import { ApiError } from '@/api/client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +19,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { signUp } from '@/features/auth/session'
 
 type SignUpFormProps = HTMLAttributes<HTMLFormElement>
 
@@ -29,7 +33,8 @@ const createFormSchema = (t: TFunction) =>
       password: z
         .string()
         .min(1, { message: t('auth.validation.passwordRequired') })
-        .min(7, { message: t('auth.validation.passwordMin', { min: 7 }) }),
+        .min(8, { message: t('auth.validation.passwordMin', { min: 8 }) })
+        .max(72, { message: t('auth.validation.passwordMax', { max: 72 }) }),
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -42,6 +47,7 @@ type FormValues = z.infer<ReturnType<typeof createFormSchema>>
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
   const formSchema = useMemo(() => createFormSchema(t), [t])
 
   const form = useForm<FormValues>({
@@ -53,13 +59,21 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
     },
   })
 
-  function onSubmit(_data: FormValues) {
+  async function onSubmit({ email, password }: FormValues) {
     setIsLoading(true)
-
-    // Placeholder until the real sign-up flow is wired to the API (#5).
-    setTimeout(() => {
+    try {
+      await signUp({ email, password })
+      toast.success(t('auth.signUp.success'))
+      await navigate({ to: '/dashboard' })
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError && error.status === 409
+          ? t('auth.signUp.emailTaken')
+          : t('errors.toast.generic')
+      )
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (

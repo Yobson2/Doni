@@ -1,19 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { User } from '../users/entities/user.entity';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
+import { SessionResponseDto } from './dto/session-response.dto';
 import {
   InvalidCredentialsError,
   InvalidTokenError,
 } from '@common/exceptions/auth.exceptions';
-import {
-  getJWTRefreshSecret,
-  JWT_EXPIRES_IN,
-  JWT_REFRESH_TOKEN_EXPIRES_IN,
-} from '@common/config/auth.config';
+import { ACCESS_TOKEN_TTL_SECONDS } from '@common/config/auth.config';
+import { SessionsService } from './sessions.service';
+import { TokensService } from './tokens.service';
+
+/** A signed-in session: the API response plus the refresh token cookie. */
+export interface IssuedSession {
+  body: SessionResponseDto;
+  refreshToken: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -21,64 +25,67 @@ export class AuthService {
 
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly sessions: SessionsService,
+    private readonly tokens: TokensService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  /** The single sign-up path: creates a member account and signs it in. */
+  async signUp(dto: SignUpDto): Promise<IssuedSession> {
     const user = await this.usersService.create(dto);
-    const tokens = this.generateTokens(user.id, user.role);
-    this.logger.log(`User registered: ${user.id}`);
-    return { user: user.toJSON(), ...tokens };
+    this.logger.log(`User signed up: ${user.id}`);
+    return this.startSession(user);
   }
 
-  async login(dto: LoginDto) {
+  async signIn(dto: SignInDto): Promise<IssuedSession> {
     const user = await this.usersService.findByEmail(dto.email);
-
-    if (!user) {
+    const passwordMatches = user
+      ? await bcrypt.compare(dto.password, user.password)
+      : false;
+    if (!user || !passwordMatches || !user.isActive) {
       throw new InvalidCredentialsError();
     }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    if (!isPasswordValid) {
-      throw new InvalidCredentialsError();
-    }
-
-    if (!user.isActive) {
-      throw new InvalidCredentialsError();
-    }
-
-    const tokens = this.generateTokens(user.id, user.role);
-    this.logger.log(`User logged in: ${user.id}`);
-    return { user: user.toJSON(), ...tokens };
+    this.logger.log(`User signed in: ${user.id}`);
+    return this.startSession(user);
   }
 
-  async refreshToken(refreshToken: string) {
-    try {
-      const refreshSecret = getJWTRefreshSecret(this.configService);
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: refreshSecret,
-      });
-
-      const user = await this.usersService.findOne(payload.userId);
-      const tokens = this.generateTokens(user.id, user.role);
-
-      return { user: user.toJSON(), ...tokens };
-    } catch {
+  /** Rotates the refresh token and issues a new access token. */
+  async refresh(refreshToken: string | undefined): Promise<IssuedSession> {
+    if (!refreshToken) {
+      throw new InvalidTokenError('Missing refresh token');
+    }
+    const rotated = await this.sessions.rotate(refreshToken);
+    const user = await this.usersService.findByIdOrNull(rotated.userId);
+    if (!user || !user.isActive) {
+      await this.sessions.end(rotated.token);
       throw new InvalidTokenError('Invalid or expired refresh token');
     }
+    return this.respond(user, rotated.token);
   }
 
-  private generateTokens(userId: string, role: string) {
-    const payload = { userId, role };
-    const refreshSecret = getJWTRefreshSecret(this.configService);
+  /** Ends the session server-side. Always succeeds. */
+  signOut(refreshToken: string | undefined): Promise<void> {
+    return this.sessions.end(refreshToken);
+  }
 
+  private async startSession(user: User): Promise<IssuedSession> {
+    return this.respond(user, await this.sessions.start(user.id));
+  }
+
+  private async respond(
+    user: User,
+    refreshToken: string,
+  ): Promise<IssuedSession> {
+    const accessToken = await this.tokens.signAccessToken({
+      userId: user.id,
+      role: user.role,
+    });
     return {
-      accessToken: this.jwtService.sign(payload, { expiresIn: JWT_EXPIRES_IN }),
-      refreshToken: this.jwtService.sign(payload, {
-        secret: refreshSecret,
-        expiresIn: JWT_REFRESH_TOKEN_EXPIRES_IN,
-      }),
+      body: {
+        accessToken,
+        expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+        user: user.toResponse(),
+      },
+      refreshToken,
     };
   }
 }

@@ -1,29 +1,43 @@
 import { ConfigService } from '@nestjs/config';
 
-export const getJWTSecret = (config: ConfigService): string => {
-  const secret = config.get<string>('JWT_SECRET');
-  if (!secret) {
-    const nodeEnv = config.get<string>('NODE_ENV', 'development');
-    if (nodeEnv === 'production' || nodeEnv === 'staging') {
-      throw new Error(
-        'JWT_SECRET environment variable is required in production/staging',
-      );
-    }
-    console.warn(
-      'WARNING: Using insecure JWT secret. Set JWT_SECRET environment variable.',
-    );
-    return 'dev-only-insecure-secret-do-not-use-in-production';
-  }
-  return secret;
-};
+export interface AuthSecrets {
+  /** Signs access tokens (bearer tokens on API requests). */
+  accessSecret: string;
+  /** Signs refresh tokens (the httpOnly session cookie). */
+  refreshSecret: string;
+}
 
-export const getJWTRefreshSecret = (config: ConfigService): string => {
+/**
+ * Reads the token-signing secrets (ADR 0011). Both are required in every
+ * environment and must differ, so that one kind of token can never verify as
+ * the other. Throws at boot otherwise.
+ */
+export const loadAuthSecrets = (config: ConfigService): AuthSecrets => {
+  const accessSecret = config.get<string>('JWT_ACCESS_SECRET');
   const refreshSecret = config.get<string>('JWT_REFRESH_SECRET');
-  if (refreshSecret) {
-    return refreshSecret;
+
+  if (!accessSecret) {
+    throw new Error('JWT_ACCESS_SECRET environment variable is required');
   }
-  return getJWTSecret(config);
+  if (!refreshSecret) {
+    throw new Error('JWT_REFRESH_SECRET environment variable is required');
+  }
+  if (accessSecret === refreshSecret) {
+    throw new Error(
+      'JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be distinct values',
+    );
+  }
+  return { accessSecret, refreshSecret };
 };
 
-export const JWT_EXPIRES_IN = '900s';
-export const JWT_REFRESH_TOKEN_EXPIRES_IN = '7d';
+/** Lifetime of an access token, in seconds. */
+export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
+
+/** Lifetime of a refresh token (and of an idle session), in seconds. */
+export const REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+
+/** The cookie that carries the refresh token. */
+export const REFRESH_COOKIE = 'doni_refresh';
+
+/** Only the auth endpoints (refresh, sign-out) ever receive the cookie. */
+export const REFRESH_COOKIE_PATH = '/api/auth';

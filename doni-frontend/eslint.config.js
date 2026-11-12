@@ -1,13 +1,13 @@
 import globals from 'globals'
 import js from '@eslint/js'
 import pluginQuery from '@tanstack/eslint-plugin-query'
+import i18next from 'eslint-plugin-i18next'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
-import i18next from 'eslint-plugin-i18next'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'src/components/ui'] },
+  { ignores: ['dist', 'src/components/ui', 'src/api/schema.d.ts'] },
   {
     extends: [
       js.configs.recommended,

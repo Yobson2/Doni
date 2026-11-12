@@ -1,8 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Logger } from '@nestjs/common';
+import { SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { configureApp } from './app.setup';
+import { buildOpenApiDocument } from './openapi';
 import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
 
 async function bootstrap() {
@@ -46,44 +48,13 @@ async function bootstrap() {
     maxAge: 3600,
   });
 
-  // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
-  );
+  configureApp(app);
 
   // Global exception filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Swagger / OpenAPI
-  const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('REST API documentation with Swagger')
-    .setVersion('1.0.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'Authorization',
-        description: 'Enter JWT token',
-        in: 'header',
-      },
-      'JWT-auth',
-    )
-    .addTag('Auth', 'Authentication and authorization')
-    .addTag('Users', 'User management')
-    .addTag('Health', 'Health check')
-    .addServer(`http://localhost:${process.env.PORT ?? 3000}`, 'Development')
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
+  const document = buildOpenApiDocument(app);
   SwaggerModule.setup('api/docs', app, document, {
     customSiteTitle: 'API Documentation',
     customCss: '.swagger-ui .topbar { display: none }',

@@ -14,6 +14,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    // Same-origin API in development, so the refresh cookie (SameSite=Strict,
+    // Path=/api/auth) is sent without any CORS setup.
+    proxy: {
+      '/api': process.env.VITE_DEV_API_PROXY ?? 'http://localhost:3000',
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

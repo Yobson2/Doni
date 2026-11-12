@@ -67,7 +67,8 @@
       "emailInvalid": "Invalid email address.",
       "passwordRequired": "Please enter your password.",
       "passwordMin": "Password must be at least {{min}} characters long.",
-      "passwordMismatch": "Passwords don't match."
+      "passwordMismatch": "Passwords don't match.",
+      "passwordMax": "Password must be at most {{max}} characters."
     },
     "signIn": {
       "title": "Sign in",
@@ -76,14 +77,17 @@
       "submit": "Sign in",
       "forgot": "Forgot password?",
       "noAccount": "New to Doni?",
-      "createAccount": "Create an account"
+      "createAccount": "Create an account",
+      "invalidCredentials": "Incorrect email or password."
     },
     "signUp": {
       "title": "Create your account",
       "haveAccount": "Already have an account?",
       "submit": "Create account",
       "subtitle": "Start with one position. You can add the rest later.",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "emailTaken": "An account already exists with this email.",
+      "success": "Account created"
     },
     "forgotPassword": {
       "title": "Forgot password",

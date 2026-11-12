@@ -48,16 +48,15 @@ src/
 │   ├── jobs/                      # Job runner (pg-boss) + sample heartbeat job
 │   ├── mail/                      # Email with Handlebars templates
 │   ├── constants/                 # Error codes, roles
-│   ├── decorators/                # @GetUser, @Roles, @Public
+│   ├── decorators/                # @GetUserId, @Roles, @Public
 │   ├── dto/                       # Pagination DTOs
 │   ├── exceptions/                # Domain exceptions
 │   ├── filters/                   # Global exception filter
-│   ├── guards/                    # Auth guard, Roles guard
-│   ├── middleware/                # JWT authentication
+│   ├── guards/                    # Access-token guard (401), Roles guard (403)
 │   └── utils/                     # Error context utility
 ├── modules/
-│   ├── auth/                      # JWT auth (register, login, refresh)
-│   ├── users/                     # Sample CRUD module
+│   ├── auth/                      # Sign-up, sign-in, refresh, sign-out (ADR 0011)
+│   ├── users/                     # Own account (/me) and account administration
 │   └── health/                    # Health check (database + job runner)
 templates/                         # Handlebars email templates
 ```
@@ -136,14 +135,34 @@ docker compose logs -f     # View logs
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET` | `/health` | No | Health check: database and job runner (503 if either is down) |
-| `POST` | `/api/auth/register` | No | Register user |
-| `POST` | `/api/auth/login` | No | Login |
-| `POST` | `/api/auth/refresh` | No | Refresh tokens |
-| `GET` | `/api/users` | Yes | List users (paginated) |
-| `GET` | `/api/users/:id` | Yes | Get user by ID |
-| `POST` | `/api/users` | No | Create user |
-| `PATCH` | `/api/users/:id` | Yes | Update user |
-| `DELETE` | `/api/users/:id` | Admin | Delete user (soft) |
+| `POST` | `/api/auth/sign-up` | No | Create an account (the only way to create one); signs in |
+| `POST` | `/api/auth/sign-in` | No | Sign in |
+| `POST` | `/api/auth/refresh` | Refresh cookie | Rotate the refresh token, get a new access token |
+| `POST` | `/api/auth/sign-out` | Refresh cookie | End the session, clear the cookie |
+| `GET` | `/api/users/me` | Yes | Read my account |
+| `PATCH` | `/api/users/me` | Yes | Update my account (name only) |
+| `GET` | `/api/users` | Admin | List accounts (paginated) |
+| `GET` | `/api/users/:id` | Admin | Read an account |
+| `PATCH` | `/api/users/:id` | Admin | Update an account |
+| `DELETE` | `/api/users/:id` | Admin | Deactivate an account |
+
+No or invalid access token: `401`. Authenticated without the required role: `403`.
+
+### Sessions (ADR 0011)
+
+- Access token: 15-minute JWT signed with `JWT_ACCESS_SECRET`, `typ: access`,
+  sent as `Authorization: Bearer`. The client keeps it in memory only.
+- Refresh token: JWT signed with `JWT_REFRESH_SECRET`, `typ: refresh`, sent
+  only in the `doni_refresh` cookie (`HttpOnly; Secure; SameSite=Strict;
+  Path=/api/auth`). Stored hashed in `refresh_tokens`, rotated on every
+  refresh; presenting a rotated token again revokes the whole session.
+  Expired tokens are deleted by a daily job.
+
+### OpenAPI
+
+`pnpm openapi:emit` writes `openapi.json` (no database needed). The frontend
+generates its client from it (`pnpm api:generate` in `doni-frontend`). An e2e
+test fails if the committed file is out of date.
 
 ## Adding a New Module
 
@@ -197,7 +216,7 @@ See [.env.example](.env.example) for all available variables.
 
 Key variables:
 - `DB_*` — PostgreSQL connection
-- `JWT_SECRET` / `JWT_REFRESH_SECRET` — Token signing
+- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` — Token signing; both required and distinct (boot fails otherwise)
 - `JOBS_*` — Job runner tuning (optional)
 - `MAIL_*` — SMTP email
 

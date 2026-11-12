@@ -1,7 +1,7 @@
 import { Link, useRouter } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/authStore'
 import { ChevronsUpDown, LogOut, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useAuthStore } from '@/stores/authStore'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { signOut } from '@/features/auth/session'
 
 export function NavUser() {
   const { t } = useTranslation()
@@ -26,9 +27,9 @@ export function NavUser() {
   const email = auth.user?.email ?? ''
   const initial = email.charAt(0).toUpperCase()
 
-  const handleLogout = () => {
-    auth.reset()
-    router.navigate({ to: '/sign-in' })
+  const handleLogout = async () => {
+    await signOut().catch(() => undefined)
+    await router.navigate({ to: '/sign-in' })
   }
 
   return (
@@ -41,7 +42,9 @@ export function NavUser() {
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
             >
               <Avatar className='h-8 w-8 rounded-lg'>
-                <AvatarFallback className='rounded-lg'>{initial}</AvatarFallback>
+                <AvatarFallback className='rounded-lg'>
+                  {initial}
+                </AvatarFallback>
               </Avatar>
               <div className='grid flex-1 text-left text-sm leading-tight'>
                 <span className='truncate font-semibold'>
