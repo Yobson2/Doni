@@ -24,3 +24,4 @@ Doni stores personal financial data. The session model has to keep tokens out of
 - A page reload always performs a silent refresh to obtain a new access token.
 - The refresh endpoint needs CSRF-appropriate cookie settings and the frontend and API origins must be configured accordingly.
 - A refresh-token table must be maintained and cleaned up.
+- Sensitive account actions (deleting the account) re-enter the password on the request, and access tokens are checked against the account so a deleted or deactivated account's sessions end at once (ADR 0016).

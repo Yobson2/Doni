@@ -1483,7 +1483,7 @@
             "description": "No portfolio with that id belongs to you"
           },
           "422": {
-            "description": "A later sale would then exceed the shares held at its date"
+            "description": "A later sale would then exceed the shares held at its date, or an opening position for the security already has that date (edit it instead)"
           }
         },
         "security": [
@@ -1492,6 +1492,182 @@
           }
         ],
         "summary": "Record an opening position: the quantity held and its PMP as of a date, instead of the past trades",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/entries/{entryId}": {
+      "put": {
+        "operationId": "editLedgerEntry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLedgerEntryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, unknown ticker or a trade date after today"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included)"
+          },
+          "422": {
+            "description": "With the correction, a sale at some date would exceed the shares then held"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Correct a buy or a sell, however old: a new entry replaces it and the portfolio is recomputed",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteLedgerEntry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included)"
+          },
+          "422": {
+            "description": "Without the entry, a sale at some date would exceed the shares then held"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a ledger entry of any kind: it stops counting and the portfolio is recomputed",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/opening-positions/{entryId}": {
+      "put": {
+        "operationId": "editOpeningPosition",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOpeningPositionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The new entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, unknown ticker or a date after today"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included)"
+          },
+          "422": {
+            "description": "A later sale would then exceed the shares held, or another opening position for the security has that date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Correct an opening position: a new entry replaces it and the portfolio is recomputed",
         "tags": [
           "Portfolios"
         ]
@@ -1602,6 +1778,76 @@
         "summary": "Stop watching a security (no change if not watched)",
         "tags": [
           "Watchlist"
+        ]
+      }
+    },
+    "/api/account/export": {
+      "get": {
+        "operationId": "exportMyData",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountExportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Download all my data as JSON",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/api/account/deletion": {
+      "post": {
+        "description": "Requires the current password. Deletes the account, its portfolios and ledgers, watchlist and every other section of the export, and ends every session. Cannot be undone.",
+        "operationId": "deleteMyAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Account deleted; the refresh cookie is cleared"
+          },
+          "400": {
+            "description": "Password missing"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Password confirmation failed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete my account and all my data",
+        "tags": [
+          "Account"
         ]
       }
     }
@@ -2841,6 +3087,12 @@
             "type": "string",
             "format": "date-time",
             "description": "When the entry was recorded"
+          },
+          "replacesId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The entry this one corrects, when it was recorded by editing an earlier entry; null otherwise"
           }
         },
         "required": [
@@ -2853,7 +3105,8 @@
           "price",
           "fees",
           "sgi",
-          "recordedAt"
+          "recordedAt",
+          "replacesId"
         ]
       },
       "TradeKind": {
@@ -2983,6 +3236,47 @@
           "name",
           "addedAt",
           "latestPrice"
+        ]
+      },
+      "AccountExportDto": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "example": "doni-account-export"
+          },
+          "version": {
+            "type": "number",
+            "example": 1,
+            "description": "Version of this export format"
+          },
+          "exportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sections": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "One entry per kind of data, keyed by section: `account` (profile), `portfolios` (each portfolio with its whole ledger: buys, sells, opening positions and, once recorded, user dividends), `sessions`, `watchlist`. Modules added later (such as alert settings) add their own section. Amounts are XOF, as decimal strings."
+          }
+        },
+        "required": [
+          "format",
+          "version",
+          "exportedAt",
+          "sections"
+        ]
+      },
+      "DeleteAccountDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "The account’s current password"
+          }
+        },
+        "required": [
+          "password"
         ]
       }
     }

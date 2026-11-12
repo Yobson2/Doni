@@ -547,6 +547,443 @@ describe('Portfolios and ledger (e2e)', () => {
     });
   });
 
+  describe('correcting the ledger', () => {
+    let owner: string;
+
+    const edit = (
+      token: string,
+      portfolioId: string,
+      entryId: string,
+      body: object,
+    ) =>
+      http()
+        .put(`/api/portfolios/${portfolioId}/entries/${entryId}`)
+        .set('Authorization', as(token))
+        .send({ sgi: SGI, ...body });
+
+    const editOpening = (
+      token: string,
+      portfolioId: string,
+      entryId: string,
+      body: object,
+    ) =>
+      http()
+        .put(`/api/portfolios/${portfolioId}/opening-positions/${entryId}`)
+        .set('Authorization', as(token))
+        .send({ sgi: SGI, ...body });
+
+    const remove = (token: string, portfolioId: string, entryId: string) =>
+      http()
+        .delete(`/api/portfolios/${portfolioId}/entries/${entryId}`)
+        .set('Authorization', as(token));
+
+    const open = (token: string, portfolioId: string, body: object) =>
+      http()
+        .post(`/api/portfolios/${portfolioId}/opening-positions`)
+        .set('Authorization', as(token))
+        .send({ sgi: SGI, ...body });
+
+    const snts = async (token: string, portfolioId: string) =>
+      (
+        await http()
+          .get(`/api/portfolios/${portfolioId}/valuation`)
+          .set('Authorization', as(token))
+          .expect(200)
+      ).body.positions.find((p: { ticker: string }) => p.ticker === 'SNTS');
+
+    /** Records the entries in order and returns their ids. */
+    async function ledgerOf(
+      token: string,
+      portfolioId: string,
+      entries: object[],
+    ): Promise<string[]> {
+      const ids: string[] = [];
+      for (const entry of entries) {
+        const res = await record(token, portfolioId, {
+          ticker: 'SNTS',
+          ...entry,
+        }).expect(201);
+        ids.push(res.body.id as string);
+      }
+      return ids;
+    }
+
+    beforeAll(async () => {
+      owner = await signUp();
+    });
+
+    it('editing a trade from years ago updates the current PMP and realised gains', async () => {
+      const portfolio = await createPortfolio(owner, 'Historique');
+      const [oldBuy] = await ledgerOf(owner, portfolio, [
+        // Mistyped years ago: the price was 1500 and the fees 500.
+        {
+          kind: 'buy',
+          date: '2019-03-04',
+          quantity: '100',
+          price: '2000',
+          fees: '1000',
+        },
+        { kind: 'buy', date: '2026-01-05', quantity: '100', price: '4000' },
+        { kind: 'sell', date: '2026-03-16', quantity: '50', price: '4500' },
+      ]);
+      // Before: (201000 + 400000) / 200 = 3005; realised 225000 − 150250
+      expect(await snts(owner, portfolio)).toMatchObject({
+        quantity: '150',
+        pmp: '3005',
+        realisedGain: '74750',
+      });
+
+      const res = await edit(owner, portfolio, oldBuy, {
+        kind: 'buy',
+        ticker: 'SNTS',
+        date: '2019-03-04',
+        quantity: '100',
+        price: '1500',
+        fees: '500',
+      }).expect(200);
+      expect(res.body).toMatchObject({
+        kind: 'buy',
+        date: '2019-03-04',
+        price: '1500',
+        fees: '500',
+        replacesId: oldBuy,
+      });
+      expect(res.body.id).not.toBe(oldBuy);
+
+      // After: (150500 + 400000) / 200 = 2752.5
+      // realised 50 × 4500 − 50 × 2752.5 = 225000 − 137625 = 87375
+      // 150 left = 412875; 150 × 4190 = 628500; unrealised 215625
+      expect(await snts(owner, portfolio)).toMatchObject({
+        quantity: '150',
+        pmp: '2752.5',
+        costBasis: '412875',
+        realisedGain: '87375',
+        valuation: { marketValue: '628500', unrealisedGain: '215625' },
+      });
+
+      // The ledger lists the correction in place of the entry it replaces.
+      const entries = await entriesOf(owner, portfolio);
+      expect(entries.map((e) => [e.date, e.kind, e.price])).toEqual([
+        ['2019-03-04', 'buy', '1500'],
+        ['2026-01-05', 'buy', '4000'],
+        ['2026-03-16', 'sell', '4500'],
+      ]);
+      expect(entries.map((e) => e.id)).not.toContain(oldBuy);
+    });
+
+    describe('an edit or a deletion that would make a position negative at any point in time', () => {
+      let portfolio: string;
+      let firstBuy: string;
+      let sale: string;
+      let laterBuy: string;
+
+      beforeAll(async () => {
+        portfolio = await createPortfolio(owner, 'Négatif');
+        // 100 bought, 80 sold, 100 bought: 120 held today.
+        [firstBuy, sale, laterBuy] = await ledgerOf(owner, portfolio, [
+          { kind: 'buy', date: '2020-02-03', quantity: '100', price: '2000' },
+          { kind: 'sell', date: '2021-06-01', quantity: '80', price: '2500' },
+          { kind: 'buy', date: '2022-09-05', quantity: '100', price: '3000' },
+        ]);
+      });
+
+      it('is refused even when the position today would stay positive', async () => {
+        // 50 bought then 80 sold in 2021: −30 then, although 70 today.
+        const res = await edit(owner, portfolio, firstBuy, {
+          kind: 'buy',
+          ticker: 'SNTS',
+          date: '2020-02-03',
+          quantity: '50',
+          price: '2000',
+        }).expect(422);
+        expect(res.body.errors[0]).toMatchObject({
+          code: 'LEDGER_ENTRY_001',
+          context: {
+            ticker: 'SNTS',
+            date: '2021-06-01',
+            held: '50',
+            sold: '80',
+          },
+        });
+      });
+
+      it('is refused when moving a buy after the sale it covered', async () => {
+        await edit(owner, portfolio, firstBuy, {
+          kind: 'buy',
+          ticker: 'SNTS',
+          date: '2021-06-02',
+          quantity: '100',
+          price: '2000',
+        }).expect(422);
+      });
+
+      it('is refused when deleting the buy a sale needed', async () => {
+        const res = await remove(owner, portfolio, firstBuy).expect(422);
+        expect(res.body.errors[0]).toMatchObject({
+          code: 'LEDGER_ENTRY_001',
+          context: { held: '0', sold: '80' },
+        });
+      });
+
+      it('leaves the ledger and the positions as they were', async () => {
+        expect((await entriesOf(owner, portfolio)).map((e) => e.id)).toEqual([
+          firstBuy,
+          sale,
+          laterBuy,
+        ]);
+        expect(await snts(owner, portfolio)).toMatchObject({
+          quantity: '120',
+        });
+      });
+
+      it('deletes an entry the ledger does not need, and recomputes', async () => {
+        await remove(owner, portfolio, laterBuy).expect(204);
+
+        expect((await entriesOf(owner, portfolio)).map((e) => e.id)).toEqual([
+          firstBuy,
+          sale,
+        ]);
+        // 20 left at 2000; realised 80 × 2500 − 80 × 2000 = 40000
+        expect(await snts(owner, portfolio)).toMatchObject({
+          quantity: '20',
+          pmp: '2000',
+          realisedGain: '40000',
+        });
+      });
+
+      it('deletes a sale, after which its buy may be edited down', async () => {
+        await remove(owner, portfolio, sale).expect(204);
+        await edit(owner, portfolio, firstBuy, {
+          kind: 'buy',
+          ticker: 'SNTS',
+          date: '2020-02-03',
+          quantity: '50',
+          price: '2000',
+        }).expect(200);
+
+        expect(await snts(owner, portfolio)).toMatchObject({
+          quantity: '50',
+          realisedGain: '0',
+        });
+      });
+    });
+
+    describe('opening positions', () => {
+      let portfolio: string;
+      let opening: string;
+
+      beforeAll(async () => {
+        portfolio = await createPortfolio(owner, 'Ouverture');
+        opening = (
+          await open(owner, portfolio, {
+            ticker: 'SNTS',
+            date: '2026-01-02',
+            quantity: '200',
+            pmp: '3850.25',
+          }).expect(201)
+        ).body.id as string;
+        await record(owner, portfolio, {
+          kind: 'sell',
+          ticker: 'SNTS',
+          date: '2026-03-16',
+          quantity: '80',
+          price: '4200',
+          fees: '1680',
+        }).expect(201);
+      });
+
+      it('edits an opening position: its quantity, PMP and date', async () => {
+        const res = await editOpening(owner, portfolio, opening, {
+          ticker: 'SNTS',
+          date: '2026-01-05',
+          quantity: '180',
+          pmp: '3900',
+        }).expect(200);
+        expect(res.body).toMatchObject({
+          kind: 'opening_position',
+          date: '2026-01-05',
+          quantity: '180',
+          price: '3900',
+          fees: '0',
+          replacesId: opening,
+        });
+        opening = res.body.id as string;
+
+        // realised (80 × 4200 − 1680) − 80 × 3900 = 334320 − 312000 = 22320
+        // 100 left at 3900 = 390000
+        expect(await snts(owner, portfolio)).toMatchObject({
+          quantity: '100',
+          pmp: '3900',
+          costBasis: '390000',
+          realisedGain: '22320',
+        });
+        const valuation = await http()
+          .get(`/api/portfolios/${portfolio}/valuation`)
+          .set('Authorization', as(owner))
+          .expect(200);
+        expect(valuation.body.performanceSince).toBe('2026-01-05');
+      });
+
+      it('refuses an edit of an opening position that leaves a later sale uncovered', async () => {
+        await editOpening(owner, portfolio, opening, {
+          ticker: 'SNTS',
+          date: '2026-01-05',
+          quantity: '79',
+          pmp: '3900',
+        }).expect(422);
+      });
+
+      it('refuses deleting an opening position a later sale needs', async () => {
+        await remove(owner, portfolio, opening).expect(422);
+      });
+
+      it('refuses a second opening position for the same security on the same day: edit the first instead', async () => {
+        const res = await open(owner, portfolio, {
+          ticker: 'SNTS',
+          date: '2026-01-05',
+          quantity: '500',
+          pmp: '4000',
+        }).expect(422);
+        expect(res.body.errors[0]).toMatchObject({
+          code: 'LEDGER_ENTRY_005',
+          context: { ticker: 'SNTS', date: '2026-01-05' },
+        });
+      });
+
+      it('refuses moving an opening position onto the day of another for the same security', async () => {
+        const other = (
+          await open(owner, portfolio, {
+            ticker: 'SNTS',
+            date: '2026-06-01',
+            quantity: '100',
+            pmp: '4000',
+          }).expect(201)
+        ).body.id as string;
+        await editOpening(owner, portfolio, other, {
+          ticker: 'SNTS',
+          date: '2026-01-05',
+          quantity: '100',
+          pmp: '4000',
+        }).expect(422);
+        // An opening position with nothing depending on it can go.
+        await remove(owner, portfolio, other).expect(204);
+      });
+
+      it('deletes an opening position once nothing depends on it', async () => {
+        const sale = (await entriesOf(owner, portfolio)).find(
+          (e) => e.kind === 'sell',
+        ) as Record<string, string>;
+        await remove(owner, portfolio, sale.id).expect(204);
+        await remove(owner, portfolio, opening).expect(204);
+
+        expect(await entriesOf(owner, portfolio)).toEqual([]);
+        const valuation = await http()
+          .get(`/api/portfolios/${portfolio}/valuation`)
+          .set('Authorization', as(owner))
+          .expect(200);
+        expect(valuation.body.performanceSince).toBeNull();
+      });
+    });
+
+    describe('answers 404', () => {
+      let portfolio: string;
+      let buy: string;
+      let opening: string;
+
+      beforeAll(async () => {
+        portfolio = await createPortfolio(owner, 'Introuvable');
+        [buy] = await ledgerOf(owner, portfolio, [
+          { kind: 'buy', date: '2026-02-02', quantity: '10', price: '4000' },
+        ]);
+        opening = (
+          await open(owner, portfolio, {
+            ticker: 'ORAC',
+            date: '2026-01-02',
+            quantity: '5',
+            pmp: '20000',
+          }).expect(201)
+        ).body.id as string;
+      });
+
+      const trade = {
+        kind: 'buy',
+        ticker: 'SNTS',
+        date: '2026-02-02',
+        quantity: '12',
+        price: '4000',
+      };
+
+      it("for another user's portfolio, and changes nothing", async () => {
+        await edit(bob, portfolio, buy, trade).expect(404);
+        await remove(bob, portfolio, buy).expect(404);
+        // Bob's own portfolio does not hold Alice's entry either.
+        const bobs = await createPortfolio(bob, 'Bob 2');
+        await edit(bob, bobs, buy, trade).expect(404);
+        await remove(bob, bobs, buy).expect(404);
+        expect((await entriesOf(owner, portfolio)).map((e) => e.id)).toEqual([
+          opening,
+          buy,
+        ]);
+      });
+
+      it('for an entry already replaced or deleted', async () => {
+        const replacement = (
+          await edit(owner, portfolio, buy, trade).expect(200)
+        ).body.id as string;
+        await edit(owner, portfolio, buy, trade).expect(404);
+        await remove(owner, portfolio, buy).expect(404);
+
+        await remove(owner, portfolio, replacement).expect(204);
+        await remove(owner, portfolio, replacement).expect(404);
+      });
+
+      it('for an opening position edited as a trade, and a trade as an opening position', async () => {
+        await edit(owner, portfolio, opening, {
+          ...trade,
+          ticker: 'ORAC',
+        }).expect(404);
+        const [another] = await ledgerOf(owner, portfolio, [trade]);
+        await editOpening(owner, portfolio, another, {
+          ticker: 'SNTS',
+          date: '2026-02-02',
+          quantity: '1',
+          pmp: '1',
+        }).expect(404);
+      });
+
+      it('for an id that is not a uuid: 400', async () => {
+        await remove(owner, portfolio, 'nope').expect(400);
+      });
+    });
+
+    it.each([
+      ['an unknown ticker', { ticker: 'NOPE' }],
+      ['a trade date after today', { date: '2999-01-01' }],
+      ['a zero quantity', { quantity: '0' }],
+    ])('rejects an edit with %s', async (_case, override) => {
+      const portfolio = await createPortfolio(owner, 'Invalide');
+      const [buy] = await ledgerOf(owner, portfolio, [
+        { kind: 'buy', date: '2026-02-02', quantity: '10', price: '4000' },
+      ]);
+      await edit(owner, portfolio, buy, {
+        kind: 'buy',
+        ticker: 'SNTS',
+        date: '2026-02-02',
+        quantity: '10',
+        price: '4000',
+        ...override,
+      }).expect(400);
+    });
+
+    it('keeps corrections append-only: the database refuses to change one', async () => {
+      await expect(
+        app
+          .get(DataSource)
+          .query(`UPDATE "ledger_entry_voids" SET "replacementId" = NULL`),
+      ).rejects.toThrow(/append-only/);
+    });
+  });
+
   it('keeps the ledger append-only: the database refuses to change an entry', async () => {
     await expect(
       app

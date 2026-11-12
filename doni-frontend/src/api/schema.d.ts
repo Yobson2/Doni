@@ -406,6 +406,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portfolios/{id}/entries/{entryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Correct a buy or a sell, however old: a new entry replaces it and the portfolio is recomputed */
+        put: operations["editLedgerEntry"];
+        post?: never;
+        /** Delete a ledger entry of any kind: it stops counting and the portfolio is recomputed */
+        delete: operations["deleteLedgerEntry"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolios/{id}/opening-positions/{entryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Correct an opening position: a new entry replaces it and the portfolio is recomputed */
+        put: operations["editOpeningPosition"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/watchlist": {
         parameters: {
             query?: never;
@@ -436,6 +471,43 @@ export interface paths {
         post?: never;
         /** Stop watching a security (no change if not watched) */
         delete: operations["removeFromWatchlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/account/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download all my data as JSON */
+        get: operations["exportMyData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/account/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete my account and all my data
+         * @description Requires the current password. Deletes the account, its portfolios and ledgers, watchlist and every other section of the export, and ends every session. Cannot be undone.
+         */
+        post: operations["deleteMyAccount"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -960,6 +1032,11 @@ export interface components {
              * @description When the entry was recorded
              */
             recordedAt: string;
+            /**
+             * Format: uuid
+             * @description The entry this one corrects, when it was recorded by editing an earlier entry; null otherwise
+             */
+            replacesId: string | null;
         };
         /** @enum {string} */
         TradeKind: "buy" | "sell";
@@ -1031,6 +1108,25 @@ export interface components {
             addedAt: string;
             /** @description Most recent published end-of-day price, with the date it applies to; null when there is none */
             latestPrice: components["schemas"]["EndOfDayPriceDto"] | null;
+        };
+        AccountExportDto: {
+            /** @example doni-account-export */
+            format: string;
+            /**
+             * @description Version of this export format
+             * @example 1
+             */
+            version: number;
+            /** Format: date-time */
+            exportedAt: string;
+            /** @description One entry per kind of data, keyed by section: `account` (profile), `portfolios` (each portfolio with its whole ledger: buys, sells, opening positions and, once recorded, user dividends), `sessions`, `watchlist`. Modules added later (such as alert settings) add their own section. Amounts are XOF, as decimal strings. */
+            sections: {
+                [key: string]: unknown;
+            };
+        };
+        DeleteAccountDto: {
+            /** @description The account’s current password */
+            password: string;
         };
     };
     responses: never;
@@ -2257,7 +2353,159 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description A later sale would then exceed the shares held at its date */
+            /** @description A later sale would then exceed the shares held at its date, or an opening position for the security already has that date (edit it instead) */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    editLedgerEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                entryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLedgerEntryDto"];
+            };
+        };
+        responses: {
+            /** @description The new entry */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"];
+                };
+            };
+            /** @description Invalid values, unknown ticker or a trade date after today */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description With the correction, a sale at some date would exceed the shares then held */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteLedgerEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                entryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Without the entry, a sale at some date would exceed the shares then held */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    editOpeningPosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                entryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOpeningPositionDto"];
+            };
+        };
+        responses: {
+            /** @description The new entry */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"];
+                };
+            };
+            /** @description Invalid values, unknown ticker or a date after today */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you, or its ledger has no such entry of that kind (already corrected entries included) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A later sale would then exceed the shares held, or another opening position for the security has that date */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -2354,6 +2602,75 @@ export interface operations {
             };
             /** @description Unknown ticker */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    exportMyData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountExportDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteMyAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountDto"];
+            };
+        };
+        responses: {
+            /** @description Account deleted; the refresh cookie is cleared */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Password missing */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Password confirmation failed */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

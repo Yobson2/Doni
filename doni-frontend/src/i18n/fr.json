@@ -58,6 +58,30 @@
         "system": "Police du système"
       },
       "themeDescription": "Choisissez un thème clair ou sombre."
+    },
+    "account": {
+      "title": "Compte et données",
+      "description": "Téléchargez vos données ou supprimez votre compte.",
+      "export": {
+        "title": "Télécharger mes données",
+        "description": "Obtenez une copie de tout ce que Doni conserve à votre sujet (compte, portefeuilles et leurs écritures, liste de suivi, sessions) dans un fichier JSON lisible par d’autres outils.",
+        "submit": "Télécharger mes données (JSON)",
+        "pending": "Préparation de votre fichier…",
+        "error": "Vos données n’ont pas pu être téléchargées. Veuillez réessayer."
+      },
+      "delete": {
+        "title": "Supprimer mon compte",
+        "description": "Supprime définitivement votre compte, vos portefeuilles et leurs écritures, votre liste de suivi et toutes vos autres données, et vous déconnecte sur tous vos appareils. Cette action est irréversible : téléchargez d’abord vos données si vous souhaitez en garder une copie.",
+        "open": "Supprimer mon compte…",
+        "confirmTitle": "Supprimer votre compte ?",
+        "confirmDescription": "Votre compte et toutes vos données seront supprimés définitivement et vous serez déconnecté partout. Saisissez votre mot de passe pour confirmer qu’il s’agit bien de vous.",
+        "password": "Mot de passe",
+        "understand": "Je comprends que mon compte et toutes mes données seront supprimés définitivement.",
+        "wrongPassword": "Mot de passe incorrect.",
+        "cancel": "Annuler",
+        "submit": "Supprimer définitivement mon compte",
+        "success": "Votre compte et vos données ont été supprimés."
+      }
     }
   },
   "auth": {
@@ -544,7 +568,26 @@
       "price": "Cours",
       "fees": "Frais",
       "sgi": "SGI",
-      "pmp": "PMP"
+      "pmp": "PMP",
+      "actions": "Actions",
+      "name": "{{ticker}} du {{date}}",
+      "edit": "Modifier l’écriture {{entry}}",
+      "delete": "Supprimer l’écriture {{entry}}"
+    },
+    "correction": {
+      "title": "Corriger l’écriture",
+      "openingTitle": "Corriger la position d’ouverture",
+      "description": "Même ancienne, l’écriture corrigée est prise en compte : PMP, plus-values réalisées et latentes sont recalculés.",
+      "submit": "Enregistrer la correction",
+      "cancel": "Annuler",
+      "saved": "Correction enregistrée : le portefeuille a été recalculé"
+    },
+    "delete": {
+      "title": "Supprimer cette écriture ?",
+      "description": "L’écriture {{entry}} ne sera plus prise en compte, et le portefeuille sera recalculé sans elle.",
+      "confirm": "Supprimer",
+      "done": "Écriture supprimée : le portefeuille a été recalculé",
+      "insufficient": "Suppression refusée : une vente enregistrée ensuite dépasserait les {{held}} titres alors détenus."
     },
     "form": {
       "title": "Enregistrer un achat ou une vente",
@@ -567,7 +610,8 @@
       },
       "errors": {
         "insufficient": "Vente refusée : vous ne déteniez que {{held}} titres à cette date.",
-        "invalid": "Vérifiez les valeurs saisies (date, valeur, montants)."
+        "invalid": "Vérifiez les valeurs saisies (date, valeur, montants).",
+        "gone": "Cette écriture a déjà été corrigée ou supprimée. Rechargez la page."
       }
     },
     "performanceSince": "Performance mesurée depuis le {{date}} : aucun rendement n’est calculé avant cette date.",
@@ -596,23 +640,8 @@
       "pmp": "PMP (F CFA, frais inclus)",
       "submit": "Enregistrer la position",
       "saved": "Position d’ouverture enregistrée",
-      "insufficient": "Position refusée : une vente enregistrée après cette date dépasserait les {{held}} titres alors détenus."
-    },
-    "currency": {
-      "label": "Devise d’affichage",
-      "XOF": "F CFA",
-      "EUR": "EUR",
-      "peg": "Montants convertis au taux fixe de 1 € = 655,957 F CFA. Ils restent enregistrés en F CFA.",
-      "saveError": "Votre choix de devise n’a pas pu être enregistré. Réessayez."
-    },
-    "allocation": {
-      "title": "Répartition",
-      "description": "Part de chaque ligne dans la valeur de marché, au dernier cours de clôture publié.",
-      "view": "Répartir",
-      "bySecurity": "Par valeur",
-      "bySector": "Par secteur",
-      "empty": "Aucune position valorisée à répartir pour l’instant.",
-      "unpriced": "Hors répartition, faute de cours de clôture publié : {{tickers}}."
+      "insufficient": "Position refusée : une vente enregistrée après cette date dépasserait les {{held}} titres alors détenus.",
+      "duplicate": "Une position d’ouverture pour cette valeur est déjà enregistrée à cette date : corrigez-la plutôt."
     }
   }
 }

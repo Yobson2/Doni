@@ -430,6 +430,223 @@ describe('portfolio page', () => {
     expect(row).toContain('—')
   })
 
+  describe('correcting the ledger', () => {
+    const entriesCard = async () =>
+      within(
+        (await screen.findByRole('heading', { name: 'Écritures' })).closest(
+          '[data-slot="card"]'
+        ) as HTMLElement
+      )
+
+    it('edits a trade: the form opens filled in, and the correction replaces it', async () => {
+      let sent: unknown
+      portfolioApi({
+        [`PUT ${ENTRIES}/e1`]: async (request: Request) => {
+          sent = await request.json()
+          return json(200, { ...entry, id: 'e2', price: '3900' })
+        },
+      })
+      renderApp('/portfolio')
+      await screen.findByRole('option', { name: 'SNTS · SONATEL' })
+
+      fireEvent.click(
+        await (
+          await entriesCard()
+        ).findByRole('button', {
+          name: 'Modifier l’écriture SNTS du 05/01/2026',
+        })
+      )
+      await screen.findByRole('heading', { name: 'Corriger l’écriture' })
+      expect(
+        (screen.getByLabelText('Cours unitaire (F CFA)') as HTMLInputElement)
+          .value
+      ).toBe('4000')
+      fireEvent.change(screen.getByLabelText('Cours unitaire (F CFA)'), {
+        target: { value: '3900' },
+      })
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Enregistrer la correction' })
+      )
+
+      await waitFor(() =>
+        expect(sent).toEqual({
+          kind: 'buy',
+          ticker: 'SNTS',
+          date: '2026-01-05',
+          quantity: '100',
+          price: '3900',
+          fees: '2000',
+          sgi: 'SGI Test Bourse',
+        })
+      )
+      // Back to recording new entries.
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Enregistrer un achat ou une vente',
+        })
+      ).toBeTruthy()
+    })
+
+    it('explains a refused edit that would oversell at some date', async () => {
+      portfolioApi({
+        [`PUT ${ENTRIES}/e1`]: () =>
+          json(422, {
+            message: 'Cannot sell',
+            errors: [
+              {
+                code: 'LEDGER_ENTRY_001',
+                context: { ticker: 'SNTS', held: '40', sold: '60' },
+              },
+            ],
+          }),
+      })
+      renderApp('/portfolio')
+      await screen.findByRole('option', { name: 'SNTS · SONATEL' })
+
+      fireEvent.click(
+        await (
+          await entriesCard()
+        ).findByRole('button', {
+          name: 'Modifier l’écriture SNTS du 05/01/2026',
+        })
+      )
+      fireEvent.change(screen.getByLabelText('Quantité'), {
+        target: { value: '40' },
+      })
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Enregistrer la correction' })
+      )
+
+      expect((await screen.findByRole('alert')).textContent).toBe(
+        'Vente refusée : vous ne déteniez que 40 titres à cette date.'
+      )
+    })
+
+    it('can cancel an edit', async () => {
+      portfolioApi()
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await (
+          await entriesCard()
+        ).findByRole('button', {
+          name: 'Modifier l’écriture SNTS du 05/01/2026',
+        })
+      )
+      fireEvent.click(await screen.findByRole('button', { name: 'Annuler' }))
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Enregistrer un achat ou une vente',
+        })
+      ).toBeTruthy()
+    })
+
+    it('edits an opening position with its own form', async () => {
+      let sent: unknown
+      const opening = {
+        ...entry,
+        kind: 'opening_position',
+        date: '2026-01-02',
+        quantity: '200',
+        price: '3850.25',
+        fees: '0',
+      }
+      portfolioApi({
+        [`GET ${ENTRIES}`]: () => json(200, [opening]),
+        [`PUT /api/portfolios/${PORTFOLIO_ID}/opening-positions/e1`]: async (
+          request: Request
+        ) => {
+          sent = await request.json()
+          return json(200, { ...opening, id: 'e2' })
+        },
+      })
+      renderApp('/portfolio')
+      await screen.findByRole('option', { name: 'SNTS · SONATEL' })
+
+      fireEvent.click(
+        await (
+          await entriesCard()
+        ).findByRole('button', {
+          name: 'Modifier l’écriture SNTS du 02/01/2026',
+        })
+      )
+      await screen.findByRole('heading', {
+        name: 'Corriger la position d’ouverture',
+      })
+      fireEvent.change(screen.getByLabelText('Quantité détenue'), {
+        target: { value: '180' },
+      })
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Enregistrer la correction' })
+      )
+
+      await waitFor(() =>
+        expect(sent).toEqual({
+          ticker: 'SNTS',
+          date: '2026-01-02',
+          quantity: '180',
+          pmp: '3850.25',
+          sgi: 'SGI Test Bourse',
+        })
+      )
+    })
+
+    it('deletes an entry once confirmed', async () => {
+      let deleted = false
+      portfolioApi({
+        [`DELETE ${ENTRIES}/e1`]: () => {
+          deleted = true
+          return new Response(null, { status: 204 })
+        },
+      })
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await (
+          await entriesCard()
+        ).findByRole('button', {
+          name: 'Supprimer l’écriture SNTS du 05/01/2026',
+        })
+      )
+      const dialog = within(await screen.findByRole('dialog'))
+      expect(dialog.getByText('Supprimer cette écriture ?')).toBeTruthy()
+      expect(deleted).toBe(false)
+      fireEvent.click(dialog.getByRole('button', { name: 'Supprimer' }))
+
+      await waitFor(() => expect(deleted).toBe(true))
+    })
+
+    it('explains a refused deletion, and deletes nothing', async () => {
+      portfolioApi({
+        [`DELETE ${ENTRIES}/e1`]: () =>
+          json(422, {
+            message: 'Cannot sell',
+            errors: [
+              {
+                code: 'LEDGER_ENTRY_001',
+                context: { ticker: 'SNTS', held: '0', sold: '60' },
+              },
+            ],
+          }),
+      })
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await (
+          await entriesCard()
+        ).findByRole('button', {
+          name: 'Supprimer l’écriture SNTS du 05/01/2026',
+        })
+      )
+      const dialog = within(await screen.findByRole('dialog'))
+      fireEvent.click(dialog.getByRole('button', { name: 'Supprimer' }))
+
+      expect((await dialog.findByRole('alert')).textContent).toBe(
+        'Suppression refusée : une vente enregistrée ensuite dépasserait les 0 titres alors détenus.'
+      )
+    })
+  })
+
   describe('onboarding an empty portfolio', () => {
     const emptyPortfolioApi = (routes = {}) =>
       portfolioApi({

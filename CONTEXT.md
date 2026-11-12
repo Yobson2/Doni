@@ -43,8 +43,12 @@ _Avoid_: dividend (unqualified), announced dividend
 One dated, immutable record in a portfolio's ledger: a buy, a sell, an opening position, a user dividend, or a correction of an earlier entry. The ledger is the single source of truth from which positions are derived.
 _Avoid_: transaction, operation, movement, trade (when meaning any ledger entry)
 
+**Correction**:
+A user's edit or deletion of a ledger entry, however old. It never changes the entry: it voids it and, for an edit, records a new entry that replaces it. The ledger as it stands is every entry not voided, and a correction is refused if that ledger would sell more shares than held at any date.
+_Avoid_: update, amendment, reversal
+
 **Opening position**:
-A ledger entry stating that the user held a given quantity of a security at a given PMP on a given date, used instead of entering the full trade history. It states the holding at the start of that day: buys and sells on the same date apply on top of it, and it replaces what earlier entries say about that security's quantity and PMP. Performance is only measured from that date.
+A ledger entry stating that the user held a given quantity of a security at a given PMP on a given date, used instead of entering the full trade history. It states the holding at the start of that day: buys and sells on the same date apply on top of it, and it replaces what earlier entries say about that security's quantity and PMP. Performance is only measured from that date. A security has at most one opening position per date: a second one is refused, and the first is corrected instead.
 _Avoid_: initial balance, starting holding, import
 
 **Position**:

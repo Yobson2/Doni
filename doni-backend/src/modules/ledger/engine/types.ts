@@ -30,6 +30,7 @@ export interface TradeEntry {
  * `date`, entered instead of the trades that led there (ADR 0001). It is a
  * snapshot of the holding at the start of that day: it sets the quantity and
  * PMP, superseding the security's earlier entries, and realises nothing.
+ * A ledger holds at most one per security and day.
  */
 export interface OpeningPositionEntry {
   id: string;

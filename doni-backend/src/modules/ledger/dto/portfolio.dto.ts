@@ -184,6 +184,15 @@ export class LedgerEntryDto {
     description: 'When the entry was recorded',
   })
   recordedAt: string;
+
+  @ApiProperty({
+    type: String,
+    format: 'uuid',
+    nullable: true,
+    description:
+      'The entry this one corrects, when it was recorded by editing an earlier entry; null otherwise',
+  })
+  replacesId: string | null;
 }
 
 // ─── Valuation ───────────────────────────────────────────────

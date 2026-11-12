@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { SessionsService } from './sessions.service';
+import { SessionsUserData } from './sessions-user-data';
 import { TokensService } from './tokens.service';
 
 @Module({
@@ -22,6 +23,7 @@ import { TokensService } from './tokens.service';
   providers: [
     AuthService,
     SessionsService,
+    SessionsUserData,
     TokensService,
     // Global guards, in order: authenticate, then check the role.
     { provide: APP_GUARD, useClass: AuthGuard },

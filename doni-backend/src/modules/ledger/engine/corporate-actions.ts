@@ -104,17 +104,16 @@ function apply(holding: Holding, action: CorporateAction): Holding {
     .div(new Decimal(action.held));
   const kept = entitled.round(0, Decimal.roundDown);
   const fraction = entitled.minus(kept);
-  const totalCost = holding.quantity.times(holding.pmp);
 
   if (action.cashInLieuPrice == null && kept.gt(ZERO)) {
-    return { ...holding, quantity: kept, pmp: totalCost.div(kept) };
+    return { ...holding, quantity: kept };
   }
 
-  const pmp = totalCost.div(entitled);
+  const pmp = holding.cost.div(entitled);
   const cash = fraction.times(action.cashInLieuPrice ?? ZERO);
   return {
     quantity: kept,
-    pmp: kept.gt(ZERO) ? pmp : ZERO,
+    cost: kept.times(pmp),
     realisedGain: holding.realisedGain.plus(cash.minus(fraction.times(pmp))),
   };
 }

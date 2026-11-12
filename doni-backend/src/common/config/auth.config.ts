@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import type { CookieOptions } from 'express';
 
 export interface AuthSecrets {
   /** Signs access tokens (bearer tokens on API requests). */
@@ -41,3 +42,15 @@ export const REFRESH_COOKIE = 'doni_refresh';
 
 /** Only the auth endpoints (refresh, sign-out) ever receive the cookie. */
 export const REFRESH_COOKIE_PATH = '/api/auth';
+
+/**
+ * The refresh token lives only in this cookie (ADR 0011): unreadable from
+ * JavaScript, sent only over HTTPS, never on cross-site requests, and only to
+ * the auth endpoints.
+ */
+export const REFRESH_COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  path: REFRESH_COOKIE_PATH,
+};

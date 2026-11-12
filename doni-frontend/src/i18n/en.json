@@ -58,6 +58,30 @@
         "system": "System font"
       },
       "themeDescription": "Choose a light or dark theme."
+    },
+    "account": {
+      "title": "Account & data",
+      "description": "Download your data or delete your account.",
+      "export": {
+        "title": "Download my data",
+        "description": "Get a copy of everything Doni holds about you (account, portfolios and their ledger entries, watchlist, sessions) as a JSON file you can open in other tools.",
+        "submit": "Download my data (JSON)",
+        "pending": "Preparing your file…",
+        "error": "Your data could not be downloaded. Please try again."
+      },
+      "delete": {
+        "title": "Delete my account",
+        "description": "Permanently deletes your account, your portfolios and their ledger entries, your watchlist and every other piece of your data, and signs you out on all your devices. This cannot be undone: download your data first if you want to keep a copy.",
+        "open": "Delete my account…",
+        "confirmTitle": "Delete your account?",
+        "confirmDescription": "Your account and all your data will be deleted for good and you will be signed out everywhere. Enter your password to confirm it is you.",
+        "password": "Password",
+        "understand": "I understand that my account and all my data will be permanently deleted.",
+        "wrongPassword": "Incorrect password.",
+        "cancel": "Cancel",
+        "submit": "Delete my account permanently",
+        "success": "Your account and your data have been deleted."
+      }
     }
   },
   "auth": {
@@ -544,7 +568,26 @@
       "price": "Price",
       "fees": "Fees",
       "sgi": "SGI",
-      "pmp": "PMP"
+      "pmp": "PMP",
+      "actions": "Actions",
+      "name": "{{ticker}} of {{date}}",
+      "edit": "Edit ledger entry {{entry}}",
+      "delete": "Delete ledger entry {{entry}}"
+    },
+    "correction": {
+      "title": "Correct the ledger entry",
+      "openingTitle": "Correct the opening position",
+      "description": "However old the entry, the portfolio is recomputed from the corrected ledger: PMP, realised and unrealised gains.",
+      "submit": "Save the correction",
+      "cancel": "Cancel",
+      "saved": "Correction saved: the portfolio has been recomputed"
+    },
+    "delete": {
+      "title": "Delete this ledger entry?",
+      "description": "The ledger entry {{entry}} will no longer count, and the portfolio will be recomputed without it.",
+      "confirm": "Delete",
+      "done": "Ledger entry deleted: the portfolio has been recomputed",
+      "insufficient": "Deletion refused: a sale recorded later would exceed the {{held}} shares then held."
     },
     "form": {
       "title": "Record a buy or a sell",
@@ -567,7 +610,8 @@
       },
       "errors": {
         "insufficient": "Sale refused: you held only {{held}} shares at that date.",
-        "invalid": "Check the values entered (date, security, amounts)."
+        "invalid": "Check the values entered (date, security, amounts).",
+        "gone": "This ledger entry has already been corrected or deleted. Reload the page."
       }
     },
     "performanceSince": "Performance measured since {{date}}: no return is computed before that date.",
@@ -596,23 +640,8 @@
       "pmp": "PMP (XOF, fees included)",
       "submit": "Record position",
       "saved": "Opening position recorded",
-      "insufficient": "Position refused: a sale recorded after that date would exceed the {{held}} shares then held."
-    },
-    "currency": {
-      "label": "Display currency",
-      "XOF": "XOF",
-      "EUR": "EUR",
-      "peg": "Amounts converted at the fixed rate of €1 = 655.957 XOF. They remain stored in XOF.",
-      "saveError": "Your currency choice could not be saved. Try again."
-    },
-    "allocation": {
-      "title": "Allocation",
-      "description": "Each holding’s share of the market value, at the latest published closing price.",
-      "view": "Allocate",
-      "bySecurity": "By security",
-      "bySector": "By sector",
-      "empty": "No valued position to allocate yet.",
-      "unpriced": "Left out of the allocation, no published closing price yet: {{tickers}}."
+      "insufficient": "Position refused: a sale recorded after that date would exceed the {{held}} shares then held.",
+      "duplicate": "An opening position for this security is already recorded on that date: correct it instead."
     }
   }
 }

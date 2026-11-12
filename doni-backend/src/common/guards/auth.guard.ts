@@ -4,6 +4,7 @@ import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { InvalidTokenError } from '../exceptions/auth.exceptions';
 import { AuthenticatedUser, TokensService } from '@modules/auth/tokens.service';
+import { UsersService } from '@modules/users/users.service';
 
 export interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
@@ -11,7 +12,9 @@ export interface AuthenticatedRequest extends Request {
 
 /**
  * Global guard: every route needs a valid access token in the
- * `Authorization: Bearer` header unless it is marked `@Public()`.
+ * `Authorization: Bearer` header unless it is marked `@Public()`, and the
+ * account it was issued to must still exist and be active, so that deleting
+ * or deactivating an account ends its sessions at once (ADR 0016).
  * Missing or invalid credentials answer 401.
  */
 @Injectable()
@@ -19,6 +22,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly tokens: TokensService,
+    private readonly users: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,7 +40,7 @@ export class AuthGuard implements CanActivate {
       scheme === 'Bearer' && token
         ? await this.tokens.verifyAccessToken(token)
         : null;
-    if (!user) {
+    if (!user || !(await this.users.isActive(user.userId))) {
       throw new InvalidTokenError();
     }
     request.user = user;
