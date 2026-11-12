@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  name: 'React Admin',
-  description: 'A modern React admin dashboard template',
+  name: 'Doni',
+  description: 'Research BRVM stocks and track your portfolio',
   version: '1.0.0',
 } as const

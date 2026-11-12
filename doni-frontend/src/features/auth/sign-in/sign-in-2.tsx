@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Logo } from '@/components/logo'
+import { Logo, Wordmark } from '@/components/logo'
 import { AnimatedContainer } from '@/components/motion/animated-container'
 import { UserAuthForm } from './components/user-auth-form'
 
@@ -9,13 +9,12 @@ export default function SignIn2() {
       <div className='bg-primary text-primary-foreground relative hidden h-full flex-col p-10 lg:flex dark:border-r dark:bg-secondary dark:text-foreground'>
         <div className='absolute inset-0 bg-primary dark:bg-secondary' />
         <Link to='/' className='relative z-20 flex items-center text-lg font-medium'>
-          <Logo className='mr-2 h-6 w-6' />
-          React Admin
+          <Wordmark className='h-7 w-auto' />
         </Link>
 
         <div className='relative z-20 m-auto flex flex-col items-center gap-4'>
-          <Logo className='h-16 w-16' />
-          <span className='text-3xl font-bold tracking-tight'>React Admin</span>
+          <Logo className='h-24 w-24' />
+          <span className='text-lg font-medium opacity-90'>Research BRVM stocks and track your portfolio</span>
         </div>
 
         <div className='relative z-20 mt-auto'>
@@ -31,8 +30,7 @@ export default function SignIn2() {
       <div className='lg:p-8'>
         <div className='mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[350px]'>
           <Link to='/' className='mb-4 flex items-center gap-2 lg:hidden'>
-            <Logo className='h-6 w-6' />
-            <span className='text-lg font-semibold'>React Admin</span>
+            <Wordmark className='text-primary h-7 w-auto' />
           </Link>
           <div className='flex flex-col space-y-2 text-left'>
             <h1 className='text-2xl font-semibold tracking-tight'>Login</h1>

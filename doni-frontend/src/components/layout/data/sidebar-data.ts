@@ -10,7 +10,7 @@ import {
   IconUserCog,
   IconUsers,
 } from '@tabler/icons-react'
-import { Logo } from '@/components/logo'
+import { LogoSmall } from '@/components/logo'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -21,9 +21,9 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: 'React Admin',
-      logo: Logo,
-      plan: 'Admin Template',
+      name: 'Doni',
+      logo: LogoSmall,
+      plan: 'BRVM portfolio',
     },
   ],
   navGroups: [

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { IconMenu2, IconX } from '@tabler/icons-react'
-import { Logo } from '@/components/logo'
-import { APP_CONFIG } from '@/config/app'
+import { Wordmark } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -34,9 +33,8 @@ export function LandingNavbar() {
   return (
     <header className='bg-background/80 sticky top-0 z-50 border-b backdrop-blur-sm'>
       <div className='container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8'>
-        <a href='/' className='flex items-center gap-2'>
-          <Logo className='h-6 w-6' />
-          <span className='text-lg font-semibold'>{APP_CONFIG.name}</span>
+        <a href='/' className='flex items-center'>
+          <Wordmark className='text-primary h-7 w-auto' />
         </a>
 
         {/* Desktop nav */}
@@ -72,8 +70,7 @@ export function LandingNavbar() {
             <SheetContent side='right' className='w-[300px]'>
               <SheetHeader>
                 <SheetTitle className='flex items-center gap-2'>
-                  <Logo className='h-5 w-5' />
-                  {APP_CONFIG.name}
+                  <Wordmark className='text-primary h-6 w-auto' />
                 </SheetTitle>
               </SheetHeader>
               <nav className='mt-8 flex flex-col gap-1'>
