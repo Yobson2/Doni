@@ -8,6 +8,7 @@ import {
   PortfolioNotFoundError,
   UnknownLedgerSecurityError,
 } from '@common/exceptions/ledger.exceptions';
+import { CorporateActionsService } from '@modules/securities/corporate-actions/corporate-actions.service';
 import { Security } from '@modules/securities/entities/security.entity';
 import {
   PRICE_SOURCE,
@@ -22,6 +23,7 @@ import {
   PositionDto,
 } from './dto/portfolio.dto';
 import {
+  type CorporateAction,
   InsufficientQuantityError,
   InvalidLedgerEntryError,
   type LedgerEntry,
@@ -43,6 +45,7 @@ export class PortfoliosService {
     @InjectRepository(Portfolio)
     private readonly portfolios: Repository<Portfolio>,
     @Inject(PRICE_SOURCE) private readonly priceSource: PriceSource,
+    private readonly corporateActions: CorporateActionsService,
   ) {}
 
   async create(
@@ -102,7 +105,14 @@ export class PortfoliosService {
         sgi: dto.sgi,
       });
       const ledger = await this.ledgerOf(manager, portfolioId);
-      checkReplays([...ledger, { ...candidate, id: NEW_ENTRY, security }]);
+      const withCandidate = [
+        ...ledger,
+        { ...candidate, id: NEW_ENTRY, security },
+      ];
+      checkReplays(
+        withCandidate,
+        await this.corporateActions.inEffectFor(securityIdsOf(withCandidate)),
+      );
 
       const saved = await manager.save(candidate);
       return toLedgerEntryDto({ ...saved, security });
@@ -137,7 +147,13 @@ export class PortfoliosService {
       ]),
     );
 
-    const result = replay({ entries: ledger.map(toEngineEntry), prices });
+    const result = replay({
+      entries: ledger.map(toEngineEntry),
+      prices,
+      corporateActions: await this.corporateActions.inEffectFor([
+        ...securities.keys(),
+      ]),
+    });
     const positions: PositionDto[] = result.positions.map((position) => {
       const security = securities.get(position.securityId) as Security;
       const { securityId: _id, ...figures } = position;
@@ -185,10 +201,24 @@ export class PortfoliosService {
 /** Stands in for the id of an entry not yet saved. */
 const NEW_ENTRY = 'new';
 
-/** Replays the ledger, turning a broken rule into an API error. */
-function checkReplays(ledger: LedgerEntryRecord[]): void {
+const securityIdsOf = (ledger: LedgerEntryRecord[]): string[] => [
+  ...new Set(ledger.map((entry) => entry.securityId)),
+];
+
+/**
+ * Replays the ledger with the corporate actions in effect, turning a broken
+ * rule into an API error.
+ */
+function checkReplays(
+  ledger: LedgerEntryRecord[],
+  corporateActions: CorporateAction[],
+): void {
   try {
-    replay({ entries: ledger.map(toEngineEntry), prices: new Map() });
+    replay({
+      entries: ledger.map(toEngineEntry),
+      prices: new Map(),
+      corporateActions,
+    });
   } catch (error) {
     if (error instanceof InsufficientQuantityError) {
       const entry = ledger.find((e) => e.id === error.entryId);

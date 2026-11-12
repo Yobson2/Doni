@@ -715,7 +715,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/EndOfDayPriceDto"
+                    "$ref": "#/components/schemas/AdjustedEndOfDayPriceDto"
                   }
                 }
               }
@@ -733,7 +733,7 @@
             "JWT-auth": []
           }
         ],
-        "summary": "End-of-day price history, oldest first",
+        "summary": "End-of-day price history, oldest first, restated in today’s shares",
         "tags": [
           "Catalogue"
         ]
@@ -1003,6 +1003,223 @@
           }
         ],
         "summary": "Enter or correct one day’s index value from a BOC",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities/{ticker}/corporate-actions": {
+      "get": {
+        "operationId": "listCorporateActions",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CorporateActionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown ticker or corporate action"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Corporate actions on a security, oldest first",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "post": {
+        "operationId": "createCorporateAction",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCorporateActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorporateActionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Terms do not fit the kind"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown ticker or corporate action"
+          },
+          "409": {
+            "description": "Same kind already on that date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enter a corporate action from its BRVM notice",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities/{ticker}/corporate-actions/{id}": {
+      "put": {
+        "operationId": "replaceCorporateAction",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCorporateActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorporateActionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Terms do not fit the kind"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown ticker or corporate action"
+          },
+          "409": {
+            "description": "Same kind already on that date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Correct a corporate action",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteCorporateAction",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown ticker or corporate action"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Remove a corporate action entered by mistake",
         "tags": [
           "Catalogue"
         ]
@@ -1645,6 +1862,68 @@
           "latestPrice"
         ]
       },
+      "AdjustedEndOfDayPriceDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Trading day the price applies to"
+          },
+          "close": {
+            "type": "string",
+            "example": "4190",
+            "description": "Closing price, XOF"
+          },
+          "open": {
+            "type": "string",
+            "nullable": true,
+            "example": "4000"
+          },
+          "high": {
+            "type": "string",
+            "nullable": true
+          },
+          "low": {
+            "type": "string",
+            "nullable": true
+          },
+          "volume": {
+            "type": "string",
+            "nullable": true,
+            "example": "85624"
+          },
+          "sourceDocument": {
+            "type": "string",
+            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf",
+            "description": "The BOC the price was read from"
+          },
+          "publishedOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Date the BOC was published"
+          },
+          "publishedClose": {
+            "type": "string",
+            "nullable": true,
+            "example": "20500",
+            "description": "The close as published in the BOC when a later corporate action restated it; null when close is the published close"
+          }
+        },
+        "required": [
+          "date",
+          "close",
+          "open",
+          "high",
+          "low",
+          "volume",
+          "sourceDocument",
+          "publishedOn",
+          "publishedClose"
+        ]
+      },
       "CreateSecurityDto": {
         "type": "object",
         "properties": {
@@ -1887,6 +2166,125 @@
         "required": [
           "code",
           "name"
+        ]
+      },
+      "CorporateActionKind": {
+        "type": "string",
+        "enum": [
+          "split",
+          "reverse_split",
+          "free_shares",
+          "rights_issue"
+        ]
+      },
+      "CorporateActionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CorporateActionKind"
+              }
+            ]
+          },
+          "effectiveDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-04-02",
+            "description": "First trading day on the new basis"
+          },
+          "ratioHeld": {
+            "type": "number",
+            "example": 1,
+            "description": "The ratio reads \"ratioReceived shares for every ratioHeld\". Split and reverse split: the ratioHeld shares are replaced by ratioReceived new ones (1:5 split = held 1, received 5). Free shares: ratioReceived are added for every ratioHeld. Rights issue: ratioReceived new shares may be subscribed for every ratioHeld."
+          },
+          "ratioReceived": {
+            "type": "number",
+            "example": 5
+          },
+          "cashInLieuPrice": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cash paid per new share for a fraction of a share, as the notice states"
+          },
+          "subscriptionPrice": {
+            "type": "string",
+            "nullable": true,
+            "description": "Subscription price per new share (rights issue only)"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example",
+            "description": "The BRVM notice the corporate action was read from"
+          }
+        },
+        "required": [
+          "id",
+          "ticker",
+          "kind",
+          "effectiveDate",
+          "ratioHeld",
+          "ratioReceived",
+          "cashInLieuPrice",
+          "subscriptionPrice",
+          "sourceNoticeUrl"
+        ]
+      },
+      "CreateCorporateActionDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CorporateActionKind"
+              }
+            ]
+          },
+          "effectiveDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-04-02"
+          },
+          "ratioHeld": {
+            "type": "number",
+            "example": 1,
+            "description": "The ratio reads \"ratioReceived shares for every ratioHeld\". Split and reverse split: the ratioHeld shares are replaced by ratioReceived new ones (1:5 split = held 1, received 5). Free shares: ratioReceived are added for every ratioHeld. Rights issue: ratioReceived new shares may be subscribed for every ratioHeld."
+          },
+          "ratioReceived": {
+            "type": "number",
+            "example": 5
+          },
+          "cashInLieuPrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "41000",
+            "description": "Cash paid per new share for a fraction of a share, only if the notice states it"
+          },
+          "subscriptionPrice": {
+            "type": "string",
+            "nullable": true,
+            "example": "3000",
+            "description": "Subscription price per new share; required for a rights issue"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example"
+          }
+        },
+        "required": [
+          "kind",
+          "effectiveDate",
+          "ratioHeld",
+          "ratioReceived",
+          "sourceNoticeUrl"
         ]
       },
       "PortfolioDto": {

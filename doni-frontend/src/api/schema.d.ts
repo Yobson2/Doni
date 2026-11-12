@@ -221,7 +221,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** End-of-day price history, oldest first */
+        /** End-of-day price history, oldest first, restated in today’s shares */
         get: operations["getSecurityPrices"];
         put?: never;
         post?: never;
@@ -295,6 +295,42 @@ export interface paths {
         put: operations["putIndexPrice"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/securities/{ticker}/corporate-actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Corporate actions on a security, oldest first */
+        get: operations["listCorporateActions"];
+        put?: never;
+        /** Enter a corporate action from its BRVM notice */
+        post: operations["createCorporateAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/securities/{ticker}/corporate-actions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Correct a corporate action */
+        put: operations["replaceCorporateAction"];
+        post?: never;
+        /** Remove a corporate action entered by mistake */
+        delete: operations["deleteCorporateAction"];
         options?: never;
         head?: never;
         patch?: never;
@@ -499,6 +535,41 @@ export interface components {
             /** @description Most recent published end-of-day price */
             latestPrice: components["schemas"]["EndOfDayPriceDto"] | null;
         };
+        AdjustedEndOfDayPriceDto: {
+            /**
+             * Format: date
+             * @description Trading day the price applies to
+             * @example 2026-11-11
+             */
+            date: string;
+            /**
+             * @description Closing price, XOF
+             * @example 4190
+             */
+            close: string;
+            /** @example 4000 */
+            open: string | null;
+            high: string | null;
+            low: string | null;
+            /** @example 85624 */
+            volume: string | null;
+            /**
+             * @description The BOC the price was read from
+             * @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf
+             */
+            sourceDocument: string;
+            /**
+             * Format: date
+             * @description Date the BOC was published
+             * @example 2026-11-11
+             */
+            publishedOn: string;
+            /**
+             * @description The close as published in the BOC when a later corporate action restated it; null when close is the published close
+             * @example 20500
+             */
+            publishedClose: string | null;
+        };
         CreateSecurityDto: {
             /** @example SNTS */
             ticker: string;
@@ -597,6 +668,64 @@ export interface components {
             code: string;
             /** @example BRVM Composite */
             name: string;
+        };
+        /** @enum {string} */
+        CorporateActionKind: "split" | "reverse_split" | "free_shares" | "rights_issue";
+        CorporateActionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example SNTS */
+            ticker: string;
+            kind: components["schemas"]["CorporateActionKind"];
+            /**
+             * Format: date
+             * @description First trading day on the new basis
+             * @example 2026-04-02
+             */
+            effectiveDate: string;
+            /**
+             * @description The ratio reads "ratioReceived shares for every ratioHeld". Split and reverse split: the ratioHeld shares are replaced by ratioReceived new ones (1:5 split = held 1, received 5). Free shares: ratioReceived are added for every ratioHeld. Rights issue: ratioReceived new shares may be subscribed for every ratioHeld.
+             * @example 1
+             */
+            ratioHeld: number;
+            /** @example 5 */
+            ratioReceived: number;
+            /** @description Cash paid per new share for a fraction of a share, as the notice states */
+            cashInLieuPrice: string | null;
+            /** @description Subscription price per new share (rights issue only) */
+            subscriptionPrice: string | null;
+            /**
+             * @description The BRVM notice the corporate action was read from
+             * @example https://www.brvm.org/fr/avis/example
+             */
+            sourceNoticeUrl: string;
+        };
+        CreateCorporateActionDto: {
+            kind: components["schemas"]["CorporateActionKind"];
+            /**
+             * Format: date
+             * @example 2026-04-02
+             */
+            effectiveDate: string;
+            /**
+             * @description The ratio reads "ratioReceived shares for every ratioHeld". Split and reverse split: the ratioHeld shares are replaced by ratioReceived new ones (1:5 split = held 1, received 5). Free shares: ratioReceived are added for every ratioHeld. Rights issue: ratioReceived new shares may be subscribed for every ratioHeld.
+             * @example 1
+             */
+            ratioHeld: number;
+            /** @example 5 */
+            ratioReceived: number;
+            /**
+             * @description Cash paid per new share for a fraction of a share, only if the notice states it
+             * @example 41000
+             */
+            cashInLieuPrice?: string | null;
+            /**
+             * @description Subscription price per new share; required for a rights issue
+             * @example 3000
+             */
+            subscriptionPrice?: string | null;
+            /** @example https://www.brvm.org/fr/avis/example */
+            sourceNoticeUrl: string;
         };
         PortfolioDto: {
             /** Format: uuid */
@@ -1331,7 +1460,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EndOfDayPriceDto"][];
+                    "application/json": components["schemas"]["AdjustedEndOfDayPriceDto"][];
                 };
             };
             /** @description Missing or invalid access token */
@@ -1537,6 +1666,203 @@ export interface operations {
                 content?: never;
             };
             /** @description Unknown index */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listCorporateActions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorporateActionDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker or corporate action */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createCorporateAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCorporateActionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorporateActionDto"];
+                };
+            };
+            /** @description Terms do not fit the kind */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker or corporate action */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Same kind already on that date */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    replaceCorporateAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCorporateActionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorporateActionDto"];
+                };
+            };
+            /** @description Terms do not fit the kind */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker or corporate action */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Same kind already on that date */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteCorporateAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown ticker or corporate action */
             404: {
                 headers: {
                     [name: string]: unknown;
