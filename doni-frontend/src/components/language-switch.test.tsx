@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const STORAGE_KEY = 'doni-language'
+const STORAGE_KEY = 'doni-lang'
 
 afterEach(cleanup)
 
@@ -29,18 +29,18 @@ describe('LanguageSwitch', () => {
       </>
     )
 
+    const fr = screen.getByRole('button', { name: 'fr' })
+    const en = screen.getByRole('button', { name: 'en' })
     expect(screen.getByRole('heading').textContent).toBe('Tableau de bord')
-    const button = screen.getByRole('button', { name: 'Passer en anglais' })
+    expect(fr.getAttribute('aria-pressed')).toBe('true')
 
     await act(async () => {
-      fireEvent.click(button)
+      fireEvent.click(en)
     })
 
     expect(i18n.language).toBe('en')
     expect(screen.getByRole('heading').textContent).toBe('Dashboard')
-    expect(
-      screen.getByRole('button', { name: 'Switch to French' })
-    ).toBeTruthy()
+    expect(en.getAttribute('aria-pressed')).toBe('true')
     expect(document.documentElement.lang).toBe('en')
     expect(localStorage.getItem(STORAGE_KEY)).toBe('en')
 

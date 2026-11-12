@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { AuthSplitLayout } from '../auth-split-layout'
 import { ForgotPasswordForm } from './components/forgot-password-form'
 
-const linkClass = 'hover:text-primary underline underline-offset-4'
+const linkClass = 'text-primary font-medium underline-offset-4 hover:underline'
 
 export default function ForgotPassword2() {
   const { t } = useTranslation()
@@ -11,19 +11,21 @@ export default function ForgotPassword2() {
   return (
     <AuthSplitLayout
       title={t('auth.forgotPassword.title')}
-      description={t('auth.forgotPassword.description')}
+      subtitle={t('auth.forgotPassword.description')}
+      footer={
+        <>
+          {t('auth.signIn.noAccount')}{' '}
+          <Link to='/sign-up' className={linkClass}>
+            {t('auth.signIn.createAccount')}
+          </Link>
+          {' · '}
+          <Link to='/sign-in' className={linkClass}>
+            {t('auth.forgotPassword.backToSignIn')}
+          </Link>
+        </>
+      }
     >
       <ForgotPasswordForm />
-      <p className='text-muted-foreground px-8 text-center text-sm'>
-        {t('auth.forgotPassword.noAccount')}{' '}
-        <Link to='/sign-up' className={linkClass}>
-          {t('auth.signUp.action')}
-        </Link>
-        {' · '}
-        <Link to='/sign-in' className={linkClass}>
-          {t('auth.forgotPassword.backToSignIn')}
-        </Link>
-      </p>
     </AuthSplitLayout>
   )
 }

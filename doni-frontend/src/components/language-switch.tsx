@@ -1,25 +1,38 @@
-import { IconLanguage } from '@tabler/icons-react'
+import { LANGUAGES } from '@/i18n'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-import { setLanguage, type Language } from '@/i18n'
-import { Button } from '@/components/ui/button'
 
-/** Toggles between French and English. Shows the language it switches to. */
+/** Two-option FR / EN toggle. Each option is a real button with aria-pressed. */
 export function LanguageSwitch({ className }: { className?: string }) {
   const { t, i18n } = useTranslation()
-  const next: Language = i18n.resolvedLanguage === 'en' ? 'fr' : 'en'
+  const current = i18n.resolvedLanguage
 
   return (
-    <Button
-      variant='ghost'
-      size='sm'
-      className={cn('gap-1.5', className)}
-      onClick={() => setLanguage(next)}
-      aria-label={t(`language.switchTo.${next}`)}
-      title={t(`language.switchTo.${next}`)}
+    <div
+      role='group'
+      aria-label={t('landing.nav.language')}
+      className={cn(
+        'border-border inline-flex items-center rounded-md border p-0.5',
+        className
+      )}
     >
-      <IconLanguage aria-hidden='true' className='size-4' />
-      <span lang={next}>{next.toUpperCase()}</span>
-    </Button>
+      {LANGUAGES.map((lng) => (
+        <button
+          key={lng}
+          type='button'
+          lang={lng}
+          aria-pressed={current === lng}
+          onClick={() => i18n.changeLanguage(lng)}
+          className={cn(
+            'h-7 min-w-9 rounded-[5px] px-2 text-xs font-semibold tracking-wide uppercase transition-colors',
+            current === lng
+              ? 'bg-foreground text-background'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {lng}
+        </button>
+      ))}
+    </div>
   )
 }

@@ -72,7 +72,7 @@ export function ForgotPasswordForm({ className, ...props }: ForgotFormProps) {
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
+        <Button className='mt-2 h-11' disabled={isLoading}>
           {t('auth.forgotPassword.submit')}
         </Button>
       </form>

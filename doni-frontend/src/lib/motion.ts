@@ -52,26 +52,6 @@ const scaleIn: Variants = {
   },
 }
 
-export const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.05,
-    },
-  },
-}
-
-export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: duration.normal, ease: ease.default },
-  },
-}
-
 export const pageTransition: Variants = {
   initial: { opacity: 0, x: 10 },
   animate: {

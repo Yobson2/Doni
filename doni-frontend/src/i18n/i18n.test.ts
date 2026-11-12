@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import en from './en.json'
 import fr from './fr.json'
 
-const STORAGE_KEY = 'doni-language'
+const STORAGE_KEY = 'doni-lang'
 
 // Importing the module again after resetModules() simulates a page reload.
 async function loadI18n() {
@@ -38,7 +38,7 @@ describe('i18n', () => {
 
   it('persists the chosen language across a reload', async () => {
     const first = await loadI18n()
-    await first.setLanguage('en')
+    await first.default.changeLanguage('en')
     expect(localStorage.getItem(STORAGE_KEY)).toBe('en')
     expect(document.documentElement.lang).toBe('en')
 

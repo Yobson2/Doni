@@ -1,57 +1,100 @@
 import { Link } from '@tanstack/react-router'
+import { IconArrowLeft, IconCheck } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
-import { Logo, Wordmark } from '@/components/logo'
 import { LanguageSwitch } from '@/components/language-switch'
+import { Logo, Wordmark } from '@/components/logo'
 import { AnimatedContainer } from '@/components/motion/animated-container'
 
-interface Props {
-  title: string
-  description: React.ReactNode
-  children: React.ReactNode
-}
+const points = ['pmp', 'dividends', 'dated'] as const
 
-/** Two-column layout shared by the sign-in, sign-up and forgot-password screens. */
-export function AuthSplitLayout({ title, description, children }: Props) {
+/** Sign-in / sign-up shell: brand panel (desktop) + form column. */
+export function AuthSplitLayout({
+  title,
+  subtitle,
+  children,
+  footer,
+}: {
+  title: string
+  subtitle: React.ReactNode
+  children: React.ReactNode
+  footer?: React.ReactNode
+}) {
   const { t } = useTranslation()
 
   return (
-    <AnimatedContainer
-      variant='scaleIn'
-      className='relative container grid h-svh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0'
-    >
-      <LanguageSwitch className='absolute top-4 right-4 z-30' />
-      <div className='bg-primary text-primary-foreground dark:bg-secondary dark:text-foreground relative hidden h-full flex-col p-10 lg:flex dark:border-r'>
-        <div className='bg-primary dark:bg-secondary absolute inset-0' />
+    <div className='grid min-h-svh lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]'>
+      <aside className='bg-primary text-primary-foreground relative hidden overflow-hidden p-10 lg:flex lg:flex-col xl:p-14'>
         <Link
           to='/'
-          className='relative z-20 flex items-center text-lg font-medium'
+          aria-label={t('landing.nav.home')}
+          className='self-start rounded-sm'
         >
-          <Wordmark className='h-7 w-auto' />
+          <Wordmark className='h-8 w-auto' aria-hidden='true' />
         </Link>
-
-        <div className='relative z-20 m-auto flex flex-col items-center gap-4'>
-          <Logo className='h-24 w-24' />
-          <span className='text-lg font-medium opacity-90'>
-            {t('app.tagline')}
-          </span>
+        <div className='relative z-10 mt-auto max-w-md'>
+          <p className='font-manrope text-3xl leading-tight font-bold tracking-tight xl:text-4xl'>
+            {t('auth.panelTitle')}
+          </p>
+          <ul className='mt-8 flex flex-col gap-4'>
+            {points.map((p) => (
+              <li key={p} className='flex items-start gap-3'>
+                <span className='bg-primary-foreground/15 mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md'>
+                  <IconCheck className='size-4' aria-hidden='true' />
+                </span>
+                <span className='text-primary-foreground/90'>
+                  {t(`auth.points.${p}`)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className='text-primary-foreground/70 mt-10 text-xs'>
+            {t('auth.disclaimer')}
+          </p>
         </div>
+        <Logo
+          accent='currentColor'
+          className='text-primary-foreground/10 pointer-events-none absolute -top-10 -right-16 size-96'
+        />
+      </aside>
 
-        <p className='relative z-20 mt-auto text-sm opacity-80'>
-          {t('app.disclaimer')}
-        </p>
-      </div>
-      <div className='lg:p-8'>
-        <div className='mx-auto flex w-full flex-col justify-center space-y-2 sm:w-[350px]'>
-          <Link to='/' className='mb-4 flex items-center gap-2 lg:hidden'>
-            <Wordmark className='text-primary h-7 w-auto' />
+      <div className='flex flex-col px-5 py-6 sm:px-8'>
+        <div className='flex items-center justify-between gap-4'>
+          <Link
+            to='/'
+            className='text-text-secondary hover:text-foreground inline-flex min-h-10 items-center gap-2 rounded-md text-sm font-medium'
+          >
+            <IconArrowLeft className='size-4' aria-hidden='true' />
+            <span className='lg:hidden'>
+              <Wordmark
+                className='text-primary h-6 w-auto'
+                aria-hidden='true'
+              />
+              <span className='sr-only'>{t('auth.backHome')}</span>
+            </span>
+            <span className='hidden lg:inline'>{t('auth.backHome')}</span>
           </Link>
-          <div className='flex flex-col space-y-2 text-left'>
-            <h1 className='text-2xl font-semibold tracking-tight'>{title}</h1>
-            <p className='text-muted-foreground text-sm'>{description}</p>
-          </div>
-          {children}
+          <LanguageSwitch />
         </div>
+
+        <main
+          id='content'
+          className='flex flex-1 items-center justify-center py-10'
+        >
+          <AnimatedContainer variant='fadeSlideUp' className='w-full max-w-sm'>
+            <h1 className='font-manrope text-3xl font-bold tracking-tight'>
+              {title}
+            </h1>
+            <p className='text-text-secondary mt-2 text-sm'>{subtitle}</p>
+            <div className='mt-8'>{children}</div>
+            {footer && (
+              <div className='text-text-secondary mt-8 text-sm'>{footer}</div>
+            )}
+            <p className='text-muted-foreground mt-10 text-xs lg:hidden'>
+              {t('auth.disclaimer')}
+            </p>
+          </AnimatedContainer>
+        </main>
       </div>
-    </AnimatedContainer>
+    </div>
   )
 }

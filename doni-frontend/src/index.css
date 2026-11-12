@@ -515,3 +515,10 @@
 }
 
 
+
+/* Smooth in-page anchor scrolling, only when motion is welcome */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

@@ -3,7 +3,7 @@ import { ChevronDownIcon } from '@radix-ui/react-icons'
 import { useTranslation } from 'react-i18next'
 import { fonts } from '@/config/fonts'
 import { cn } from '@/lib/utils'
-import { SUPPORTED_LANGUAGES, setLanguage, type Language } from '@/i18n'
+import { LANGUAGES } from '@/i18n'
 import { useFont } from '@/context/font-context'
 import { useTheme } from '@/context/theme-context'
 import { buttonVariants } from '@/components/ui/button'
@@ -30,10 +30,10 @@ export function AppearanceForm() {
         </p>
         <RadioGroup
           value={i18n.resolvedLanguage}
-          onValueChange={(value) => setLanguage(value as Language)}
+          onValueChange={(value) => i18n.changeLanguage(value)}
           className='flex gap-6 pt-1'
         >
-          {SUPPORTED_LANGUAGES.map((language) => (
+          {LANGUAGES.map((language) => (
             <div key={language} className='flex items-center gap-2'>
               <RadioGroupItem value={language} id={`language-${language}`} />
               <Label htmlFor={`language-${language}`} lang={language}>

@@ -103,13 +103,13 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 to='/forgot-password'
                 className='text-muted-foreground absolute -top-0.5 right-0 text-sm font-medium hover:opacity-75'
               >
-                {t('auth.signIn.forgotPassword')}
+                {t('auth.signIn.forgot')}
               </Link>
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
-          {t('auth.signIn.action')}
+        <Button className='mt-2 h-11' disabled={isLoading}>
+          {t('auth.signIn.submit')}
         </Button>
       </form>
     </Form>

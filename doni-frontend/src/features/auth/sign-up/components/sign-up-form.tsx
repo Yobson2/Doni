@@ -121,7 +121,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
+        <Button className='mt-2 h-11' disabled={isLoading}>
           {t('auth.signUp.submit')}
         </Button>
       </form>

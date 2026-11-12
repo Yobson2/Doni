@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { AuthSplitLayout } from '../auth-split-layout'
-import { LegalNotice } from '../legal-notice'
 import { SignUpForm } from './components/sign-up-form'
 
 export default function SignUp2() {
@@ -10,22 +9,20 @@ export default function SignUp2() {
   return (
     <AuthSplitLayout
       title={t('auth.signUp.title')}
-      description={
+      subtitle={t('auth.signUp.subtitle')}
+      footer={
         <>
-          {t('auth.signUp.description')}
-          <br />
           {t('auth.signUp.haveAccount')}{' '}
           <Link
             to='/sign-in'
-            className='hover:text-primary underline underline-offset-4'
+            className='text-primary font-medium underline-offset-4 hover:underline'
           >
-            {t('auth.signIn.action')}
+            {t('auth.signUp.signIn')}
           </Link>
         </>
       }
     >
       <SignUpForm />
-      <LegalNotice i18nKey='auth.signUp.legal' />
     </AuthSplitLayout>
   )
 }

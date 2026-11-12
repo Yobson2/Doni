@@ -4,10 +4,10 @@ import translationEN from './en.json'
 import translationFR from './fr.json'
 
 // French is the default language; English is the alternative (ADR-0012).
-export const SUPPORTED_LANGUAGES = ['fr', 'en'] as const
-export type Language = (typeof SUPPORTED_LANGUAGES)[number]
+export const LANGUAGES = ['fr', 'en'] as const
+type Language = (typeof LANGUAGES)[number]
 const DEFAULT_LANGUAGE: Language = 'fr'
-const LANGUAGE_STORAGE_KEY = 'doni-language'
+const STORAGE_KEY = 'doni-lang'
 
 const resources = {
   fr: { translation: translationFR },
@@ -15,13 +15,14 @@ const resources = {
 }
 
 function isLanguage(value: unknown): value is Language {
-  return SUPPORTED_LANGUAGES.includes(value as Language)
+  return LANGUAGES.includes(value as Language)
 }
 
-function readStoredLanguage(): Language {
+/** The saved choice if there is one, French otherwise. */
+function detectLanguage(): Language {
   try {
-    const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY)
-    return isLanguage(stored) ? stored : DEFAULT_LANGUAGE
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return isLanguage(saved) ? saved : DEFAULT_LANGUAGE
   } catch {
     return DEFAULT_LANGUAGE
   }
@@ -35,9 +36,9 @@ function applyDocumentLanguage(language: string) {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: readStoredLanguage(),
+  lng: detectLanguage(),
   fallbackLng: DEFAULT_LANGUAGE,
-  supportedLngs: SUPPORTED_LANGUAGES,
+  supportedLngs: LANGUAGES,
   interpolation: {
     escapeValue: false,
   },
@@ -49,14 +50,10 @@ applyDocumentLanguage(i18n.language)
 i18n.on('languageChanged', (language) => {
   applyDocumentLanguage(language)
   try {
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+    localStorage.setItem(STORAGE_KEY, language)
   } catch {
     // Storage can be unavailable (private mode); the switch still works for the session.
   }
 })
-
-export function setLanguage(language: Language) {
-  return i18n.changeLanguage(language)
-}
 
 export default i18n
