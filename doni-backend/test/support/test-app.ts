@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModuleOptions, getOptionsToken } from '@nestjs/throttler';
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
 
@@ -19,9 +19,12 @@ export async function createTestApp(
 ): Promise<INestApplication> {
   let builder = Test.createTestingModule({ imports: [AppModule] });
   if (options.rateLimit === false) {
-    builder = builder
-      .overrideGuard(ThrottlerGuard)
-      .useValue({ canActivate: () => true });
+    // The global ThrottlerGuard stays registered; its limits are skipped.
+    const unlimited: ThrottlerModuleOptions = {
+      throttlers: [{ ttl: 1000, limit: 1 }],
+      skipIf: () => true,
+    };
+    builder = builder.overrideProvider(getOptionsToken()).useValue(unlimited);
   }
   const moduleFixture = await builder.compile();
 
