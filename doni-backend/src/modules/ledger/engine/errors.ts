@@ -45,3 +45,22 @@ export class InsufficientQuantityError extends LedgerRuleViolation {
     );
   }
 }
+
+/**
+ * A corporate action whose terms the engine cannot use: a ratio that is not
+ * a whole number greater than zero, or a negative cash-in-lieu price. Not a
+ * ledger rule violation: it names a corporate action, not a ledger entry.
+ */
+export class InvalidCorporateActionError extends Error {
+  override readonly name = 'InvalidCorporateActionError';
+
+  constructor(
+    readonly corporateActionId: string,
+    readonly field: string,
+    readonly value: string,
+  ) {
+    super(
+      `Corporate action ${corporateActionId} has an invalid ${field}: ${value}`,
+    );
+  }
+}

@@ -39,7 +39,57 @@ export interface ReplayInput {
   entries: readonly LedgerEntry[];
   /** End-of-day price to value each security at, by security id. */
   prices: ReadonlyMap<string, ValuationPrice>;
+  /**
+   * Corporate actions on the securities the ledger touches, in any order.
+   * Omitted means none.
+   */
+  corporateActions?: readonly CorporateAction[];
 }
+
+/**
+ * An issuer decision that changes the quantity of a security held, as the
+ * engine sees it. The ratio reads "`received` shares for every `held`":
+ *
+ * - `split`, `reverse_split`: the `held` shares are replaced by `received`
+ *   new ones (a 1:5 split is held 1, received 5; a 10:1 reverse split is
+ *   held 10, received 1).
+ * - `free_shares`: `received` free shares are added for every `held`
+ *   (one free share for ten held is held 10, received 1).
+ * - `rights_issue`: shares held do not change. Subscribed shares are a buy
+ *   at the subscription price that the holder records in the ledger.
+ *
+ * Shares are whole on the BRVM: when the ratio leaves a fraction of a share,
+ * the holder keeps the whole shares and the fraction is settled in cash.
+ */
+export interface CorporateAction {
+  /** Stable identity of the corporate action; echoed in errors. */
+  id: string;
+  kind: CorporateActionKind;
+  securityId: string;
+  /**
+   * The first trading day on which the security trades on the new basis.
+   * The action applies before that day's ledger entries, so trades dated
+   * that day or later are already in new shares.
+   */
+  effectiveDate: string;
+  /** A whole number greater than zero. */
+  held: string;
+  /** A whole number greater than zero. */
+  received: string;
+  /**
+   * Cash paid per new share for a fraction of a share (the issuer's
+   * "indemnisation des rompus"), when the source notice states it. With it,
+   * the fraction is treated as sold at that price and realises a gain or
+   * loss. Without it, the fraction's cost stays in the whole shares kept.
+   */
+  cashInLieuPrice?: string | null;
+}
+
+export type CorporateActionKind =
+  | 'split'
+  | 'reverse_split'
+  | 'free_shares'
+  | 'rights_issue';
 
 /** A position's value at its end-of-day price. */
 export interface PositionValuation {

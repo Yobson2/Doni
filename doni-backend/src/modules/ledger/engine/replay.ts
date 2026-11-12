@@ -1,3 +1,4 @@
+import { CorporateActionTimeline } from './corporate-actions';
 import { Decimal, ZERO, toDecimalString } from './decimal';
 import { InsufficientQuantityError, InvalidLedgerEntryError } from './errors';
 import type {
@@ -11,7 +12,7 @@ import type {
 } from './types';
 
 /** Running state of one security while the ledger is replayed. */
-interface Holding {
+export interface Holding {
   quantity: Decimal;
   pmp: Decimal;
   realisedGain: Decimal;
@@ -48,15 +49,22 @@ const byReplayOrder = (a: LedgerEntry, b: LedgerEntry): number =>
  */
 export function replay(input: ReplayInput): ReplayResult {
   const holdings = new Map<string, Holding>();
+  const corporateActions = new CorporateActionTimeline(input.corporateActions);
   for (const entry of [...input.entries].sort(byReplayOrder)) {
+    corporateActions.applyUpTo(holdings, entry.date);
     const holding = holdings.get(entry.securityId) ?? EMPTY;
     holdings.set(entry.securityId, applyTrade(holding, entry));
   }
+  corporateActions.applyUpTo(holdings);
 
   const positions = [...holdings]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([securityId, holding]) =>
-      toPosition(securityId, holding, input.prices.get(securityId)),
+      toPosition(
+        securityId,
+        holding,
+        corporateActions.restate(securityId, input.prices.get(securityId)),
+      ),
     );
   return { positions, totals: totalsOf(positions) };
 }

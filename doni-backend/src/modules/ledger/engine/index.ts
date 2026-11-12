@@ -5,12 +5,16 @@
  * rule violations it throws. Nothing here does I/O or knows about NestJS.
  */
 export { replay } from './replay';
+export { adjustPrice } from './corporate-actions';
 export {
+  InvalidCorporateActionError,
   InsufficientQuantityError,
   InvalidLedgerEntryError,
   LedgerRuleViolation,
 } from './errors';
 export type {
+  CorporateAction,
+  CorporateActionKind,
   LedgerEntry,
   PortfolioTotals,
   Position,
