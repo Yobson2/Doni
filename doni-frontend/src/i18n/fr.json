@@ -642,6 +642,22 @@
       "saved": "Position d’ouverture enregistrée",
       "insufficient": "Position refusée : une vente enregistrée après cette date dépasserait les {{held}} titres alors détenus.",
       "duplicate": "Une position d’ouverture pour cette valeur est déjà enregistrée à cette date : corrigez-la plutôt."
+    },
+    "currency": {
+      "label": "Devise d’affichage",
+      "XOF": "F CFA",
+      "EUR": "EUR",
+      "peg": "Montants convertis au taux fixe de 1 € = 655,957 F CFA. Ils restent enregistrés en F CFA.",
+      "saveError": "Votre choix de devise n’a pas pu être enregistré. Réessayez."
+    },
+    "allocation": {
+      "title": "Répartition",
+      "description": "Part de chaque ligne dans la valeur de marché, au dernier cours de clôture publié.",
+      "view": "Répartir",
+      "bySecurity": "Par valeur",
+      "bySector": "Par secteur",
+      "empty": "Aucune position valorisée à répartir pour l’instant.",
+      "unpriced": "Hors répartition, faute de cours de clôture publié : {{tickers}}."
     }
   }
 }

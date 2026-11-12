@@ -4,18 +4,20 @@ import {
   UserDataRegistry,
   UserDataSection,
 } from '@common/user-data/user-data.registry';
+import { LedgerEntryVoid } from './entities/ledger-entry-void.entity';
 import { LedgerEntryRecord } from './entities/ledger-entry.entity';
 import { Portfolio } from './entities/portfolio.entity';
 
 /**
  * The `portfolios` section of the user data export: each portfolio with its
  * whole ledger, every stored column of every ledger entry (so columns added
- * later are exported too), plus the security's ticker.
+ * later are exported too), plus the security's ticker, and the corrections
+ * (ADR 0004): which entries were voided, when, and what replaced them.
  */
 @Injectable()
 export class PortfoliosUserData implements UserDataSection, OnModuleInit {
   readonly key = 'portfolios';
-  readonly entities = [Portfolio, LedgerEntryRecord];
+  readonly entities = [Portfolio, LedgerEntryRecord, LedgerEntryVoid];
 
   constructor(private readonly registry: UserDataRegistry) {}
 
@@ -33,6 +35,13 @@ export class PortfoliosUserData implements UserDataSection, OnModuleInit {
       relations: { security: true },
       order: { tradeDate: 'ASC', createdAt: 'ASC' },
     });
+    const voids = await manager.find(LedgerEntryVoid, {
+      where: { entryId: In(entries.map((entry) => entry.id)) },
+      order: { createdAt: 'ASC' },
+    });
+    const portfolioOf = new Map(
+      entries.map((entry) => [entry.id, entry.portfolioId]),
+    );
     return portfolios.map((portfolio) => ({
       id: portfolio.id,
       name: portfolio.name,
@@ -49,6 +58,13 @@ export class PortfoliosUserData implements UserDataSection, OnModuleInit {
           } = entry;
           return { ...columns, ticker: security?.ticker };
         }),
+      corrections: voids
+        .filter((v) => portfolioOf.get(v.entryId) === portfolio.id)
+        .map(({ entryId, replacementId, createdAt }) => ({
+          entryId,
+          replacementId,
+          createdAt,
+        })),
     }));
   }
 }
