@@ -300,6 +300,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portfolios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List my portfolios */
+        get: operations["listPortfolios"];
+        put?: never;
+        /** Create a portfolio */
+        post: operations["createPortfolio"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolios/{id}/valuation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Positions, PMP, realised and unrealised gains at the latest end-of-day prices */
+        get: operations["getPortfolioValuation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolios/{id}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The portfolio’s ledger entries, oldest trade first */
+        get: operations["listLedgerEntries"];
+        put?: never;
+        /** Record a buy or a sell, with its fees and SGI */
+        post: operations["addLedgerEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -544,6 +597,148 @@ export interface components {
             code: string;
             /** @example BRVM Composite */
             name: string;
+        };
+        PortfolioDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Mon portefeuille */
+            name: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreatePortfolioDto: {
+            /** @example Mon portefeuille */
+            name: string;
+        };
+        PositionValuationDto: {
+            /**
+             * @description End-of-day price used
+             * @example 4190
+             */
+            price: string;
+            /**
+             * Format: date
+             * @description Trading day the price applies to (as of)
+             * @example 2026-11-11
+             */
+            priceDate: string;
+            /**
+             * @description quantity × price
+             * @example 377100
+             */
+            marketValue: string;
+            /**
+             * @description marketValue − costBasis
+             * @example 6255
+             */
+            unrealisedGain: string;
+        };
+        PositionDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example Sonatel */
+            name: string;
+            /**
+             * @description 0 once fully sold
+             * @example 90
+             */
+            quantity: string;
+            /**
+             * @description PMP, fees included
+             * @example 4120.5
+             */
+            pmp: string;
+            /**
+             * @description quantity × PMP
+             * @example 370845
+             */
+            costBasis: string;
+            /** @example 21420 */
+            realisedGain: string;
+            /** @description Null when the position is closed or has no price */
+            valuation: components["schemas"]["PositionValuationDto"] | null;
+        };
+        PortfolioTotalsDto: {
+            /** @example 370845 */
+            costBasis: string;
+            /** @example 21420 */
+            realisedGain: string;
+            /**
+             * @description Null when an open position has no end-of-day price
+             * @example 377100
+             */
+            marketValue: string | null;
+            /**
+             * @description Null when an open position has no end-of-day price
+             * @example 6255
+             */
+            unrealisedGain: string | null;
+        };
+        PortfolioValuationDto: {
+            portfolio: components["schemas"]["PortfolioDto"];
+            /** @description Open positions first, then closed ones; by ticker */
+            positions: components["schemas"]["PositionDto"][];
+            totals: components["schemas"]["PortfolioTotalsDto"];
+        };
+        /** @enum {string} */
+        LedgerEntryKind: "buy" | "sell";
+        LedgerEntryDto: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["LedgerEntryKind"];
+            /** @example SNTS */
+            ticker: string;
+            /** @example Sonatel */
+            securityName: string;
+            /**
+             * Format: date
+             * @example 2026-03-16
+             */
+            date: string;
+            /** @example 100 */
+            quantity: string;
+            /** @example 4000 */
+            price: string;
+            /** @example 2000 */
+            fees: string;
+            /** @example SGI Example */
+            sgi: string;
+            /**
+             * Format: date-time
+             * @description When the entry was recorded
+             */
+            recordedAt: string;
+        };
+        CreateLedgerEntryDto: {
+            kind: components["schemas"]["LedgerEntryKind"];
+            /** @example SNTS */
+            ticker: string;
+            /**
+             * Format: date
+             * @description Trade date; not after today
+             * @example 2026-03-16
+             */
+            date: string;
+            /**
+             * @description Whole number of shares
+             * @example 100
+             */
+            quantity: string;
+            /**
+             * @description Price per share, XOF
+             * @example 4000
+             */
+            price: string;
+            /**
+             * @description Total fees for the trade, XOF; defaults to 0
+             * @example 2000
+             */
+            fees?: string;
+            /**
+             * @description The SGI the trade went through
+             * @example SGI Example
+             */
+            sgi: string;
         };
     };
     responses: never;
@@ -1343,6 +1538,185 @@ export interface operations {
             };
             /** @description Unknown index */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listPortfolios: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createPortfolio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePortfolioDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getPortfolioValuation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioValuationDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listLedgerEntries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    addLedgerEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLedgerEntryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"];
+                };
+            };
+            /** @description Invalid values, unknown ticker or a trade date after today */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The sale exceeds the shares held at that date */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

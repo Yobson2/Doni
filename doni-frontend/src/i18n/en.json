@@ -17,7 +17,8 @@
     "signOut": "Sign out",
     "skipToMain": "Skip to main content",
     "securities": "Securities",
-    "adminCatalogue": "Catalogue and prices"
+    "adminCatalogue": "Catalogue and prices",
+    "portfolio": "My portfolio"
   },
   "command": {
     "search": "Search",
@@ -425,6 +426,79 @@
       "errors": {
         "exists": "This security already exists.",
         "invalid": "Some of the information is invalid."
+      }
+    }
+  },
+  "portfolio": {
+    "description": "Your positions, derived from your ledger entries, valued at the latest published closing price.",
+    "loadError": "Your portfolio could not be loaded. Try again later.",
+    "unknown": "Unavailable",
+    "missingPrice": "A position has no published closing price yet, so the total value cannot be computed.",
+    "kind": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "create": {
+      "title": "Create your portfolio",
+      "description": "Then record your buys and sells: Doni computes your PMP and your gains.",
+      "name": "Portfolio name",
+      "defaultName": "My portfolio",
+      "submit": "Create portfolio"
+    },
+    "totals": {
+      "title": "Portfolio summary",
+      "marketValue": "Market value",
+      "unrealisedGain": "Unrealised gain",
+      "realisedGain": "Realised gain",
+      "costBasis": "Cost basis"
+    },
+    "positions": {
+      "title": "Positions",
+      "empty": "No positions yet. Record a first buy.",
+      "security": "Security",
+      "quantity": "Quantity",
+      "pmp": "PMP",
+      "price": "Closing price",
+      "asOf": "as of {{date}}",
+      "marketValue": "Market value",
+      "unrealisedGain": "Unrealised gain",
+      "realisedGain": "Realised gain",
+      "closed": "Position closed"
+    },
+    "entries": {
+      "title": "Ledger entries",
+      "description": "Every buy and sell recorded, oldest first.",
+      "empty": "No ledger entries yet.",
+      "date": "Date",
+      "kind": "Type",
+      "security": "Security",
+      "quantity": "Quantity",
+      "price": "Price",
+      "fees": "Fees",
+      "sgi": "SGI"
+    },
+    "form": {
+      "title": "Record a buy or a sell",
+      "description": "Copy the figures from your SGI trade confirmation: price, fees and SGI.",
+      "kind": "Type",
+      "security": "Security",
+      "choose": "Choose a security",
+      "date": "Trade date",
+      "quantity": "Quantity",
+      "price": "Price per share (XOF)",
+      "fees": "Total fees (XOF)",
+      "sgi": "SGI",
+      "submit": "Record",
+      "saved": "Ledger entry recorded",
+      "validation": {
+        "required": "Required.",
+        "decimal": "Enter a number, for example 4190 or 4190.5.",
+        "date": "Enter a date.",
+        "shares": "Enter a whole number of shares, for example 100."
+      },
+      "errors": {
+        "insufficient": "Sale refused: you held only {{held}} shares at that date.",
+        "invalid": "Check the values entered (date, security, amounts)."
       }
     }
   }

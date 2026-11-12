@@ -32,6 +32,10 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       'Catalogue',
       'Securities, sectors, indices and end-of-day prices (changes: admin)',
     )
+    .addTag(
+      'Portfolios',
+      'My portfolios, their ledger entries and their valuation',
+    )
     .addTag('Health', 'Health check')
     .build();
 

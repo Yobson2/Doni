@@ -25,6 +25,7 @@ import { Route as authForgotPasswordImport } from './routes/(auth)/forgot-passwo
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSecuritiesIndexImport } from './routes/_authenticated/securities/index'
+import { Route as AuthenticatedPortfolioIndexImport } from './routes/_authenticated/portfolio/index'
 import { Route as AuthenticatedDashboardIndexImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedSecuritiesTickerImport } from './routes/_authenticated/securities/$ticker'
 import { Route as AuthenticatedAdminCatalogueImport } from './routes/_authenticated/admin/catalogue'
@@ -115,6 +116,13 @@ const AuthenticatedSecuritiesIndexRoute =
   AuthenticatedSecuritiesIndexImport.update({
     id: '/securities/',
     path: '/securities/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
+const AuthenticatedPortfolioIndexRoute =
+  AuthenticatedPortfolioIndexImport.update({
+    id: '/portfolio/',
+    path: '/portfolio/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -248,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/portfolio/': {
+      id: '/_authenticated/portfolio/'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedPortfolioIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/securities/': {
       id: '/_authenticated/securities/'
       path: '/securities'
@@ -286,6 +301,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCatalogueRoute: typeof AuthenticatedAdminCatalogueRoute
   AuthenticatedSecuritiesTickerRoute: typeof AuthenticatedSecuritiesTickerRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedPortfolioIndexRoute: typeof AuthenticatedPortfolioIndexRoute
   AuthenticatedSecuritiesIndexRoute: typeof AuthenticatedSecuritiesIndexRoute
 }
 
@@ -294,6 +310,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminCatalogueRoute: AuthenticatedAdminCatalogueRoute,
   AuthenticatedSecuritiesTickerRoute: AuthenticatedSecuritiesTickerRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedPortfolioIndexRoute: AuthenticatedPortfolioIndexRoute,
   AuthenticatedSecuritiesIndexRoute: AuthenticatedSecuritiesIndexRoute,
 }
 
@@ -327,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
@@ -345,6 +363,7 @@ export interface FileRoutesByTo {
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
 }
@@ -366,6 +385,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/_authenticated/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/portfolio/': typeof AuthenticatedPortfolioIndexRoute
   '/_authenticated/securities/': typeof AuthenticatedSecuritiesIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
@@ -387,6 +407,7 @@ export interface FileRouteTypes {
     | '/admin/catalogue'
     | '/securities/$ticker'
     | '/dashboard'
+    | '/portfolio'
     | '/securities'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -404,6 +425,7 @@ export interface FileRouteTypes {
     | '/admin/catalogue'
     | '/securities/$ticker'
     | '/dashboard'
+    | '/portfolio'
     | '/securities'
     | '/settings'
   id:
@@ -423,6 +445,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/catalogue'
     | '/_authenticated/securities/$ticker'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/portfolio/'
     | '/_authenticated/securities/'
     | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
@@ -483,6 +506,7 @@ export const routeTree = rootRoute
         "/_authenticated/admin/catalogue",
         "/_authenticated/securities/$ticker",
         "/_authenticated/dashboard/",
+        "/_authenticated/portfolio/",
         "/_authenticated/securities/"
       ]
     },
@@ -537,6 +561,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/dashboard/": {
       "filePath": "_authenticated/dashboard/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/portfolio/": {
+      "filePath": "_authenticated/portfolio/index.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/securities/": {

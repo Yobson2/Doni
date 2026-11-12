@@ -76,10 +76,19 @@ export enum CatalogueErrorCode {
   INDEX_ALREADY_EXISTS = 'CATALOGUE_INDEX_002',
 }
 
+export enum LedgerErrorCode {
+  PORTFOLIO_NOT_FOUND = 'LEDGER_PORTFOLIO_001',
+  INSUFFICIENT_QUANTITY = 'LEDGER_ENTRY_001',
+  INVALID_ENTRY = 'LEDGER_ENTRY_002',
+  UNKNOWN_SECURITY = 'LEDGER_ENTRY_003',
+  FUTURE_TRADE_DATE = 'LEDGER_ENTRY_004',
+}
+
 export type ErrorCode =
   | AuthErrorCode
   | UserErrorCode
   | CatalogueErrorCode
+  | LedgerErrorCode
   | SystemErrorCode;
 
 export interface ErrorCodeMetadata {

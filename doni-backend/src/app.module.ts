@@ -13,6 +13,7 @@ import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { HealthModule } from '@modules/health/health.module';
 import { SecuritiesModule } from '@modules/securities/securities.module';
+import { LedgerModule } from '@modules/ledger/ledger.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { SecuritiesModule } from '@modules/securities/securities.module';
     AuthModule,
     HealthModule,
     SecuritiesModule,
+    LedgerModule,
   ],
   providers: [
     {

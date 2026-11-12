@@ -1,4 +1,5 @@
 import {
+  IconBriefcase,
   IconBuildingBank,
   IconDatabaseEdit,
   IconLayoutDashboard,
@@ -15,6 +16,11 @@ const navGroups: NavGroup[] = [
         title: 'nav.dashboard',
         url: '/dashboard',
         icon: IconLayoutDashboard,
+      },
+      {
+        title: 'nav.portfolio',
+        url: '/portfolio',
+        icon: IconBriefcase,
       },
       {
         title: 'nav.securities',
