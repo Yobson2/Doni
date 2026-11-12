@@ -17,7 +17,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import type { CookieOptions, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService, IssuedSession } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -25,21 +25,9 @@ import { SessionResponseDto } from './dto/session-response.dto';
 import { Public } from '@common/decorators/public.decorator';
 import {
   REFRESH_COOKIE,
-  REFRESH_COOKIE_PATH,
+  REFRESH_COOKIE_OPTIONS as refreshCookieOptions,
   REFRESH_TOKEN_TTL_SECONDS,
 } from '@common/config/auth.config';
-
-/**
- * The refresh token lives only in this cookie (ADR 0011): unreadable from
- * JavaScript, sent only over HTTPS, never on cross-site requests, and only to
- * the auth endpoints.
- */
-const refreshCookieOptions: CookieOptions = {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'strict',
-  path: REFRESH_COOKIE_PATH,
-};
 
 const readRefreshCookie = (req: Request): string | undefined => {
   const cookies = req.cookies as Record<string, unknown> | undefined;

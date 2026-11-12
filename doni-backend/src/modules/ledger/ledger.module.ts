@@ -6,6 +6,7 @@ import { LedgerEntryRecord } from './entities/ledger-entry.entity';
 import { Portfolio } from './entities/portfolio.entity';
 import { PortfoliosController } from './portfolios.controller';
 import { PortfoliosService } from './portfolios.service';
+import { PortfoliosUserData } from './portfolios-user-data';
 
 /**
  * Portfolios, their append-only ledgers, and valuation. Positions are
@@ -18,6 +19,6 @@ import { PortfoliosService } from './portfolios.service';
     SecuritiesModule,
   ],
   controllers: [PortfoliosController],
-  providers: [PortfoliosService],
+  providers: [PortfoliosService, PortfoliosUserData],
 })
 export class LedgerModule {}

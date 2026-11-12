@@ -5,6 +5,7 @@ import { SecuritiesModule } from '@modules/securities/securities.module';
 import { WatchlistItem } from './entities/watchlist-item.entity';
 import { WatchlistController } from './watchlist.controller';
 import { WatchlistService } from './watchlist.service';
+import { WatchlistUserData } from './watchlist-user-data';
 
 /**
  * Securities each user follows without holding them, shown with their latest
@@ -16,6 +17,6 @@ import { WatchlistService } from './watchlist.service';
     SecuritiesModule,
   ],
   controllers: [WatchlistController],
-  providers: [WatchlistService],
+  providers: [WatchlistService, WatchlistUserData],
 })
 export class WatchlistModule {}

@@ -441,6 +441,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/account/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download all my data as JSON */
+        get: operations["exportMyData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/account/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete my account and all my data
+         * @description Requires the current password. Deletes the account, its portfolios and ledgers, watchlist and every other section of the export, and ends every session. Cannot be undone.
+         */
+        post: operations["deleteMyAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -972,6 +1009,25 @@ export interface components {
             addedAt: string;
             /** @description Most recent published end-of-day price, with the date it applies to; null when there is none */
             latestPrice: components["schemas"]["EndOfDayPriceDto"] | null;
+        };
+        AccountExportDto: {
+            /** @example doni-account-export */
+            format: string;
+            /**
+             * @description Version of this export format
+             * @example 1
+             */
+            version: number;
+            /** Format: date-time */
+            exportedAt: string;
+            /** @description One entry per kind of data, keyed by section: `account` (profile), `portfolios` (each portfolio with its whole ledger: buys, sells, opening positions and, once recorded, user dividends), `sessions`, `watchlist`. Modules added later (such as alert settings) add their own section. Amounts are XOF, as decimal strings. */
+            sections: {
+                [key: string]: unknown;
+            };
+        };
+        DeleteAccountDto: {
+            /** @description The account’s current password */
+            password: string;
         };
     };
     responses: never;
@@ -2295,6 +2351,75 @@ export interface operations {
             };
             /** @description Unknown ticker */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    exportMyData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountExportDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteMyAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountDto"];
+            };
+        };
+        responses: {
+            /** @description Account deleted; the refresh cookie is cleared */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Password missing */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Password confirmation failed */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

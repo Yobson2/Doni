@@ -77,6 +77,11 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
+  /** True when the account exists and is not deactivated. */
+  isActive(id: string): Promise<boolean> {
+    return this.userRepository.exists({ where: { id, isActive: true } });
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
   }

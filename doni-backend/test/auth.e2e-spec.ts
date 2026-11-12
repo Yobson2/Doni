@@ -337,6 +337,11 @@ describe('Sign-up, sign-in and sign-out (e2e)', () => {
         .expect(200);
 
       await refresh(member.refreshCookie).expect(401);
+      // The access token already issued stops working too.
+      await http()
+        .get('/api/users/me')
+        .set('Authorization', `Bearer ${member.accessToken}`)
+        .expect(401);
       await http()
         .post('/api/auth/sign-in')
         .send({ email: member.email, password: PASSWORD })

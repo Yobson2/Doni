@@ -1,5 +1,5 @@
 import { Outlet } from '@tanstack/react-router'
-import { IconPalette } from '@tabler/icons-react'
+import { IconPalette, IconUserShield } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { Separator } from '@/components/ui/separator'
 import { Header } from '@/components/layout/header'
@@ -16,6 +16,11 @@ const sidebarNavItems = [
     title: 'settings.appearance.title',
     icon: <IconPalette size={18} />,
     href: '/settings',
+  },
+  {
+    title: 'settings.account.title',
+    icon: <IconUserShield size={18} />,
+    href: '/settings/account',
   },
 ]
 
