@@ -16,11 +16,13 @@ export function ThemeSwitch() {
   /* Update theme-color meta tag
    * when theme is updated */
   useEffect(() => {
-    const metaThemeColor = document.querySelector("meta[name='theme-color']")
-    if (metaThemeColor) {
-      const bg = getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
-      metaThemeColor.setAttribute('content', bg)
-    }
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
+    // index.html ships one tag per OS scheme; once the app knows the active
+    // theme, both tags follow it so the browser chrome matches the page.
+    document.querySelectorAll("meta[name='theme-color']").forEach((meta) => {
+      meta.removeAttribute('media')
+      meta.setAttribute('content', bg)
+    })
   }, [theme])
 
   return (
