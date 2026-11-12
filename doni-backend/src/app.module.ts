@@ -8,12 +8,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { getEnvironmentConfig } from '@common/config/environment.loader';
 import { buildDbConfig } from '@common/database/database.config';
 import { getJWTSecret, JWT_EXPIRES_IN } from '@common/config/auth.config';
-import { RedisModule } from '@common/redis/redis.module';
-import { FirebaseModule } from '@common/firebase/firebase.module';
 import { MailModule } from '@common/mail/mail.module';
-import { StorageModule } from '@common/storage/storage.module';
-import { WebSocketsModule } from '@common/websockets/websockets.module';
-import { QueuesModule } from '@common/queues/queues.module';
+import { JobsModule } from '@common/jobs/jobs.module';
 import { AuthenticationMiddleware } from '@common/middleware/authentication.middleware';
 import { AuthGuard } from '@common/guards/auth.guard';
 
@@ -27,6 +23,9 @@ import { HealthModule } from '@modules/health/health.module';
     ConfigModule.forRoot(getEnvironmentConfig()),
 
     // ─── Rate Limiting ──────────────────────────────────────
+    // Counters live in process memory (the throttler's default storage):
+    // right for a single backend instance. Running several instances needs a
+    // shared store first (ADR 0009).
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -62,12 +61,8 @@ import { HealthModule } from '@modules/health/health.module';
     }),
 
     // ─── Infrastructure ─────────────────────────────────────
-    RedisModule,
-    FirebaseModule,
     MailModule,
-    StorageModule,
-    WebSocketsModule,
-    QueuesModule,
+    JobsModule,
 
     // ─── Feature Modules ────────────────────────────────────
     UsersModule,

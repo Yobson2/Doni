@@ -1,10 +1,11 @@
 import { DataSource } from 'typeorm';
 import { buildDataSourceOptions } from '../../src/common/database/data-source.options';
+import { JOB_RUNNER_SCHEMA } from '../../src/common/jobs/job-runner.config';
 
 /**
- * Empties the test database and rebuilds it by running every migration, the
- * same way a fresh environment gets its schema. Returns the names of the
- * migrations that ran.
+ * Empties the test database (app tables and the job runner's schema) and
+ * rebuilds it by running every migration, the same way a fresh environment
+ * gets its schema. Returns the names of the migrations that ran.
  */
 export async function migrateEmptyDatabase(): Promise<string[]> {
   const dataSource = new DataSource({
@@ -13,6 +14,9 @@ export async function migrateEmptyDatabase(): Promise<string[]> {
   });
   await dataSource.initialize();
   try {
+    await dataSource.query(
+      `DROP SCHEMA IF EXISTS "${JOB_RUNNER_SCHEMA}" CASCADE`,
+    );
     const migrations = await dataSource.runMigrations({ transaction: 'all' });
     return migrations.map((migration) => migration.name);
   } finally {

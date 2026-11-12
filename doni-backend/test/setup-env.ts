@@ -14,6 +14,9 @@ const defaults: Record<string, string> = {
   DB_NAME: 'doni_test',
   JWT_SECRET: 'e2e-jwt-secret',
   JWT_REFRESH_SECRET: 'e2e-jwt-refresh-secret',
+  // Check schedules every second so scheduled jobs run within the test.
+  JOBS_CRON_MONITOR_INTERVAL_SECONDS: '1',
+  JOBS_CRON_WORKER_INTERVAL_SECONDS: '1',
 };
 
 for (const [key, value] of Object.entries(defaults)) {

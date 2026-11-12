@@ -25,6 +25,8 @@ describe('Application (e2e)', () => {
           expect(res.body).toHaveProperty('timestamp');
           expect(res.body).toHaveProperty('uptime');
           expect(res.body).toHaveProperty('environment');
+          expect(res.body.checks.database).toEqual({ status: 'up' });
+          expect(res.body.checks.jobs).toHaveProperty('status', 'up');
         });
     });
   });
