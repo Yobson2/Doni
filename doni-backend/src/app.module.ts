@@ -12,6 +12,7 @@ import { JobsModule } from '@common/jobs/jobs.module';
 import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { HealthModule } from '@modules/health/health.module';
+import { SecuritiesModule } from '@modules/securities/securities.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { HealthModule } from '@modules/health/health.module';
     UsersModule,
     AuthModule,
     HealthModule,
+    SecuritiesModule,
   ],
   providers: [
     {

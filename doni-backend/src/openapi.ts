@@ -28,6 +28,10 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
     })
     .addTag('Auth', 'Sign-up, sign-in, session refresh and sign-out')
     .addTag('Users', 'Own account, and account administration (admin)')
+    .addTag(
+      'Catalogue',
+      'Securities, sectors, indices and end-of-day prices (changes: admin)',
+    )
     .addTag('Health', 'Health check')
     .build();
 

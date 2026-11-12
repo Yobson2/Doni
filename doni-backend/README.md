@@ -26,8 +26,9 @@ cp .env.example .env
 # 3. Start infrastructure (PostgreSQL, plus Mailpit to catch emails)
 docker compose up -d
 
-# 4. Create the schema
+# 4. Create the schema, then add the seed securities and their BOC prices
 pnpm migration:run
+pnpm seed:catalogue
 
 # 5. Start the application
 pnpm start:dev
@@ -57,6 +58,7 @@ src/
 ├── modules/
 │   ├── auth/                      # Sign-up, sign-in, refresh, sign-out (ADR 0011)
 │   ├── users/                     # Own account (/me) and account administration
+│   ├── securities/                # Catalogue, end-of-day prices, PriceSource (ADR 0003)
 │   └── health/                    # Health check (database + job runner)
 templates/                         # Handlebars email templates
 ```
@@ -78,6 +80,7 @@ pnpm format              # Prettier
 pnpm migration:run       # Apply pending migrations
 pnpm migration:revert    # Revert the last migration
 pnpm migration:generate  # Generate a migration from entity changes
+pnpm seed:catalogue      # Add seed securities and real BOC prices (only what is missing)
 ```
 
 ## Background and scheduled jobs

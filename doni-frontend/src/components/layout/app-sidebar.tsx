@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useAuthStore } from '@/stores/authStore'
 import {
   Sidebar,
   SidebarContent,
@@ -9,12 +10,13 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { Logo, Wordmark } from '@/components/logo'
 import { NavGroup } from '@/components/layout/nav-group'
 import { NavUser } from '@/components/layout/nav-user'
-import { navGroups } from './data/sidebar-data'
+import { Logo, Wordmark } from '@/components/logo'
+import { navGroupsFor } from './data/sidebar-data'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const isAdmin = useAuthStore((state) => state.auth.user?.role === 'ADMIN')
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>
       <SidebarHeader>
@@ -32,7 +34,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navGroups.map((props) => (
+        {navGroupsFor(isAdmin).map(({ adminOnly: _, ...props }) => (
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>

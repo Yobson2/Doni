@@ -383,6 +383,630 @@
           "Health"
         ]
       }
+    },
+    "/api/sectors": {
+      "get": {
+        "operationId": "listSectors",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SectorDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List sectors",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "post": {
+        "operationId": "createSector",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSectorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add a sector",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/sectors/{code}": {
+      "patch": {
+        "operationId": "updateSector",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSectorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Rename a sector",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities": {
+      "get": {
+        "operationId": "listSecurities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SecurityDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List securities with their latest end-of-day price",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "post": {
+        "operationId": "createSecurity",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSecurityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add a security",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities/{ticker}": {
+      "get": {
+        "operationId": "getSecurity",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown ticker"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Read a security",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "patch": {
+        "operationId": "updateSecurity",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSecurityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Edit a security",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities/{ticker}/prices": {
+      "get": {
+        "operationId": "getSecurityPrices",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EndOfDayPriceDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown ticker"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "End-of-day price history, oldest first",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities/{ticker}/prices/{date}": {
+      "put": {
+        "operationId": "putSecurityPrice",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "SNTS",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoredPriceDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown ticker"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enter or correct one day’s end-of-day price from a BOC",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/indices": {
+      "get": {
+        "operationId": "listIndices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MarketIndexDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List indices",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "post": {
+        "operationId": "createIndex",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMarketIndexDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketIndexDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add an index",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/indices/{code}/prices": {
+      "get": {
+        "operationId": "getIndexPrices",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EndOfDayPriceDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown index"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Index value history, oldest first",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/indices/{code}/prices/{date}": {
+      "put": {
+        "operationId": "putIndexPrice",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "BRVM-C",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoredPriceDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown index"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enter or correct one day’s index value from a BOC",
+        "tags": [
+          "Catalogue"
+        ]
+      }
     }
   },
   "info": {
@@ -399,6 +1023,10 @@
     {
       "name": "Users",
       "description": "Own account, and account administration (admin)"
+    },
+    {
+      "name": "Catalogue",
+      "description": "Securities, sectors, indices and end-of-day prices (changes: admin)"
     },
     {
       "name": "Health",
@@ -615,6 +1243,432 @@
         "required": [
           "email",
           "password"
+        ]
+      },
+      "SectorDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "TEL"
+          },
+          "nameFr": {
+            "type": "string",
+            "example": "Télécommunications"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Telecommunications"
+          }
+        },
+        "required": [
+          "code",
+          "nameFr",
+          "nameEn"
+        ]
+      },
+      "CreateSectorDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "TEL"
+          },
+          "nameFr": {
+            "type": "string",
+            "example": "Télécommunications"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Telecommunications"
+          }
+        },
+        "required": [
+          "code",
+          "nameFr",
+          "nameEn"
+        ]
+      },
+      "UpdateSectorDto": {
+        "type": "object",
+        "properties": {
+          "nameFr": {
+            "type": "string",
+            "example": "Télécommunications"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Telecommunications"
+          }
+        }
+      },
+      "ProfileLanguage": {
+        "type": "string",
+        "enum": [
+          "fr",
+          "en"
+        ],
+        "description": "Language the profile was written in; the other one is a translation"
+      },
+      "EndOfDayPriceDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Trading day the price applies to"
+          },
+          "close": {
+            "type": "string",
+            "example": "4190",
+            "description": "Closing price, XOF"
+          },
+          "open": {
+            "type": "string",
+            "nullable": true,
+            "example": "4000"
+          },
+          "high": {
+            "type": "string",
+            "nullable": true
+          },
+          "low": {
+            "type": "string",
+            "nullable": true
+          },
+          "volume": {
+            "type": "string",
+            "nullable": true,
+            "example": "85624"
+          },
+          "sourceDocument": {
+            "type": "string",
+            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf",
+            "description": "The BOC the price was read from"
+          },
+          "publishedOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Date the BOC was published"
+          }
+        },
+        "required": [
+          "date",
+          "close",
+          "open",
+          "high",
+          "low",
+          "volume",
+          "sourceDocument",
+          "publishedOn"
+        ]
+      },
+      "SecurityDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "SONATEL SN"
+          },
+          "isin": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "sector": {
+            "$ref": "#/components/schemas/SectorDto"
+          },
+          "country": {
+            "type": "string",
+            "example": "SN",
+            "description": "ISO 3166-1 alpha-2"
+          },
+          "profileFr": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileOriginalLanguage": {
+            "description": "Language the profile was written in; the other one is a translation",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileLanguage"
+              }
+            ]
+          },
+          "latestPrice": {
+            "nullable": true,
+            "description": "Most recent published end-of-day price",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EndOfDayPriceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "isin",
+          "sector",
+          "country",
+          "profileFr",
+          "profileEn",
+          "profileOriginalLanguage",
+          "latestPrice"
+        ]
+      },
+      "CreateSecurityDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "SONATEL SN"
+          },
+          "isin": {
+            "type": "string",
+            "nullable": true
+          },
+          "sectorCode": {
+            "type": "string",
+            "example": "TEL"
+          },
+          "country": {
+            "type": "string",
+            "example": "SN"
+          },
+          "profileFr": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileOriginalLanguage": {
+            "description": "Defaults to fr",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileLanguage"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "sectorCode",
+          "country"
+        ]
+      },
+      "UpdateSecurityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "SONATEL SN"
+          },
+          "isin": {
+            "type": "string",
+            "nullable": true
+          },
+          "sectorCode": {
+            "type": "string",
+            "example": "TEL"
+          },
+          "country": {
+            "type": "string",
+            "example": "SN"
+          },
+          "profileFr": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileOriginalLanguage": {
+            "description": "Defaults to fr",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileLanguage"
+              }
+            ]
+          }
+        }
+      },
+      "PriceStatus": {
+        "type": "string",
+        "enum": [
+          "published",
+          "pending_review"
+        ],
+        "description": "Defaults to published; pending_review holds the price back from users"
+      },
+      "PutPriceDto": {
+        "type": "object",
+        "properties": {
+          "close": {
+            "type": "string",
+            "example": "4190"
+          },
+          "open": {
+            "type": "string",
+            "example": "4000"
+          },
+          "high": {
+            "type": "string"
+          },
+          "low": {
+            "type": "string"
+          },
+          "volume": {
+            "type": "string",
+            "example": "85624"
+          },
+          "sourceDocument": {
+            "type": "string",
+            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf",
+            "description": "The BOC the price was read from (URL or reference)"
+          },
+          "publishedOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11"
+          },
+          "status": {
+            "description": "Defaults to published; pending_review holds the price back from users",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceStatus"
+              }
+            ]
+          }
+        },
+        "required": [
+          "close",
+          "sourceDocument",
+          "publishedOn"
+        ]
+      },
+      "StoredPriceDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Trading day the price applies to"
+          },
+          "close": {
+            "type": "string",
+            "example": "4190",
+            "description": "Closing price, XOF"
+          },
+          "open": {
+            "type": "string",
+            "nullable": true,
+            "example": "4000"
+          },
+          "high": {
+            "type": "string",
+            "nullable": true
+          },
+          "low": {
+            "type": "string",
+            "nullable": true
+          },
+          "volume": {
+            "type": "string",
+            "nullable": true,
+            "example": "85624"
+          },
+          "sourceDocument": {
+            "type": "string",
+            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf",
+            "description": "The BOC the price was read from"
+          },
+          "publishedOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Date the BOC was published"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceStatus"
+              }
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "close",
+          "open",
+          "high",
+          "low",
+          "volume",
+          "sourceDocument",
+          "publishedOn",
+          "status"
+        ]
+      },
+      "MarketIndexDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BRVM-C"
+          },
+          "name": {
+            "type": "string",
+            "example": "BRVM Composite"
+          },
+          "latestPrice": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EndOfDayPriceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "latestPrice"
+        ]
+      },
+      "CreateMarketIndexDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BRVM-C"
+          },
+          "name": {
+            "type": "string",
+            "example": "BRVM Composite"
+          }
+        },
+        "required": [
+          "code",
+          "name"
         ]
       }
     }

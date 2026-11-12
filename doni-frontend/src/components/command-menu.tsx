@@ -7,6 +7,7 @@ import {
   IconSun,
 } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
+import { useAuthStore } from '@/stores/authStore'
 import { useSearch } from '@/context/search-context'
 import { useTheme } from '@/context/theme-context'
 import {
@@ -18,11 +19,12 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { navGroups } from './layout/data/sidebar-data'
+import { navGroupsFor } from './layout/data/sidebar-data'
 import { ScrollArea } from './ui/scroll-area'
 
 export function CommandMenu() {
   const { t } = useTranslation()
+  const isAdmin = useAuthStore((state) => state.auth.user?.role === 'ADMIN')
   const navigate = useNavigate()
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
@@ -41,7 +43,7 @@ export function CommandMenu() {
       <CommandList>
         <ScrollArea type='hover' className='h-72 pr-1'>
           <CommandEmpty>{t('command.empty')}</CommandEmpty>
-          {navGroups.map((group) => (
+          {navGroupsFor(isAdmin).map((group) => (
             <CommandGroup key={group.title} heading={t(group.title)}>
               {group.items.map((navItem, i) => {
                 if (navItem.url)
