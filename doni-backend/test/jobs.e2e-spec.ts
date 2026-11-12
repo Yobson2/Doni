@@ -28,11 +28,11 @@ describe('Job runner (e2e)', () => {
   beforeAll(async () => {
     await migrateEmptyDatabase();
     app = await createTestApp();
-  });
+  }, 60000);
 
   afterAll(async () => {
     await app?.close();
-  });
+  }, 30000);
 
   it('registers the heartbeat schedule with pg-boss', async () => {
     const schedules = await app.get(JobsService).getSchedules();
@@ -47,10 +47,11 @@ describe('Job runner (e2e)', () => {
   it('runs the scheduled heartbeat job through pg-boss', async () => {
     const heartbeat = app.get(HeartbeatJob);
 
-    const ranAt = await waitFor(() => heartbeat.getLastRunAt(), 20000);
+    // Schedules are checked every second in tests; allow for a slow runner.
+    const ranAt = await waitFor(() => heartbeat.getLastRunAt(), 45000);
 
     expect(ranAt).toBeInstanceOf(Date);
-  });
+  }, 60000);
 
   it('reports the database and the job runner in the health check', async () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);

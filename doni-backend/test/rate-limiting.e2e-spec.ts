@@ -9,6 +9,9 @@ describe('Rate limiting (e2e)', () => {
   beforeAll(async () => {
     await migrateEmptyDatabase();
     app = await createTestApp();
+    // Listen once up front: supertest would otherwise start the server for
+    // each request, which breaks when the requests run concurrently.
+    await app.listen(0);
   });
 
   afterAll(async () => {
