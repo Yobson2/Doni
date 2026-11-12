@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import i18n from '@/i18n'
-import { fakeApi, json, session } from '@/test/fake-api'
+import { fakeApi, json, session, testUser } from '@/test/fake-api'
 import { renderApp } from '@/test/render-app'
 import {
   cleanup,
@@ -47,6 +47,27 @@ const valuation = {
     unrealisedGain: '6255',
   },
   performanceSince: '2026-01-05',
+  allocation: {
+    marketValue: '377100',
+    bySecurity: [
+      {
+        ticker: 'SNTS',
+        name: 'SONATEL',
+        marketValue: '377100',
+        percent: '100.0',
+      },
+    ],
+    bySector: [
+      {
+        code: 'TEL',
+        nameFr: 'Télécommunications',
+        nameEn: 'Telecoms',
+        marketValue: '377100',
+        percent: '100.0',
+      },
+    ],
+    unpriced: [] as Array<{ ticker: string; name: string }>,
+  },
 }
 
 const entry = {
@@ -127,6 +148,142 @@ describe('portfolio page', () => {
     expect(summary).toContain('Valeur de marché377 100 F CFA')
     expect(summary).toContain('Plus-value latente+6 255 F CFA')
     expect(summary).toContain('Plus-value réalisée+21 420 F CFA')
+  })
+
+  describe('allocation', () => {
+    // Two priced positions and one without a closing price yet.
+    const spread = {
+      ...valuation,
+      totals: { ...valuation.totals, marketValue: null, unrealisedGain: null },
+      allocation: {
+        marketValue: '1384500',
+        bySecurity: [
+          {
+            ticker: 'SNTS',
+            name: 'SONATEL',
+            marketValue: '619000',
+            percent: '44.7',
+          },
+          {
+            ticker: 'SGBC',
+            name: 'SGB CI',
+            marketValue: '386000',
+            percent: '27.9',
+          },
+          {
+            ticker: 'PALC',
+            name: 'PALM CI',
+            marketValue: '379500',
+            percent: '27.4',
+          },
+        ],
+        bySector: [
+          {
+            code: 'FIN',
+            nameFr: 'Services financiers',
+            nameEn: 'Financials',
+            marketValue: '765500',
+            percent: '55.3',
+          },
+          {
+            code: 'TEL',
+            nameFr: 'Télécommunications',
+            nameEn: 'Telecoms',
+            marketValue: '619000',
+            percent: '44.7',
+          },
+        ],
+        unpriced: [{ ticker: 'NOPX', name: 'Sans Cours SA' }],
+      },
+    }
+
+    it('shows each security’s share of the market value, then each sector’s', async () => {
+      portfolioApi({ [VALUATION]: () => json(200, spread) })
+      renderApp('/portfolio')
+
+      const region = await screen.findByRole('region', { name: 'Répartition' })
+      const bars = () =>
+        within(region)
+          .getAllByRole('listitem')
+          .map((item) => text(item.textContent))
+      expect(bars()).toEqual([
+        'SNTSSONATEL44,7 %619 000 F CFA',
+        'SGBCSGB CI27,9 %386 000 F CFA',
+        'PALCPALM CI27,4 %379 500 F CFA',
+      ])
+
+      fireEvent.click(
+        within(region).getByRole('button', { name: 'Par secteur' })
+      )
+      expect(bars()).toEqual([
+        'Services financiers55,3 %765 500 F CFA',
+        'Télécommunications44,7 %619 000 F CFA',
+      ])
+    })
+
+    it('states which positions are left out for want of a closing price', async () => {
+      portfolioApi({ [VALUATION]: () => json(200, spread) })
+      renderApp('/portfolio')
+
+      const region = await screen.findByRole('region', { name: 'Répartition' })
+      expect(text(region.textContent)).toContain(
+        'Hors répartition, faute de cours de clôture publié : NOPX.'
+      )
+    })
+  })
+
+  describe('display currency', () => {
+    const signedInAs = (displayCurrency: 'XOF' | 'EUR') => () =>
+      json(200, {
+        accessToken: 'token',
+        expiresIn: 900,
+        user: { ...testUser, displayCurrency },
+      })
+
+    it('shows amounts in EUR at the peg rate when the user chose EUR', async () => {
+      portfolioApi({ 'POST /api/auth/refresh': signedInAs('EUR') })
+      renderApp('/portfolio')
+
+      const table = within(
+        (await screen.findByRole('heading', { name: 'Positions' })).closest(
+          '[data-slot="card"]'
+        ) as HTMLElement
+      )
+      const row = text(table.getByText('SNTS').closest('tr')!.textContent)
+      expect(row).toContain('6,28 €') // PMP 4120.5 F
+      expect(row).toContain('574,89 €') // market value 377 100 F
+      expect(row).toContain('+9,54 €') // unrealised gain 6 255 F
+      expect(row).not.toContain('F CFA')
+      expect(
+        screen.getByRole('button', { name: 'EUR', pressed: true })
+      ).toBeTruthy()
+    })
+
+    it('switches to EUR and saves the choice to the account', async () => {
+      let sent: unknown
+      portfolioApi({
+        'PATCH /api/users/me': async (request: Request) => {
+          sent = await request.json()
+          return json(200, { ...testUser, displayCurrency: 'EUR' })
+        },
+      })
+      renderApp('/portfolio')
+
+      const summary = await screen.findByRole('region', {
+        name: 'Synthèse du portefeuille',
+      })
+      expect(text(summary.textContent)).toContain('377 100 F CFA')
+
+      fireEvent.click(screen.getByRole('button', { name: 'EUR' }))
+
+      await waitFor(() => expect(sent).toEqual({ displayCurrency: 'EUR' }))
+      await waitFor(() =>
+        expect(text(summary.textContent)).toContain('Valeur de marché574,89 €')
+      )
+      expect(
+        screen.getByRole('button', { name: 'F CFA', pressed: false })
+      ).toBeTruthy()
+    })
   })
 
   it('lists ledger entries with their fees and SGI', async () => {
@@ -504,6 +661,12 @@ describe('portfolio page', () => {
               unrealisedGain: '0',
             },
             performanceSince: null,
+            allocation: {
+              marketValue: '0',
+              bySecurity: [],
+              bySector: [],
+              unpriced: [],
+            },
           }),
         [`GET ${ENTRIES}`]: () => json(200, []),
         ...routes,

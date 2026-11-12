@@ -154,3 +154,31 @@ export interface ReplayResult {
   positions: Position[];
   totals: PortfolioTotals;
 }
+
+/** A market value to allocate, under the key it is grouped by. */
+export interface AllocationShare {
+  /** What the share is grouped by, e.g. a security or a sector. */
+  key: string;
+  /** XOF, zero or more. */
+  marketValue: string;
+}
+
+/** One key's part of an allocation. */
+export interface AllocationLine {
+  key: string;
+  /** The key's total market value, XOF. */
+  marketValue: string;
+  /**
+   * Its share of the whole as a percentage with one decimal place, e.g.
+   * "33.4". The lines' percentages add up to exactly "100.0".
+   */
+  percent: string;
+}
+
+/** How a market value is spread across keys. */
+export interface Allocation {
+  /** The whole market value, XOF: the sum of the shares. */
+  marketValue: string;
+  /** Largest market value first, then by key. */
+  lines: AllocationLine[];
+}

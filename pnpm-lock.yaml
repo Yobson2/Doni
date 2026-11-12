@@ -233,6 +233,9 @@ importers:
       '@tanstack/react-router':
         specifier: ^1.116.0
         version: 1.116.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      big.js:
+        specifier: 6.2.2
+        version: 6.2.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -312,6 +315,9 @@ importers:
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^5.2.2
         version: 5.2.2(prettier@3.5.3)
+      '@types/big.js':
+        specifier: 6.2.2
+        version: 6.2.2
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6

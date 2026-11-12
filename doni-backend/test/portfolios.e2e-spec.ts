@@ -183,6 +183,35 @@ describe('Portfolios and ledger (e2e)', () => {
       },
       // The full trade history: performance runs from the first entry.
       performanceSince: '2026-01-05',
+      // 377100 / 577100 = 65.34%, 200000 / 577100 = 34.66%: rounded down to
+      // 65.3 + 34.6, the leftover tenth goes to the larger remainder (ORAC).
+      allocation: {
+        marketValue: '577100',
+        bySecurity: [
+          {
+            ticker: 'SNTS',
+            name: expect.any(String),
+            marketValue: '377100',
+            percent: '65.3',
+          },
+          {
+            ticker: 'ORAC',
+            name: expect.any(String),
+            marketValue: '200000',
+            percent: '34.7',
+          },
+        ],
+        bySector: [
+          {
+            code: 'TEL',
+            nameFr: expect.any(String),
+            nameEn: expect.any(String),
+            marketValue: '577100',
+            percent: '100.0',
+          },
+        ],
+        unpriced: [],
+      },
     });
   });
 
@@ -400,6 +429,79 @@ describe('Portfolios and ledger (e2e)', () => {
         pmp: '1',
       }).expect(404);
       expect(await entriesOf(holder, portfolio)).toHaveLength(3);
+    });
+  });
+
+  describe('allocation', () => {
+    it('spreads the market value by security and by sector, summing to 100.0%, and states the positions left out for want of a price', async () => {
+      const carol = await signUp();
+      const portfolio = await createPortfolio(carol, 'Réparti');
+      // A listed security with no end-of-day price yet.
+      await app.get(DataSource).query(
+        `INSERT INTO "securities" ("ticker", "name", "sectorId", "country")
+         SELECT 'NOPX', 'Sans Cours SA', "id", 'CI' FROM "sectors" WHERE "code" = 'FIN'`,
+      );
+      const buy = (ticker: string, quantity: string) =>
+        record(carol, portfolio, {
+          kind: 'buy',
+          ticker,
+          date: '2026-02-02',
+          quantity,
+          price: '1000',
+        }).expect(201);
+      await buy('SNTS', '100'); // 100 × 4190 = 419000 (TEL)
+      await buy('SGBC', '10'); //   10 × 38600 = 386000 (FIN)
+      await buy('PALC', '50'); //   50 × 7590 = 379500 (CB)
+      await buy('ORAC', '10'); //   10 × 20000 = 200000 (TEL)
+      await buy('NOPX', '10'); //   no price: left out, and said so
+      await buy('ETIT', '10'); //   sold below: a closed position
+      await record(carol, portfolio, {
+        kind: 'sell',
+        ticker: 'ETIT',
+        date: '2026-02-03',
+        quantity: '10',
+        price: '1000',
+      }).expect(201);
+
+      const res = await http()
+        .get(`/api/portfolios/${portfolio}/valuation`)
+        .set('Authorization', as(carol))
+        .expect(200);
+
+      // Total 1384500. By security: 30.26 / 27.88 / 27.41 / 14.45%, rounded
+      // down to 30.2 + 27.8 + 27.4 + 14.4 = 99.8; the two tenths left go to
+      // the largest remainders, SGBC (.80) then SNTS (.64).
+      const { allocation } = res.body;
+      expect(allocation.marketValue).toBe('1384500');
+      expect(
+        allocation.bySecurity.map((l: Record<string, string>) => [
+          l.ticker,
+          l.marketValue,
+          l.percent,
+        ]),
+      ).toEqual([
+        ['SNTS', '419000', '30.3'],
+        ['SGBC', '386000', '27.9'],
+        ['PALC', '379500', '27.4'],
+        ['ORAC', '200000', '14.4'],
+      ]);
+      // By sector: 44.71 / 27.88 / 27.41%; FIN takes the leftover tenth.
+      expect(
+        allocation.bySector.map((l: Record<string, string>) => [
+          l.code,
+          l.marketValue,
+          l.percent,
+        ]),
+      ).toEqual([
+        ['TEL', '619000', '44.7'],
+        ['FIN', '386000', '27.9'],
+        ['CB', '379500', '27.4'],
+      ]);
+      expect(allocation.unpriced).toEqual([
+        { ticker: 'NOPX', name: 'Sans Cours SA' },
+      ]);
+      // The portfolio total stays unknown while a position has no price.
+      expect(res.body.totals.marketValue).toBeNull();
     });
   });
 

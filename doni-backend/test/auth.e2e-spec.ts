@@ -247,6 +247,43 @@ describe('Sign-up, sign-in and sign-out (e2e)', () => {
         });
     });
 
+    it('keeps the display currency a member chooses: XOF by default, EUR once chosen, across sessions', async () => {
+      const member = await signUp();
+      const auth = `Bearer ${member.accessToken}`;
+
+      await http()
+        .get('/api/users/me')
+        .set('Authorization', auth)
+        .expect(200)
+        .expect((res) => expect(res.body.displayCurrency).toBe('XOF'));
+
+      await http()
+        .patch('/api/users/me')
+        .set('Authorization', auth)
+        .send({ displayCurrency: 'EUR' })
+        .expect(200)
+        .expect((res) => expect(res.body.displayCurrency).toBe('EUR'));
+
+      // A new session starts with the stored preference.
+      const res = await http()
+        .post('/api/auth/sign-in')
+        .send({ email: member.email, password: PASSWORD })
+        .expect(200);
+      expect(res.body.user.displayCurrency).toBe('EUR');
+      await http()
+        .get('/api/users/me')
+        .set('Authorization', `Bearer ${res.body.accessToken}`)
+        .expect(200)
+        .expect((me) => expect(me.body.displayCurrency).toBe('EUR'));
+
+      // Only the two display currencies are accepted.
+      await http()
+        .patch('/api/users/me')
+        .set('Authorization', auth)
+        .send({ displayCurrency: 'USD' })
+        .expect(400);
+    });
+
     it('does not let a member change their own role or status', async () => {
       const member = await signUp();
 

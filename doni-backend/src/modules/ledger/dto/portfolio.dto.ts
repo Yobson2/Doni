@@ -266,6 +266,81 @@ export class PortfolioTotalsDto {
   unrealisedGain: string | null;
 }
 
+const PERCENT_DESCRIPTION =
+  'Share of the allocated market value, in percent with one decimal place. Rounded by largest remainder, so the lines add up to exactly 100.0.';
+
+export class SecurityAllocationDto {
+  @ApiProperty({ example: 'SNTS' })
+  ticker: string;
+
+  @ApiProperty({ example: 'Sonatel' })
+  name: string;
+
+  @ApiProperty({ example: '377100' })
+  marketValue: string;
+
+  @ApiProperty({ example: '65.3', description: PERCENT_DESCRIPTION })
+  percent: string;
+}
+
+export class SectorAllocationDto {
+  @ApiProperty({ example: 'TEL' })
+  code: string;
+
+  @ApiProperty({ example: 'Télécommunications' })
+  nameFr: string;
+
+  @ApiProperty({ example: 'Telecommunications' })
+  nameEn: string;
+
+  @ApiProperty({ example: '577100' })
+  marketValue: string;
+
+  @ApiProperty({ example: '100.0', description: PERCENT_DESCRIPTION })
+  percent: string;
+}
+
+export class UnpricedPositionDto {
+  @ApiProperty({ example: 'SNTS' })
+  ticker: string;
+
+  @ApiProperty({ example: 'Sonatel' })
+  name: string;
+}
+
+/**
+ * How the market value of the open positions is spread. Only positions with
+ * an end-of-day price can be allocated; the others are listed in `unpriced`,
+ * never counted as worth 0.
+ */
+export class PortfolioAllocationDto {
+  @ApiProperty({
+    example: '577100',
+    description:
+      'Market value of the allocated (priced) open positions: the whole the percentages are shares of',
+  })
+  marketValue: string;
+
+  @ApiProperty({
+    type: [SecurityAllocationDto],
+    description: 'Largest market value first',
+  })
+  bySecurity: SecurityAllocationDto[];
+
+  @ApiProperty({
+    type: [SectorAllocationDto],
+    description: 'Largest market value first',
+  })
+  bySector: SectorAllocationDto[];
+
+  @ApiProperty({
+    type: [UnpricedPositionDto],
+    description:
+      'Open positions left out of the allocation because they have no end-of-day price yet',
+  })
+  unpriced: UnpricedPositionDto[];
+}
+
 export class PortfolioValuationDto {
   @ApiProperty({ type: PortfolioDto })
   portfolio: PortfolioDto;
@@ -288,4 +363,7 @@ export class PortfolioValuationDto {
       'Performance is measured from this day only: the latest opening position, or the first entry when the full trade history was entered. Null for an empty ledger.',
   })
   performanceSince: string | null;
+
+  @ApiProperty({ type: PortfolioAllocationDto })
+  allocation: PortfolioAllocationDto;
 }

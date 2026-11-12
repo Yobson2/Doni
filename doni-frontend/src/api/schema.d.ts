@@ -519,6 +519,11 @@ export interface components {
     schemas: {
         /** @enum {string} */
         UserRole: "ADMIN" | "CHEF_ZONE" | "MEMBRE";
+        /**
+         * @description Currency amounts are shown in. Amounts are stored in XOF; EUR is converted for display at the fixed peg rate of 655.957 XOF per EUR.
+         * @enum {string}
+         */
+        DisplayCurrency: "XOF" | "EUR";
         UserResponseDto: {
             /** Format: uuid */
             id: string;
@@ -530,6 +535,8 @@ export interface components {
             lastName: string | null;
             role: components["schemas"]["UserRole"];
             isActive: boolean;
+            /** @description Currency amounts are shown in. Amounts are stored in XOF; EUR is converted for display at the fixed peg rate of 655.957 XOF per EUR. */
+            displayCurrency: components["schemas"]["DisplayCurrency"];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -540,6 +547,8 @@ export interface components {
             firstName?: string;
             /** @example Traoré */
             lastName?: string;
+            /** @description Currency to show amounts in (display only; XOF is stored) */
+            displayCurrency?: components["schemas"]["DisplayCurrency"];
         };
         PaginationMetaDto: {
             page: number;
@@ -556,6 +565,8 @@ export interface components {
             firstName?: string;
             /** @example Traoré */
             lastName?: string;
+            /** @description Currency to show amounts in (display only; XOF is stored) */
+            displayCurrency?: components["schemas"]["DisplayCurrency"];
             /** @example true */
             isActive?: boolean;
         };
@@ -927,6 +938,53 @@ export interface components {
              */
             unrealisedGain: string | null;
         };
+        SecurityAllocationDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example Sonatel */
+            name: string;
+            /** @example 377100 */
+            marketValue: string;
+            /**
+             * @description Share of the allocated market value, in percent with one decimal place. Rounded by largest remainder, so the lines add up to exactly 100.0.
+             * @example 65.3
+             */
+            percent: string;
+        };
+        SectorAllocationDto: {
+            /** @example TEL */
+            code: string;
+            /** @example Télécommunications */
+            nameFr: string;
+            /** @example Telecommunications */
+            nameEn: string;
+            /** @example 577100 */
+            marketValue: string;
+            /**
+             * @description Share of the allocated market value, in percent with one decimal place. Rounded by largest remainder, so the lines add up to exactly 100.0.
+             * @example 100.0
+             */
+            percent: string;
+        };
+        UnpricedPositionDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example Sonatel */
+            name: string;
+        };
+        PortfolioAllocationDto: {
+            /**
+             * @description Market value of the allocated (priced) open positions: the whole the percentages are shares of
+             * @example 577100
+             */
+            marketValue: string;
+            /** @description Largest market value first */
+            bySecurity: components["schemas"]["SecurityAllocationDto"][];
+            /** @description Largest market value first */
+            bySector: components["schemas"]["SectorAllocationDto"][];
+            /** @description Open positions left out of the allocation because they have no end-of-day price yet */
+            unpriced: components["schemas"]["UnpricedPositionDto"][];
+        };
         PortfolioValuationDto: {
             portfolio: components["schemas"]["PortfolioDto"];
             /** @description Open positions first, then closed ones; by ticker */
@@ -938,6 +996,7 @@ export interface components {
              * @example 2026-01-02
              */
             performanceSince: string | null;
+            allocation: components["schemas"]["PortfolioAllocationDto"];
         };
         /** @enum {string} */
         LedgerEntryKind: "buy" | "sell" | "opening_position";

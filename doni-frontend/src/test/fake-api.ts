@@ -8,6 +8,7 @@ export const testUser = {
   lastName: null,
   role: 'MEMBRE' as const,
   isActive: true,
+  displayCurrency: 'XOF' as const,
   createdAt: '2026-01-05T10:00:00.000Z',
   updatedAt: '2026-01-05T10:00:00.000Z',
 }
