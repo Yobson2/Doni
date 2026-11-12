@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +17,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-import { toast } from 'sonner'
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
@@ -35,6 +36,7 @@ const formSchema = z.object({
 })
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+  const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -79,9 +81,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t('auth.email')}</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input
+                  type='email'
+                  autoComplete='email'
+                  placeholder='name@example.com'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,26 +99,27 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           name='password'
           render={({ field }) => (
             <FormItem className='relative'>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('auth.password')}</FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  autoComplete='current-password'
+                  placeholder='********'
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
               <Link
                 to='/forgot-password'
                 className='text-muted-foreground absolute -top-0.5 right-0 text-sm font-medium hover:opacity-75'
               >
-                Forgot password?
+                {t('auth.signIn.forgot')}
               </Link>
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
-          Login
+        <Button className='mt-2 h-11' disabled={isLoading}>
+          {t('auth.signIn.submit')}
         </Button>
-
-       
-     
       </form>
     </Form>
   )

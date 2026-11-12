@@ -12,10 +12,10 @@ import { useAuthStore } from '@/stores/authStore'
 import { handleServerError } from '@/utils/handle-server-error'
 import { FontProvider } from './context/font-context'
 import { ThemeProvider } from './context/theme-context'
+import './i18n'
 import './index.css'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
-
 
 const queryClient = new QueryClient({
   defaultOptions: {

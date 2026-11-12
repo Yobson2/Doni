@@ -1,4 +1,231 @@
 {
   "welcome": "Welcome to our app!",
-  "language": "Language"
+  "language": "Language",
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "how": "How it works",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "getStarted": "Create account",
+      "toggleMenu": "Open menu",
+      "product": "Product",
+      "trust": "Data",
+      "home": "Doni home",
+      "language": "Language",
+      "main": "Main",
+      "skip": "Skip to content"
+    },
+    "hero": {
+      "title1": "Build your BRVM portfolio,",
+      "title2": "little by little.",
+      "subtitle": "Follow listed companies, record your trades and see what your portfolio really earns, dividends included. Built for investors in the UEMOA zone.",
+      "note": "End-of-day prices from the official BRVM bulletin. Information only, not investment advice.",
+      "eyebrow": "For BRVM investors across the 8 UEMOA countries",
+      "secondary": "See how it works"
+    },
+    "features": {
+      "title": "Everything your portfolio needs",
+      "subtitle": "One place to follow the regional market and your own positions, without spreadsheets.",
+      "market": {
+        "title": "Company pages",
+        "description": "Profile, sector and price history for every listed security, with the date and source of each end-of-day price."
+      },
+      "portfolio": {
+        "title": "Portfolio tracking",
+        "description": "Record buys and sells with fees and your SGI. Doni works out your average cost (PMP) and your realised and unrealised gains."
+      },
+      "dividends": {
+        "title": "Dividends",
+        "description": "Doni suggests each dividend from the shares you held on the ex-date. You confirm the net amount you actually received."
+      },
+      "returns": {
+        "title": "Your real return",
+        "description": "Your personal return including dividends, compared with the BRVM Composite over the same period."
+      },
+      "alerts": {
+        "title": "Watchlist and alerts",
+        "description": "Follow companies you don't own yet and get a daily alert for ex-dividend dates, corporate actions and price thresholds."
+      },
+      "currency": {
+        "title": "FCFA or euros",
+        "description": "See your allocation by company and sector, in FCFA or in euros at the fixed 655.957 peg."
+      },
+      "eyebrow": "Product",
+      "moreTitle": "And around your portfolio"
+    },
+    "how": {
+      "title": "How it works",
+      "subtitle": "Start with what you already own. Doni does the arithmetic.",
+      "step1": {
+        "title": "Add your portfolio",
+        "description": "Enter the positions you already hold, then record each new buy, sell and dividend as it happens."
+      },
+      "step2": {
+        "title": "Prices update every trading day",
+        "description": "After the close, Doni reads the official daily bulletin (BOC) and checks it before showing any price."
+      },
+      "step3": {
+        "title": "See where you stand",
+        "description": "Your positions, gains and return, always labelled with the date of the prices used."
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "What people ask before signing up.",
+      "broker": {
+        "q": "Is Doni a broker?",
+        "a": "No. Doni does not buy or sell securities. You keep placing orders with your SGI and record your trades in Doni to track them."
+      },
+      "advice": {
+        "q": "Is this investment advice?",
+        "a": "No. Doni provides information and education only. Decisions to buy or sell are yours."
+      },
+      "live": {
+        "q": "Are prices live?",
+        "a": "No. Doni shows end-of-day prices from the BRVM's official daily bulletin, always with their date. If a day's data fails our checks, Doni keeps showing the last verified day until it has been reviewed."
+      },
+      "privacy": {
+        "q": "Who can see my portfolio?",
+        "a": "Only you. You can export all your data or delete your account at any time."
+      },
+      "countries": {
+        "q": "Which countries does it cover?",
+        "a": "The BRVM is the shared stock exchange of the eight UEMOA countries: Benin, Burkina Faso, Côte d'Ivoire, Guinea-Bissau, Mali, Niger, Senegal and Togo. Doni is available in French and English."
+      },
+      "more": "Still have a question? Create an account and start with a single position."
+    },
+    "cta": {
+      "title": "Start small. Keep track of everything.",
+      "subtitle": "Create your account and add your first position in a few minutes.",
+      "eyebrow": "Doni doni, little by little"
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "disclaimer": "Information and education only. Not investment advice.",
+      "tagline": "BRVM research and portfolio tracking, little by little.",
+      "product": "Product",
+      "account": "Account"
+    },
+    "preview": {
+      "title": "Example position",
+      "illustrative": "Illustrative figures",
+      "shares": "{{count}} shares",
+      "buy": "Buy",
+      "dividend": "Dividend",
+      "net": "net",
+      "avgCost": "Average cost (PMP)",
+      "lastClose": "Last close",
+      "unrealised": "Unrealised gain",
+      "totalReturn": "Return incl. dividends",
+      "dividends": "Dividends received",
+      "source": "End-of-day price · official daily bulletin (BOC)",
+      "label": "Example of a position in Doni: two buys and one dividend, with the resulting average cost and return. Illustrative figures."
+    },
+    "problem": {
+      "eyebrow": "The problem",
+      "title": "Your investments are scattered. Your real return is a guess.",
+      "statements": {
+        "title": "Trades in SGI statements",
+        "description": "Your buys, sells and fees sit in statements from your SGI."
+      },
+      "bulletin": {
+        "title": "Prices in a daily bulletin",
+        "description": "End-of-day prices are published each session in the BRVM's official bulletin."
+      },
+      "dividends": {
+        "title": "Dividends on their own",
+        "description": "Dividends arrive later, net of tax, and are easy to leave out of the sum."
+      },
+      "answer": "Doni brings them together and does the arithmetic."
+    },
+    "demo": {
+      "title": "Try the arithmetic",
+      "hint": "Change the numbers. Doni does this for every position you hold.",
+      "buy1": "First buy",
+      "buy2": "Second buy",
+      "quantity": "Shares",
+      "price": "Price per share",
+      "dividend": "Net dividend per share",
+      "lastClose": "Last close",
+      "currency": "Currency",
+      "results": "Result",
+      "shares": "Shares held",
+      "invested": "Amount invested",
+      "avgCost": "Average cost (PMP)",
+      "value": "Value at last close",
+      "unrealised": "Unrealised gain",
+      "dividends": "Dividends received",
+      "totalReturn": "Return incl. dividends",
+      "note": "Simplified example: fees not included. In Doni, your SGI fees are recorded with each trade.",
+      "peg": "Euros at the fixed peg: 1 EUR = 655.957 FCFA."
+    },
+    "dividendFlow": {
+      "label": "How Doni suggests a dividend",
+      "exDate": "Ex-date",
+      "exDateText": "You held 30 shares",
+      "suggested": "Doni suggests",
+      "suggestedText": "30 × 900 FCFA",
+      "confirm": "Confirm the net amount received",
+      "confirmed": "Confirmed",
+      "illustrative": "Illustrative figures"
+    },
+    "returnBreakdown": {
+      "label": "Return including dividends",
+      "price": "Price gain",
+      "dividends": "Dividends",
+      "total": "Total return",
+      "benchmark": "Shown next to the BRVM Composite over the same period.",
+      "illustrative": "Follows the calculator above"
+    },
+    "trust": {
+      "eyebrow": "Data",
+      "title": "Figures you can trace back",
+      "subtitle": "Doni shows where every number comes from, and what it is not.",
+      "source": {
+        "title": "Official source",
+        "description": "End-of-day prices come from the BRVM's official daily bulletin (BOC)."
+      },
+      "checked": {
+        "title": "Checked before shown",
+        "description": "Each session's data is checked first. If it fails, Doni keeps showing the last verified session."
+      },
+      "dated": {
+        "title": "Always dated",
+        "description": "Every price and every total carries the date of the session it uses."
+      },
+      "yours": {
+        "title": "Your money stays with your SGI",
+        "description": "Doni never holds funds or places orders. Only you can see your portfolio."
+      }
+    }
+  },
+  "auth": {
+    "panelTitle": "Little by little, see what your portfolio really earns.",
+    "points": {
+      "pmp": "Average cost and gains worked out for every position",
+      "dividends": "Dividends suggested from the shares you held",
+      "dated": "End-of-day prices from the official bulletin, always dated"
+    },
+    "disclaimer": "Information and education only. Not investment advice.",
+    "backHome": "Back to home",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "signIn": {
+      "title": "Sign in",
+      "subtitle": "Welcome back. Enter your email and password.",
+      "submit": "Sign in",
+      "forgot": "Forgot password?",
+      "noAccount": "New to Doni?",
+      "createAccount": "Create an account"
+    },
+    "signUp": {
+      "title": "Create your account",
+      "subtitle": "Start with one position. You can add the rest later.",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    }
+  }
 }
