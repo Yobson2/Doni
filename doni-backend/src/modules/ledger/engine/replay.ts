@@ -2,6 +2,7 @@ import { Decimal, ZERO, toDecimalString } from './decimal';
 import { InsufficientQuantityError, InvalidLedgerEntryError } from './errors';
 import type {
   LedgerEntry,
+  OpeningPositionEntry,
   Position,
   PositionValuation,
   ReplayInput,
@@ -20,13 +21,15 @@ interface Holding {
 const EMPTY: Holding = { quantity: ZERO, pmp: ZERO, realisedGain: ZERO };
 
 /**
- * Within one day, entries that add shares are applied before entries that
- * remove them, so a day's result does not depend on the order its entries
- * were recorded in.
+ * Within one day, an opening position comes first (it states the holding at
+ * the start of the day, so that day's trades apply on top of it), then
+ * entries that add shares, then entries that remove them. A day's result
+ * does not depend on the order its entries were recorded in.
  */
 const SAME_DAY_ORDER: Record<LedgerEntry['kind'], number> = {
-  buy: 0,
-  sell: 1,
+  opening_position: 0,
+  buy: 1,
+  sell: 2,
 };
 
 const byReplayOrder = (a: LedgerEntry, b: LedgerEntry): number =>
@@ -50,7 +53,12 @@ export function replay(input: ReplayInput): ReplayResult {
   const holdings = new Map<string, Holding>();
   for (const entry of [...input.entries].sort(byReplayOrder)) {
     const holding = holdings.get(entry.securityId) ?? EMPTY;
-    holdings.set(entry.securityId, applyTrade(holding, entry));
+    holdings.set(
+      entry.securityId,
+      entry.kind === 'opening_position'
+        ? applyOpening(holding, entry)
+        : applyTrade(holding, entry),
+    );
   }
 
   const positions = [...holdings]
@@ -64,9 +72,9 @@ export function replay(input: ReplayInput): ReplayResult {
 /** A plain decimal string: digits, an optional point, an optional sign. */
 const PLAIN_DECIMAL = /^-?\d+(\.\d+)?$/;
 
-function parse(
-  entry: LedgerEntry,
-  field: 'quantity' | 'price' | 'fees',
+function parse<Field extends string>(
+  entry: { id: string } & Record<Field, string>,
+  field: Field,
   accept: (value: Decimal) => boolean,
 ): Decimal {
   const raw = entry[field];
@@ -79,6 +87,18 @@ function parse(
 
 const positive = (value: Decimal) => value.gt(ZERO);
 const nonNegative = (value: Decimal) => value.gte(ZERO);
+
+/**
+ * Sets the holding to the stated quantity and PMP: its cost basis is
+ * quantity × PMP. Gains already realised on the security are kept.
+ */
+function applyOpening(holding: Holding, entry: OpeningPositionEntry): Holding {
+  return {
+    ...holding,
+    quantity: parse(entry, 'quantity', positive),
+    pmp: parse(entry, 'pmp', nonNegative),
+  };
+}
 
 function applyTrade(holding: Holding, entry: TradeEntry): Holding {
   const quantity = parse(entry, 'quantity', positive);

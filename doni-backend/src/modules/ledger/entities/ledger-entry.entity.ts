@@ -14,6 +14,8 @@ import { Portfolio } from './portfolio.entity';
 export enum LedgerEntryKind {
   BUY = 'buy',
   SELL = 'sell',
+  /** Quantity and PMP held as of a date, instead of past trades (ADR 0001). */
+  OPENING_POSITION = 'opening_position',
 }
 
 /**
@@ -52,7 +54,7 @@ export class LedgerEntryRecord {
   @JoinColumn({ name: 'securityId' })
   security?: Security;
 
-  /** The trade date (YYYY-MM-DD). */
+  /** The trade date, or the date an opening position is stated for. */
   @Column({ type: 'date' })
   tradeDate: string;
 
@@ -60,7 +62,10 @@ export class LedgerEntryRecord {
   @Column({ type: 'numeric' })
   quantity: string;
 
-  /** Price per share, excluding fees. */
+  /**
+   * Price per share, excluding fees. For an opening position, its PMP
+   * (fees included, ADR 0006), and its fees are 0.
+   */
   @Column({ type: 'numeric' })
   price: string;
 
