@@ -1,0 +1,252 @@
+// @vitest-environment jsdom
+import i18n from '@/i18n'
+import { fakeApi, json, session } from '@/test/fake-api'
+import { renderApp } from '@/test/render-app'
+import {
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { useAuthStore } from '@/stores/authStore'
+
+const PORTFOLIO_ID = '0b7f8a52-4a3e-4d0e-9d56-2f6b1c7e9a01'
+const portfolio = {
+  id: PORTFOLIO_ID,
+  name: 'Mon portefeuille',
+  createdAt: '2026-01-05T10:00:00.000Z',
+}
+const VALUATION = `GET /api/portfolios/${PORTFOLIO_ID}/valuation`
+const ENTRIES = `/api/portfolios/${PORTFOLIO_ID}/entries`
+
+// The reference case of the ledger engine, as the API returns it.
+const valuation = {
+  portfolio,
+  positions: [
+    {
+      ticker: 'SNTS',
+      name: 'SONATEL',
+      quantity: '90',
+      pmp: '4120.5',
+      costBasis: '370845',
+      realisedGain: '21420',
+      valuation: {
+        price: '4190',
+        priceDate: '2026-11-11',
+        marketValue: '377100',
+        unrealisedGain: '6255',
+      },
+    },
+  ],
+  totals: {
+    costBasis: '370845',
+    realisedGain: '21420',
+    marketValue: '377100',
+    unrealisedGain: '6255',
+  },
+}
+
+const entry = {
+  id: 'e1',
+  kind: 'buy',
+  ticker: 'SNTS',
+  securityName: 'SONATEL',
+  date: '2026-01-05',
+  quantity: '100',
+  price: '4000',
+  fees: '2000',
+  sgi: 'SGI Test Bourse',
+  recordedAt: '2026-01-05T10:00:00.000Z',
+}
+
+const sonatel = {
+  ticker: 'SNTS',
+  name: 'SONATEL',
+  isin: null,
+  sector: { code: 'TEL', nameFr: 'Télécommunications', nameEn: 'Telecoms' },
+  country: 'SN',
+  profileFr: null,
+  profileEn: null,
+  profileOriginalLanguage: 'fr',
+  latestPrice: null,
+}
+
+const portfolioApi = (routes = {}) =>
+  fakeApi({
+    'POST /api/auth/refresh': () => session('token'),
+    'GET /api/portfolios': () => json(200, [portfolio]),
+    [VALUATION]: () => json(200, valuation),
+    [`GET ${ENTRIES}`]: () => json(200, [entry]),
+    'GET /api/securities': () => json(200, [sonatel]),
+    ...routes,
+  })
+
+// Intl separates thousands with a narrow no-break space in French.
+const text = (s: string | null) => s?.replace(/\s/g, ' ')
+
+describe('portfolio page', () => {
+  beforeEach(async () => {
+    useAuthStore.getState().auth.reset()
+    await i18n.changeLanguage('fr')
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllGlobals()
+  })
+
+  it('shows positions with PMP, market value, realised and unrealised gain, and the as-of date', async () => {
+    portfolioApi()
+    renderApp('/portfolio')
+
+    await screen.findByRole('heading', { level: 1, name: 'Mon portefeuille' })
+    const table = within(
+      (await screen.findByRole('heading', { name: 'Positions' })).closest(
+        '[data-slot="card"]'
+      ) as HTMLElement
+    )
+    const row = text(table.getByText('SNTS').closest('tr')!.textContent)
+    expect(row).toContain('90')
+    expect(row).toContain('4 120,50 F CFA') // PMP
+    expect(row).toContain('4 190 F CFA') // end-of-day price
+    expect(row).toContain('au 11/11/2026') // its date
+    expect(row).toContain('377 100 F CFA') // market value
+    expect(row).toContain('+6 255 F CFA') // unrealised gain
+    expect(row).toContain('+21 420 F CFA') // realised gain
+
+    expect(
+      screen.getByText('Cours de clôture au 11 novembre 2026')
+    ).toBeTruthy()
+    const summary = text(
+      screen.getByRole('region', { name: 'Synthèse du portefeuille' })
+        .textContent
+    )
+    expect(summary).toContain('Valeur de marché377 100 F CFA')
+    expect(summary).toContain('Plus-value latente+6 255 F CFA')
+    expect(summary).toContain('Plus-value réalisée+21 420 F CFA')
+  })
+
+  it('lists ledger entries with their fees and SGI', async () => {
+    portfolioApi()
+    renderApp('/portfolio')
+
+    const heading = await screen.findByRole('heading', { name: 'Écritures' })
+    const card = within(heading.closest('[data-slot="card"]') as HTMLElement)
+    const row = text(
+      (await card.findByText('SGI Test Bourse')).closest('tr')!.textContent
+    )
+    expect(row).toContain('05/01/2026')
+    expect(row).toContain('Achat')
+    expect(row).toContain('2 000 F CFA')
+  })
+
+  it('records a sale with its fees and SGI', async () => {
+    let sent: unknown
+    portfolioApi({
+      [`POST ${ENTRIES}`]: async (request: Request) => {
+        sent = await request.json()
+        return json(201, { ...entry, id: 'e2', kind: 'sell' })
+      },
+    })
+    renderApp('/portfolio')
+    await screen.findByRole('option', { name: 'SNTS · SONATEL' })
+
+    fireEvent.change(screen.getByLabelText('Type'), {
+      target: { value: 'sell' },
+    })
+    fireEvent.change(screen.getByLabelText('Valeur'), {
+      target: { value: 'SNTS' },
+    })
+    fireEvent.change(screen.getByLabelText('Date de la transaction'), {
+      target: { value: '2026-03-16' },
+    })
+    fireEvent.change(screen.getByLabelText('Quantité'), {
+      target: { value: '60' },
+    })
+    fireEvent.change(screen.getByLabelText('Cours unitaire (F CFA)'), {
+      target: { value: '4500' },
+    })
+    fireEvent.change(screen.getByLabelText('Frais totaux (F CFA)'), {
+      target: { value: '1350' },
+    })
+    fireEvent.change(screen.getByLabelText('SGI'), {
+      target: { value: 'SGI Test Bourse' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() =>
+      expect(sent).toEqual({
+        kind: 'sell',
+        ticker: 'SNTS',
+        date: '2026-03-16',
+        quantity: '60',
+        price: '4500',
+        fees: '1350',
+        sgi: 'SGI Test Bourse',
+      })
+    )
+  })
+
+  it('explains a refused sale of more shares than held', async () => {
+    portfolioApi({
+      [`POST ${ENTRIES}`]: () =>
+        json(422, {
+          message: 'Cannot sell',
+          errors: [
+            {
+              code: 'LEDGER_ENTRY_001',
+              context: { ticker: 'SNTS', held: '90', sold: '91' },
+            },
+          ],
+        }),
+    })
+    renderApp('/portfolio')
+    await screen.findByRole('option', { name: 'SNTS · SONATEL' })
+
+    fireEvent.change(screen.getByLabelText('Type'), {
+      target: { value: 'sell' },
+    })
+    fireEvent.change(screen.getByLabelText('Valeur'), {
+      target: { value: 'SNTS' },
+    })
+    fireEvent.change(screen.getByLabelText('Date de la transaction'), {
+      target: { value: '2026-05-01' },
+    })
+    fireEvent.change(screen.getByLabelText('Quantité'), {
+      target: { value: '91' },
+    })
+    fireEvent.change(screen.getByLabelText('Cours unitaire (F CFA)'), {
+      target: { value: '4500' },
+    })
+    fireEvent.change(screen.getByLabelText('SGI'), {
+      target: { value: 'SGI Test Bourse' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'Vente refusée : vous ne déteniez que 90 titres à cette date.'
+    )
+  })
+
+  it('offers to create the first portfolio', async () => {
+    let created: unknown
+    fakeApi({
+      'POST /api/auth/refresh': () => session('token'),
+      'GET /api/portfolios': () => json(200, []),
+      'POST /api/portfolios': async (request) => {
+        created = await request.json()
+        return json(201, portfolio)
+      },
+    })
+    renderApp('/portfolio')
+
+    await screen.findByRole('heading', { name: 'Créez votre portefeuille' })
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Créer le portefeuille' })
+    )
+
+    await waitFor(() => expect(created).toEqual({ name: 'Mon portefeuille' }))
+  })
+})

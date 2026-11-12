@@ -17,7 +17,8 @@
     "signOut": "Se déconnecter",
     "skipToMain": "Aller au contenu principal",
     "securities": "Valeurs",
-    "adminCatalogue": "Catalogue et cours"
+    "adminCatalogue": "Catalogue et cours",
+    "portfolio": "Mon portefeuille"
   },
   "command": {
     "search": "Rechercher",
@@ -425,6 +426,79 @@
       "errors": {
         "exists": "Cette valeur existe déjà.",
         "invalid": "Certaines informations sont invalides."
+      }
+    }
+  },
+  "portfolio": {
+    "description": "Vos positions, déduites de vos écritures, valorisées au dernier cours de clôture publié.",
+    "loadError": "Impossible de charger votre portefeuille. Réessayez plus tard.",
+    "unknown": "Indisponible",
+    "missingPrice": "Une position n'a pas encore de cours de clôture publié : la valeur totale ne peut pas être calculée.",
+    "kind": {
+      "buy": "Achat",
+      "sell": "Vente"
+    },
+    "create": {
+      "title": "Créez votre portefeuille",
+      "description": "Enregistrez ensuite vos achats et vos ventes : Doni calcule votre PMP et vos plus-values.",
+      "name": "Nom du portefeuille",
+      "defaultName": "Mon portefeuille",
+      "submit": "Créer le portefeuille"
+    },
+    "totals": {
+      "title": "Synthèse du portefeuille",
+      "marketValue": "Valeur de marché",
+      "unrealisedGain": "Plus-value latente",
+      "realisedGain": "Plus-value réalisée",
+      "costBasis": "Coût d'acquisition"
+    },
+    "positions": {
+      "title": "Positions",
+      "empty": "Aucune position pour le moment. Enregistrez un premier achat.",
+      "security": "Valeur",
+      "quantity": "Quantité",
+      "pmp": "PMP",
+      "price": "Cours de clôture",
+      "asOf": "au {{date}}",
+      "marketValue": "Valeur de marché",
+      "unrealisedGain": "Plus-value latente",
+      "realisedGain": "Plus-value réalisée",
+      "closed": "Position soldée"
+    },
+    "entries": {
+      "title": "Écritures",
+      "description": "Chaque achat et chaque vente enregistrés, du plus ancien au plus récent.",
+      "empty": "Aucune écriture pour le moment.",
+      "date": "Date",
+      "kind": "Type",
+      "security": "Valeur",
+      "quantity": "Quantité",
+      "price": "Cours",
+      "fees": "Frais",
+      "sgi": "SGI"
+    },
+    "form": {
+      "title": "Enregistrer un achat ou une vente",
+      "description": "Reportez les montants de votre avis d’opéré : cours, frais et SGI.",
+      "kind": "Type",
+      "security": "Valeur",
+      "choose": "Choisir une valeur",
+      "date": "Date de la transaction",
+      "quantity": "Quantité",
+      "price": "Cours unitaire (F CFA)",
+      "fees": "Frais totaux (F CFA)",
+      "sgi": "SGI",
+      "submit": "Enregistrer",
+      "saved": "Écriture enregistrée",
+      "validation": {
+        "required": "Champ obligatoire.",
+        "decimal": "Saisissez un nombre, par exemple 4190 ou 4190.5.",
+        "date": "Saisissez une date.",
+        "shares": "Saisissez un nombre entier de titres, par exemple 100."
+      },
+      "errors": {
+        "insufficient": "Vente refusée : vous ne déteniez que {{held}} titres à cette date.",
+        "invalid": "Vérifiez les valeurs saisies (date, valeur, montants)."
       }
     }
   }

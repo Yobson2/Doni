@@ -1007,6 +1007,220 @@
           "Catalogue"
         ]
       }
+    },
+    "/api/portfolios": {
+      "get": {
+        "operationId": "listPortfolios",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortfolioDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List my portfolios",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "post": {
+        "operationId": "createPortfolio",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePortfolioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a portfolio",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/valuation": {
+      "get": {
+        "operationId": "getPortfolioValuation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioValuationDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Positions, PMP, realised and unrealised gains at the latest end-of-day prices",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/entries": {
+      "get": {
+        "operationId": "listLedgerEntries",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LedgerEntryDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "The portfolio’s ledger entries, oldest trade first",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "post": {
+        "operationId": "addLedgerEntry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLedgerEntryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, unknown ticker or a trade date after today"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          },
+          "422": {
+            "description": "The sale exceeds the shares held at that date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Record a buy or a sell, with its fees and SGI",
+        "tags": [
+          "Portfolios"
+        ]
+      }
     }
   },
   "info": {
@@ -1027,6 +1241,10 @@
     {
       "name": "Catalogue",
       "description": "Securities, sectors, indices and end-of-day prices (changes: admin)"
+    },
+    {
+      "name": "Portfolios",
+      "description": "My portfolios, their ledger entries and their valuation"
     },
     {
       "name": "Health",
@@ -1669,6 +1887,297 @@
         "required": [
           "code",
           "name"
+        ]
+      },
+      "PortfolioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Mon portefeuille"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt"
+        ]
+      },
+      "CreatePortfolioDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Mon portefeuille",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "PositionValuationDto": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "string",
+            "example": "4190",
+            "description": "End-of-day price used"
+          },
+          "priceDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11",
+            "description": "Trading day the price applies to (as of)"
+          },
+          "marketValue": {
+            "type": "string",
+            "example": "377100",
+            "description": "quantity × price"
+          },
+          "unrealisedGain": {
+            "type": "string",
+            "example": "6255",
+            "description": "marketValue − costBasis"
+          }
+        },
+        "required": [
+          "price",
+          "priceDate",
+          "marketValue",
+          "unrealisedGain"
+        ]
+      },
+      "PositionDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sonatel"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "90",
+            "description": "0 once fully sold"
+          },
+          "pmp": {
+            "type": "string",
+            "example": "4120.5",
+            "description": "PMP, fees included"
+          },
+          "costBasis": {
+            "type": "string",
+            "example": "370845",
+            "description": "quantity × PMP"
+          },
+          "realisedGain": {
+            "type": "string",
+            "example": "21420"
+          },
+          "valuation": {
+            "nullable": true,
+            "description": "Null when the position is closed or has no price",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PositionValuationDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "quantity",
+          "pmp",
+          "costBasis",
+          "realisedGain",
+          "valuation"
+        ]
+      },
+      "PortfolioTotalsDto": {
+        "type": "object",
+        "properties": {
+          "costBasis": {
+            "type": "string",
+            "example": "370845"
+          },
+          "realisedGain": {
+            "type": "string",
+            "example": "21420"
+          },
+          "marketValue": {
+            "type": "string",
+            "nullable": true,
+            "example": "377100",
+            "description": "Null when an open position has no end-of-day price"
+          },
+          "unrealisedGain": {
+            "type": "string",
+            "nullable": true,
+            "example": "6255",
+            "description": "Null when an open position has no end-of-day price"
+          }
+        },
+        "required": [
+          "costBasis",
+          "realisedGain",
+          "marketValue",
+          "unrealisedGain"
+        ]
+      },
+      "PortfolioValuationDto": {
+        "type": "object",
+        "properties": {
+          "portfolio": {
+            "$ref": "#/components/schemas/PortfolioDto"
+          },
+          "positions": {
+            "description": "Open positions first, then closed ones; by ticker",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PositionDto"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/PortfolioTotalsDto"
+          }
+        },
+        "required": [
+          "portfolio",
+          "positions",
+          "totals"
+        ]
+      },
+      "LedgerEntryKind": {
+        "type": "string",
+        "enum": [
+          "buy",
+          "sell"
+        ]
+      },
+      "LedgerEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LedgerEntryKind"
+              }
+            ]
+          },
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "securityName": {
+            "type": "string",
+            "example": "Sonatel"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-03-16"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "100"
+          },
+          "price": {
+            "type": "string",
+            "example": "4000"
+          },
+          "fees": {
+            "type": "string",
+            "example": "2000"
+          },
+          "sgi": {
+            "type": "string",
+            "example": "SGI Example"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the entry was recorded"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "ticker",
+          "securityName",
+          "date",
+          "quantity",
+          "price",
+          "fees",
+          "sgi",
+          "recordedAt"
+        ]
+      },
+      "CreateLedgerEntryDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LedgerEntryKind"
+              }
+            ]
+          },
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-03-16",
+            "description": "Trade date; not after today"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "100",
+            "description": "Whole number of shares"
+          },
+          "price": {
+            "type": "string",
+            "example": "4000",
+            "description": "Price per share, XOF"
+          },
+          "fees": {
+            "type": "string",
+            "example": "2000",
+            "description": "Total fees for the trade, XOF; defaults to 0"
+          },
+          "sgi": {
+            "type": "string",
+            "example": "SGI Example",
+            "description": "The SGI the trade went through",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "kind",
+          "ticker",
+          "date",
+          "quantity",
+          "price",
+          "sgi"
         ]
       }
     }
