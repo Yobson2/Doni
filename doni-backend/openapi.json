@@ -1659,6 +1659,14 @@
           "MEMBRE"
         ]
       },
+      "DisplayCurrency": {
+        "type": "string",
+        "enum": [
+          "XOF",
+          "EUR"
+        ],
+        "description": "Currency amounts are shown in. Amounts are stored in XOF; EUR is converted for display at the fixed peg rate of 655.957 XOF per EUR."
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -1690,6 +1698,14 @@
           "isActive": {
             "type": "boolean"
           },
+          "displayCurrency": {
+            "description": "Currency amounts are shown in. Amounts are stored in XOF; EUR is converted for display at the fixed peg rate of 655.957 XOF per EUR.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DisplayCurrency"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -1706,6 +1722,7 @@
           "lastName",
           "role",
           "isActive",
+          "displayCurrency",
           "createdAt",
           "updatedAt"
         ]
@@ -1720,6 +1737,14 @@
           "lastName": {
             "type": "string",
             "example": "Traoré"
+          },
+          "displayCurrency": {
+            "description": "Currency to show amounts in (display only; XOF is stored)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DisplayCurrency"
+              }
+            ]
           }
         }
       },
@@ -1774,6 +1799,14 @@
           "lastName": {
             "type": "string",
             "example": "Traoré"
+          },
+          "displayCurrency": {
+            "description": "Currency to show amounts in (display only; XOF is stored)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DisplayCurrency"
+              }
+            ]
           },
           "isActive": {
             "type": "boolean",
@@ -2601,6 +2634,121 @@
           "unrealisedGain"
         ]
       },
+      "SecurityAllocationDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sonatel"
+          },
+          "marketValue": {
+            "type": "string",
+            "example": "377100"
+          },
+          "percent": {
+            "type": "string",
+            "example": "65.3",
+            "description": "Share of the allocated market value, in percent with one decimal place. Rounded by largest remainder, so the lines add up to exactly 100.0."
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "marketValue",
+          "percent"
+        ]
+      },
+      "SectorAllocationDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "TEL"
+          },
+          "nameFr": {
+            "type": "string",
+            "example": "Télécommunications"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Telecommunications"
+          },
+          "marketValue": {
+            "type": "string",
+            "example": "577100"
+          },
+          "percent": {
+            "type": "string",
+            "example": "100.0",
+            "description": "Share of the allocated market value, in percent with one decimal place. Rounded by largest remainder, so the lines add up to exactly 100.0."
+          }
+        },
+        "required": [
+          "code",
+          "nameFr",
+          "nameEn",
+          "marketValue",
+          "percent"
+        ]
+      },
+      "UnpricedPositionDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sonatel"
+          }
+        },
+        "required": [
+          "ticker",
+          "name"
+        ]
+      },
+      "PortfolioAllocationDto": {
+        "type": "object",
+        "properties": {
+          "marketValue": {
+            "type": "string",
+            "example": "577100",
+            "description": "Market value of the allocated (priced) open positions: the whole the percentages are shares of"
+          },
+          "bySecurity": {
+            "description": "Largest market value first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecurityAllocationDto"
+            }
+          },
+          "bySector": {
+            "description": "Largest market value first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectorAllocationDto"
+            }
+          },
+          "unpriced": {
+            "description": "Open positions left out of the allocation because they have no end-of-day price yet",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnpricedPositionDto"
+            }
+          }
+        },
+        "required": [
+          "marketValue",
+          "bySecurity",
+          "bySector",
+          "unpriced"
+        ]
+      },
       "PortfolioValuationDto": {
         "type": "object",
         "properties": {
@@ -2623,13 +2771,17 @@
             "nullable": true,
             "example": "2026-01-02",
             "description": "Performance is measured from this day only: the latest opening position, or the first entry when the full trade history was entered. Null for an empty ledger."
+          },
+          "allocation": {
+            "$ref": "#/components/schemas/PortfolioAllocationDto"
           }
         },
         "required": [
           "portfolio",
           "positions",
           "totals",
-          "performanceSince"
+          "performanceSince",
+          "allocation"
         ]
       },
       "LedgerEntryKind": {

@@ -13,6 +13,8 @@ interface AuthState {
      */
     accessToken: string
     setSession: (session: Session) => void
+    /** Replaces the signed-in user, e.g. after they update their account. */
+    setUser: (user: AuthUser) => void
     reset: () => void
   }
 }
@@ -23,6 +25,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     accessToken: '',
     setSession: ({ accessToken, user }) =>
       set((state) => ({ auth: { ...state.auth, accessToken, user } })),
+    setUser: (user) => set((state) => ({ auth: { ...state.auth, user } })),
     reset: () =>
       set((state) => ({
         auth: { ...state.auth, accessToken: '', user: null },

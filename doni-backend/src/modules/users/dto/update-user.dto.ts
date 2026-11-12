@@ -1,5 +1,12 @@
-import { IsString, IsOptional, IsBoolean, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { DisplayCurrency } from '../entities/user.entity';
 
 /** What a user may change on their own account. */
 export class UpdateProfileDto {
@@ -14,6 +21,15 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(100)
   lastName?: string;
+
+  @ApiPropertyOptional({
+    enum: DisplayCurrency,
+    enumName: 'DisplayCurrency',
+    description: 'Currency to show amounts in (display only; XOF is stored)',
+  })
+  @IsOptional()
+  @IsEnum(DisplayCurrency)
+  displayCurrency?: DisplayCurrency;
 }
 
 /** What an admin may change on any account. */

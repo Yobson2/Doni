@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import {
   FutureTradeDateError,
   InsufficientQuantityException,
@@ -38,6 +38,7 @@ import {
   LedgerEntryRecord,
 } from './entities/ledger-entry.entity';
 import { Portfolio } from './entities/portfolio.entity';
+import { allocationOf } from './portfolio-allocation';
 
 /**
  * Portfolios and their ledgers. Every method takes the current user's id
@@ -168,7 +169,7 @@ export class PortfoliosService {
   /**
    * The portfolio's positions valued at the latest published end-of-day
    * price of each security, read through the PriceSource, with that price's
-   * date.
+   * date, and how their market value is allocated.
    */
   async valuation(
     ownerId: string,
@@ -214,7 +215,20 @@ export class PortfoliosService {
       positions,
       totals: result.totals,
       performanceSince: performanceStart(entries),
+      allocation: allocationOf(
+        result.positions,
+        await this.withSectors([...securities.keys()]),
+      ),
     };
+  }
+
+  /** The securities with those ids, each with its sector, by id. */
+  private async withSectors(ids: string[]): Promise<Map<string, Security>> {
+    const securities = await this.portfolios.manager.find(Security, {
+      where: { id: In(ids) },
+      relations: { sector: true },
+    });
+    return new Map(securities.map((security) => [security.id, security]));
   }
 
   /** The user's portfolio with that id; anyone else's is "not found". */

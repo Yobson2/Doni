@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@common/constants/roles.constant';
 import { PaginationMetaDto } from '@common/dto/pagination.dto';
+import { DisplayCurrency } from '../entities/user.entity';
 
 /** A user account as the API returns it (never includes the password). */
 export class UserResponseDto {
@@ -21,6 +22,14 @@ export class UserResponseDto {
 
   @ApiProperty()
   isActive: boolean;
+
+  @ApiProperty({
+    enum: DisplayCurrency,
+    enumName: 'DisplayCurrency',
+    description:
+      'Currency amounts are shown in. Amounts are stored in XOF; EUR is converted for display at the fixed peg rate of 655.957 XOF per EUR.',
+  })
+  displayCurrency: DisplayCurrency;
 
   @ApiProperty({ format: 'date-time' })
   createdAt: string;

@@ -25,7 +25,6 @@ import {
   formatLongDate,
   formatQuantity,
   formatShortDate,
-  formatXof,
 } from '@/features/securities/format'
 import {
   type Portfolio,
@@ -34,12 +33,15 @@ import {
   portfoliosQuery,
   valuationQuery,
 } from './api'
+import { AllocationCard } from './components/allocation'
 import { CreatePortfolio } from './components/create-portfolio'
 import { EntryForm } from './components/entry-form'
 import { ENTRY_MODES, type EntryMode } from './components/form-fields'
 import { Onboarding } from './components/onboarding'
 import { OpeningPositionForm } from './components/opening-position-form'
-import { formatGain, formatPmp, signOf } from './format'
+import { CurrencyToggle } from './display-currency'
+import { signOf } from './format'
+import { useMoney } from './use-money'
 
 const gainClass = (value: string) =>
   cn(
@@ -77,9 +79,14 @@ function PortfolioView({ portfolio }: { portfolio: Portfolio }) {
 
   return (
     <div className='space-y-6'>
-      <div className='space-y-1'>
-        <h1 className='text-2xl font-bold tracking-tight'>{portfolio.name}</h1>
-        <p className='text-muted-foreground'>{t('portfolio.description')}</p>
+      <div className='flex flex-wrap items-start justify-between gap-4'>
+        <div className='space-y-1'>
+          <h1 className='text-2xl font-bold tracking-tight'>
+            {portfolio.name}
+          </h1>
+          <p className='text-muted-foreground'>{t('portfolio.description')}</p>
+        </div>
+        <CurrencyToggle />
       </div>
 
       {valuation.isPending ? (
@@ -90,6 +97,9 @@ function PortfolioView({ portfolio }: { portfolio: Portfolio }) {
         <>
           <Totals valuation={valuation.data} />
           <Positions valuation={valuation.data} />
+          {valuation.data.positions.length > 0 && (
+            <AllocationCard allocation={valuation.data.allocation} />
+          )}
         </>
       )}
 
@@ -156,6 +166,7 @@ function latestPriceDate(valuation: PortfolioValuation): string | null {
 function Totals({ valuation }: { valuation: PortfolioValuation }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
+  const money = useMoney()
   const { totals } = valuation
   const asOf = latestPriceDate(valuation)
   const unknown = t('portfolio.unknown')
@@ -163,12 +174,12 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
   const tiles = [
     {
       label: t('portfolio.totals.marketValue'),
-      value: totals.marketValue ? formatXof(totals.marketValue, lang) : unknown,
+      value: totals.marketValue ? money.amount(totals.marketValue) : unknown,
     },
     {
       label: t('portfolio.totals.unrealisedGain'),
       value: totals.unrealisedGain
-        ? formatGain(totals.unrealisedGain, lang)
+        ? money.gain(totals.unrealisedGain)
         : unknown,
       className: totals.unrealisedGain
         ? gainClass(totals.unrealisedGain)
@@ -176,12 +187,12 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
     },
     {
       label: t('portfolio.totals.realisedGain'),
-      value: formatGain(totals.realisedGain, lang),
+      value: money.gain(totals.realisedGain),
       className: gainClass(totals.realisedGain),
     },
     {
       label: t('portfolio.totals.costBasis'),
-      value: formatXof(totals.costBasis, lang),
+      value: money.amount(totals.costBasis),
     },
   ]
 
@@ -224,6 +235,7 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
 function Positions({ valuation }: { valuation: PortfolioValuation }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
+  const money = useMoney()
 
   return (
     <Card>
@@ -285,12 +297,12 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
                       {formatQuantity(position.quantity, lang)}
                     </TableCell>
                     <TableCell className='text-right tabular-nums'>
-                      {closed ? '—' : formatPmp(position.pmp, lang)}
+                      {closed ? '—' : money.pmp(position.pmp)}
                     </TableCell>
                     <TableCell className='text-right tabular-nums'>
                       {v ? (
                         <>
-                          {formatXof(v.price, lang)}
+                          {money.amount(v.price)}
                           <span className='text-muted-foreground block text-xs'>
                             {t('portfolio.positions.asOf', {
                               date: formatShortDate(v.priceDate, lang),
@@ -302,7 +314,7 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
                       )}
                     </TableCell>
                     <TableCell className='text-right tabular-nums'>
-                      {v ? formatXof(v.marketValue, lang) : '—'}
+                      {v ? money.amount(v.marketValue) : '—'}
                     </TableCell>
                     <TableCell
                       className={cn(
@@ -310,7 +322,7 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
                         v && gainClass(v.unrealisedGain)
                       )}
                     >
-                      {v ? formatGain(v.unrealisedGain, lang) : '—'}
+                      {v ? money.gain(v.unrealisedGain) : '—'}
                     </TableCell>
                     <TableCell
                       className={cn(
@@ -318,7 +330,7 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
                         gainClass(position.realisedGain)
                       )}
                     >
-                      {formatGain(position.realisedGain, lang)}
+                      {money.gain(position.realisedGain)}
                     </TableCell>
                   </TableRow>
                 )
@@ -334,6 +346,7 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
 function Entries({ portfolioId }: { portfolioId: string }) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
+  const money = useMoney()
   const entries = useQuery(entriesQuery(portfolioId))
 
   return (
@@ -389,17 +402,17 @@ function Entries({ portfolioId }: { portfolioId: string }) {
                     <TableCell className='text-right tabular-nums'>
                       {opening ? (
                         <>
-                          {formatPmp(entry.price, lang)}
+                          {money.pmp(entry.price)}
                           <span className='text-muted-foreground block text-xs'>
                             {t('portfolio.entries.pmp')}
                           </span>
                         </>
                       ) : (
-                        formatXof(entry.price, lang)
+                        money.amount(entry.price)
                       )}
                     </TableCell>
                     <TableCell className='text-right tabular-nums'>
-                      {opening ? '—' : formatXof(entry.fees, lang)}
+                      {opening ? '—' : money.amount(entry.fees)}
                     </TableCell>
                     <TableCell>{entry.sgi}</TableCell>
                   </TableRow>
