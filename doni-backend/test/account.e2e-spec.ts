@@ -152,6 +152,7 @@ describe('Account data export and deletion (e2e)', () => {
         lastName: null,
         role: 'MEMBRE',
         isActive: true,
+        displayCurrency: 'XOF',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -184,6 +185,7 @@ describe('Account data export and deletion (e2e)', () => {
               createdAt: expect.any(String),
             }),
           ],
+          corrections: [],
         },
       ]);
 
@@ -329,6 +331,34 @@ describe('Account data export and deletion (e2e)', () => {
       expect(cookie.attributes).toEqual(
         expect.arrayContaining(['Path=/api/auth', 'HttpOnly']),
       );
+    });
+  });
+
+  describe('export of corrections', () => {
+    it('includes deleted and edited ledger entries with their corrections', async () => {
+      const bob = await signUp();
+      const portfolioId = await giveData(bob);
+      const entries = await http()
+        .get(`/api/portfolios/${portfolioId}/entries`)
+        .set('Authorization', as(bob))
+        .expect(200);
+      const buy = (entries.body as { id: string; kind: string }[]).find(
+        (e) => e.kind === 'buy',
+      ) as { id: string };
+      await http()
+        .delete(`/api/portfolios/${portfolioId}/entries/${buy.id}`)
+        .set('Authorization', as(bob))
+        .expect(204);
+
+      const res = await exportOf(bob).expect(200);
+      const [portfolio] = (res.body.sections as Record<string, unknown>)
+        .portfolios as { ledger: { id: string }[]; corrections: unknown[] }[];
+
+      // The ledger keeps every entry ever recorded, the deleted one too.
+      expect(portfolio.ledger.map((e) => e.id)).toContain(buy.id);
+      expect(portfolio.corrections).toEqual([
+        { entryId: buy.id, replacementId: null, createdAt: expect.any(String) },
+      ]);
     });
   });
 
