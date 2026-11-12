@@ -1,0 +1,490 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ========================================
+   LIGHT MODE COLORS (Default Theme)
+   ======================================== */
+:root {
+  /* ========================================
+     BORDER RADIUS SYSTEM
+     Use: rounded-sm, rounded-md, rounded-lg, rounded-xl, rounded-2xl
+     ======================================== */
+  --radius: 0.625rem;                /* Base radius (10px) */
+
+  /* ========================================
+     BASE COLORS
+     Use: bg-background, text-foreground
+     ======================================== */
+  --background: oklch(1 0 0);        /* Main page background (white) */
+  --foreground: oklch(0.145 0 0);    /* Main text color (black) */
+
+  /* ========================================
+     CARD COLORS
+     Use: bg-card, text-card-foreground
+     ======================================== */
+  --card: oklch(1 0 0);              /* Card backgrounds */
+  --card-foreground: oklch(0.145 0 0); /* Text on cards */
+
+  /* ========================================
+     POPOVER COLORS
+     Use: bg-popover, text-popover-foreground
+     ======================================== */
+  --popover: oklch(1 0 0);           /* Dropdown/popup backgrounds */
+  --popover-foreground: oklch(0.145 0 0); /* Text in dropdowns */
+
+  /* ========================================
+     PRIMARY COLORS
+     Use: bg-primary, text-primary-foreground, hover:bg-primary/90
+     ======================================== */
+  --primary: oklch(0.205 0 0);       /* Main action buttons (dark) */
+  --primary-foreground: oklch(0.985 0 0); /* Text on primary buttons (white) */
+
+  /* ========================================
+     SECONDARY COLORS
+     Use: bg-secondary, text-secondary-foreground
+     ======================================== */
+  --secondary: oklch(0.97 0 0);      /* Secondary buttons (light gray) */
+  --secondary-foreground: oklch(0.205 0 0); /* Text on secondary buttons */
+
+  /* ========================================
+     MUTED COLORS
+     Use: bg-muted, text-muted-foreground
+     ======================================== */
+  --muted: oklch(0.97 0 0);          /* Subtle backgrounds (light gray) */
+  --muted-foreground: oklch(0.556 0 0); /* Disabled/less important text */
+
+  /* ========================================
+     ACCENT COLORS
+     Use: bg-accent, text-accent-foreground, hover:bg-accent
+     ======================================== */
+  --accent: oklch(0.97 0 0);         /* Hover states for items */
+  --accent-foreground: oklch(0.205 0 0); /* Text on accent backgrounds */
+
+  /* ========================================
+     STATUS COLORS
+     Use: bg-destructive, bg-success, bg-warning, bg-info
+     ======================================== */
+  --destructive: oklch(0.577 0.245 27.325); /* Error/delete actions (red) */
+  --destructive-foreground: oklch(0.985 0 0); /* Text on destructive */
+
+  --success: oklch(0.65 0.19 150);   /* Success states (green) */
+  --success-foreground: oklch(0.985 0 0); /* Text on success */
+
+  --warning: oklch(0.75 0.15 85);    /* Warning states (yellow/amber) */
+  --warning-foreground: oklch(0.145 0 0); /* Text on warning */
+
+  --info: oklch(0.6 0.15 250);       /* Info states (blue) */
+  --info-foreground: oklch(0.985 0 0); /* Text on info */
+
+  /* ========================================
+     BORDER & INPUT COLORS
+     Use: border-border, bg-input, ring-ring
+     ======================================== */
+  --border: oklch(0.922 0 0);        /* All borders (light gray) */
+  --input: oklch(0.922 0 0);         /* Input field borders */
+  --ring: oklch(0.708 0 0);          /* Focus ring color */
+
+  /* ========================================
+     CHART COLORS
+     Use in Recharts: fill="hsl(var(--chart-1))"
+     ======================================== */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* ========================================
+     SIDEBAR COLORS
+     Use: bg-sidebar, text-sidebar-foreground
+     ======================================== */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* ========================================
+     BRAND COLORS - Customize These!
+     Use: bg-brand, text-brand-foreground, bg-brand-secondary
+     ======================================== */
+  --brand: oklch(0.65 0.19 30);      /* Orange accent */
+  --brand-foreground: oklch(0.985 0 0); /* White text */
+  --brand-secondary: oklch(0.55 0.20 353); /* Red accent */
+  --brand-secondary-foreground: oklch(0.985 0 0);
+  --brand-dark: oklch(0.35 0.10 212); /* Deep blue */
+  --brand-dark-foreground: oklch(0.985 0 0);
+
+  /* ========================================
+     TYPOGRAPHY SYSTEM
+     Use: text-xs, text-sm, text-base, text-lg, etc.
+     Already handled by Tailwind, documented here for reference
+     ======================================== */
+  --font-size-xs: 0.75rem;           /* 12px */
+  --font-size-sm: 0.875rem;          /* 14px */
+  --font-size-base: 1rem;            /* 16px */
+  --font-size-lg: 1.125rem;          /* 18px */
+  --font-size-xl: 1.25rem;           /* 20px */
+  --font-size-2xl: 1.5rem;           /* 24px */
+  --font-size-3xl: 1.875rem;         /* 30px */
+  --font-size-4xl: 2.25rem;          /* 36px */
+  --font-size-5xl: 3rem;             /* 48px */
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ========================================
+     SPACING SYSTEM (8px base grid)
+     Use: p-1, m-2, gap-4, etc. (handled by Tailwind)
+     Documented for reference
+     ======================================== */
+  --spacing-0: 0;                    /* 0px */
+  --spacing-1: 0.25rem;              /* 4px */
+  --spacing-2: 0.5rem;               /* 8px */
+  --spacing-3: 0.75rem;              /* 12px */
+  --spacing-4: 1rem;                 /* 16px */
+  --spacing-5: 1.25rem;              /* 20px */
+  --spacing-6: 1.5rem;               /* 24px */
+  --spacing-8: 2rem;                 /* 32px */
+  --spacing-10: 2.5rem;              /* 40px */
+  --spacing-12: 3rem;                /* 48px */
+  --spacing-16: 4rem;                /* 64px */
+
+  /* ========================================
+     SHADOW/ELEVATION SYSTEM
+     Use: shadow-sm, shadow-md, shadow-lg, etc.
+     ======================================== */
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1), 0 4px 6px -4px oklch(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 oklch(0 0 0 / 0.05);
+
+  /* ========================================
+     ANIMATION SYSTEM
+     Use with Tailwind: transition, duration-normal, ease-out
+     ======================================== */
+  --duration-fast: 150ms;            /* Quick interactions */
+  --duration-normal: 300ms;          /* Standard transitions */
+  --duration-slow: 500ms;            /* Smooth animations */
+  --duration-slower: 700ms;          /* Page transitions */
+
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ========================================
+     OPACITY SCALE
+     Use: bg-black/10, text-white/50, etc.
+     ======================================== */
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-100: 1;
+
+  /* ========================================
+     Z-INDEX SCALE
+     Use for layering components consistently
+     ======================================== */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+}
+
+/* ========================================
+   DARK MODE COLORS
+   Automatically applied when <html class="dark">
+   ======================================== */
+.dark {
+  /* ========================================
+     BASE COLORS
+     ======================================== */
+  --background: oklch(0.145 0 0);    /* Dark background */
+  --foreground: oklch(0.985 0 0);    /* Light text */
+
+  /* ========================================
+     CARD COLORS
+     ======================================== */
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+
+  /* ========================================
+     POPOVER COLORS
+     ======================================== */
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  /* ========================================
+     PRIMARY COLORS
+     ======================================== */
+  --primary: oklch(0.922 0 0);       /* Light primary in dark mode */
+  --primary-foreground: oklch(0.205 0 0); /* Dark text on light button */
+
+  /* ========================================
+     SECONDARY & MUTED COLORS
+     ======================================== */
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+
+  /* ========================================
+     ACCENT COLORS
+     ======================================== */
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+
+  /* ========================================
+     STATUS COLORS
+     ======================================== */
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --success: oklch(0.70 0.20 150);   /* Brighter green for dark mode */
+  --success-foreground: oklch(0.145 0 0);
+
+  --warning: oklch(0.80 0.16 85);    /* Brighter yellow for dark mode */
+  --warning-foreground: oklch(0.145 0 0);
+
+  --info: oklch(0.65 0.16 250);      /* Brighter blue for dark mode */
+  --info-foreground: oklch(0.985 0 0);
+
+  /* ========================================
+     BORDERS & INPUTS
+     ======================================== */
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+
+  /* ========================================
+     CHART COLORS FOR DARK MODE
+     ======================================== */
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  /* ========================================
+     SIDEBAR IN DARK MODE
+     ======================================== */
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  /* ========================================
+     BRAND COLORS ADJUSTED FOR DARK MODE
+     ======================================== */
+  --brand: oklch(0.70 0.20 30);      /* Brighter orange */
+  --brand-foreground: oklch(0.145 0 0);
+  --brand-secondary: oklch(0.60 0.22 353); /* Brighter red */
+  --brand-secondary-foreground: oklch(0.985 0 0);
+  --brand-dark: oklch(0.60 0.12 212); /* Lighter blue (naming paradox) */
+  --brand-dark-foreground: oklch(0.145 0 0);
+
+  /* ========================================
+     SHADOWS ADJUSTED FOR DARK MODE
+     ======================================== */
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.4), 0 2px 4px -2px oklch(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.5), 0 4px 6px -4px oklch(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.6), 0 8px 10px -6px oklch(0 0 0 / 0.5);
+  --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.7);
+  --shadow-inner: inset 0 2px 4px 0 oklch(0 0 0 / 0.3);
+
+}
+
+/* ========================================
+   TAILWIND V4 THEME CONFIGURATION
+   Do not modify - used internally by Tailwind
+   ======================================== */
+@theme inline {
+  /* Font families - Use: font-inter, font-manrope */
+  --font-inter: 'Inter', 'sans-serif';
+  --font-manrope: 'Manrope', 'sans-serif';
+
+  /* Dynamic radius values */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Color mappings for Tailwind */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-foreground: var(--brand-secondary-foreground);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-dark-foreground: var(--brand-dark-foreground);
+}
+
+/* ========================================
+   GLOBAL BASE STYLES
+   ======================================== */
+@layer base {
+  /* Universal styles - borders, focus rings, scrollbars */
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* Prevent horizontal scroll */
+  html {
+    @apply overflow-x-hidden;
+  }
+
+  /* Main body setup - uses bg-background and text-foreground */
+  body {
+    @apply bg-background text-foreground min-h-svh w-full;
+  }
+
+  /* All buttons get pointer cursor when enabled */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Disabled state styling for better UX */
+  button:disabled,
+  [role='button']:disabled {
+    opacity: var(--opacity-50);
+    cursor: not-allowed;
+  }
+
+  /* Focus visible styles for keyboard navigation accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Mobile fix: prevent zoom on input focus (iOS Safari) */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* ========================================
+   CUSTOM UTILITIES
+   Use these in your JSX with className="..."
+   ======================================== */
+
+/* Container utility - Use: className="container" */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+/* Hide scrollbars - Use: className="no-scrollbar" */
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+  -ms-overflow-style: none;   /* IE, Edge */
+  scrollbar-width: none;       /* Firefox */
+}
+
+/* Faded bottom effect - Use: className="faded-bottom" */
+/* Creates white/black gradient fade at bottom of container */
+@utility faded-bottom {
+  @apply after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:hidden after:h-32 after:w-full after:bg-[linear-gradient(180deg,_transparent_10%,_white_70%)] md:after:block dark:after:bg-[linear-gradient(180deg,_transparent_10%,_black_70%)];
+}
+
+/* ========================================
+   RADIX UI ANIMATIONS
+   For Collapsible components - applied automatically
+   ======================================== */
+.CollapsibleContent {
+  overflow: hidden;
+}
+.CollapsibleContent[data-state='open'] {
+  animation: slideDown 300ms ease-out;
+}
+.CollapsibleContent[data-state='closed'] {
+  animation: slideUp 300ms ease-out;
+}
+
+@keyframes slideDown {
+  from { height: 0; }
+  to { height: var(--radix-collapsible-content-height); }
+}
+
+@keyframes slideUp {
+  from { height: var(--radix-collapsible-content-height); }
+  to { height: 0; }
+}
+
+
