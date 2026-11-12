@@ -389,6 +389,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portfolios/{id}/opening-positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record an opening position: the quantity held and its PMP as of a date, instead of the past trades */
+        post: operations["addOpeningPosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/watchlist": {
         parameters: {
             query?: never;
@@ -843,9 +860,15 @@ export interface components {
             /** @description Open positions first, then closed ones; by ticker */
             positions: components["schemas"]["PositionDto"][];
             totals: components["schemas"]["PortfolioTotalsDto"];
+            /**
+             * Format: date
+             * @description Performance is measured from this day only: the latest opening position, or the first entry when the full trade history was entered. Null for an empty ledger.
+             * @example 2026-01-02
+             */
+            performanceSince: string | null;
         };
         /** @enum {string} */
-        LedgerEntryKind: "buy" | "sell";
+        LedgerEntryKind: "buy" | "sell" | "opening_position";
         LedgerEntryDto: {
             /** Format: uuid */
             id: string;
@@ -861,9 +884,15 @@ export interface components {
             date: string;
             /** @example 100 */
             quantity: string;
-            /** @example 4000 */
+            /**
+             * @description Price per share excluding fees; for an opening position, its PMP
+             * @example 4000
+             */
             price: string;
-            /** @example 2000 */
+            /**
+             * @description 0 for an opening position
+             * @example 2000
+             */
             fees: string;
             /** @example SGI Example */
             sgi: string;
@@ -873,8 +902,10 @@ export interface components {
              */
             recordedAt: string;
         };
+        /** @enum {string} */
+        TradeKind: "buy" | "sell";
         CreateLedgerEntryDto: {
-            kind: components["schemas"]["LedgerEntryKind"];
+            kind: components["schemas"]["TradeKind"];
             /** @example SNTS */
             ticker: string;
             /**
@@ -900,6 +931,31 @@ export interface components {
             fees?: string;
             /**
              * @description The SGI the trade went through
+             * @example SGI Example
+             */
+            sgi: string;
+        };
+        CreateOpeningPositionDto: {
+            /** @example SNTS */
+            ticker: string;
+            /**
+             * Format: date
+             * @description Day the holding is stated for (at the start of that day); not after today
+             * @example 2026-01-02
+             */
+            date: string;
+            /**
+             * @description Whole number of shares held
+             * @example 200
+             */
+            quantity: string;
+            /**
+             * @description PMP of the shares held, fees included, XOF
+             * @example 3850.25
+             */
+            pmp: string;
+            /**
+             * @description The SGI the shares are held with
              * @example SGI Example
              */
             sgi: string;
@@ -2090,6 +2146,59 @@ export interface operations {
                 content?: never;
             };
             /** @description The sale exceeds the shares held at that date */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    addOpeningPosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOpeningPositionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"];
+                };
+            };
+            /** @description Invalid values, unknown ticker or a date after today */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A later sale would then exceed the shares held at its date */
             422: {
                 headers: {
                     [name: string]: unknown;

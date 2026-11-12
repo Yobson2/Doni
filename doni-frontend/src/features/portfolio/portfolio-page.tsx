@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -20,6 +22,7 @@ import {
 import { AsOfLabel } from '@/features/securities/components/as-of-label'
 import { PageShell } from '@/features/securities/components/page-shell'
 import {
+  formatLongDate,
   formatQuantity,
   formatShortDate,
   formatXof,
@@ -33,6 +36,9 @@ import {
 } from './api'
 import { CreatePortfolio } from './components/create-portfolio'
 import { EntryForm } from './components/entry-form'
+import { ENTRY_MODES, type EntryMode } from './components/form-fields'
+import { Onboarding } from './components/onboarding'
+import { OpeningPositionForm } from './components/opening-position-form'
 import { formatGain, formatPmp, signOf } from './format'
 
 const gainClass = (value: string) =>
@@ -87,10 +93,53 @@ function PortfolioView({ portfolio }: { portfolio: Portfolio }) {
         </>
       )}
 
-      <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
-        <EntryForm portfolioId={portfolio.id} />
-        <Entries portfolioId={portfolio.id} />
+      <Ledger portfolioId={portfolio.id} />
+    </div>
+  )
+}
+
+/**
+ * Records ledger entries and lists them. An empty portfolio first asks how
+ * to start: opening positions first, the full trade history second.
+ */
+function Ledger({ portfolioId }: { portfolioId: string }) {
+  const { t } = useTranslation()
+  const entries = useQuery(entriesQuery(portfolioId))
+  const [chosen, setChosen] = useState<EntryMode | null>(null)
+
+  if (entries.isPending) return <Skeleton className='h-48 w-full' />
+  if (entries.data?.length === 0 && chosen === null) {
+    return <Onboarding onChoose={setChosen} />
+  }
+
+  const mode = chosen ?? 'trade'
+  return (
+    <div className='grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'>
+      <div className='space-y-3'>
+        <div
+          role='group'
+          aria-label={t('portfolio.mode.label')}
+          className='flex flex-wrap gap-2'
+        >
+          {ENTRY_MODES.map((m) => (
+            <Button
+              key={m}
+              size='sm'
+              variant={m === mode ? 'secondary' : 'ghost'}
+              aria-pressed={m === mode}
+              onClick={() => setChosen(m)}
+            >
+              {t(`portfolio.mode.${m}`)}
+            </Button>
+          ))}
+        </div>
+        {mode === 'opening' ? (
+          <OpeningPositionForm portfolioId={portfolioId} />
+        ) : (
+          <EntryForm portfolioId={portfolioId} />
+        )}
       </div>
+      <Entries portfolioId={portfolioId} />
     </div>
   )
 }
@@ -156,6 +205,13 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
         ))}
       </div>
       {asOf && <AsOfLabel date={asOf} />}
+      {valuation.performanceSince && (
+        <p className='text-muted-foreground text-sm'>
+          {t('portfolio.performanceSince', {
+            date: formatLongDate(valuation.performanceSince, lang),
+          })}
+        </p>
+      )}
       {totals.marketValue === null && (
         <p className='text-muted-foreground text-sm'>
           {t('portfolio.missingPrice')}
@@ -317,25 +373,38 @@ function Entries({ portfolioId }: { portfolioId: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.data.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell className='tabular-nums'>
-                    {formatShortDate(entry.date, lang)}
-                  </TableCell>
-                  <TableCell>{t(`portfolio.kind.${entry.kind}`)}</TableCell>
-                  <TableCell className='font-mono'>{entry.ticker}</TableCell>
-                  <TableCell className='text-right tabular-nums'>
-                    {formatQuantity(entry.quantity, lang)}
-                  </TableCell>
-                  <TableCell className='text-right tabular-nums'>
-                    {formatXof(entry.price, lang)}
-                  </TableCell>
-                  <TableCell className='text-right tabular-nums'>
-                    {formatXof(entry.fees, lang)}
-                  </TableCell>
-                  <TableCell>{entry.sgi}</TableCell>
-                </TableRow>
-              ))}
+              {entries.data.map((entry) => {
+                // An opening position's price is its PMP, fees included.
+                const opening = entry.kind === 'opening_position'
+                return (
+                  <TableRow key={entry.id}>
+                    <TableCell className='tabular-nums'>
+                      {formatShortDate(entry.date, lang)}
+                    </TableCell>
+                    <TableCell>{t(`portfolio.kind.${entry.kind}`)}</TableCell>
+                    <TableCell className='font-mono'>{entry.ticker}</TableCell>
+                    <TableCell className='text-right tabular-nums'>
+                      {formatQuantity(entry.quantity, lang)}
+                    </TableCell>
+                    <TableCell className='text-right tabular-nums'>
+                      {opening ? (
+                        <>
+                          {formatPmp(entry.price, lang)}
+                          <span className='text-muted-foreground block text-xs'>
+                            {t('portfolio.entries.pmp')}
+                          </span>
+                        </>
+                      ) : (
+                        formatXof(entry.price, lang)
+                      )}
+                    </TableCell>
+                    <TableCell className='text-right tabular-nums'>
+                      {opening ? '—' : formatXof(entry.fees, lang)}
+                    </TableCell>
+                    <TableCell>{entry.sgi}</TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         )}

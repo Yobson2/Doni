@@ -181,6 +181,8 @@ describe('Portfolios and ledger (e2e)', () => {
         marketValue: '577100',
         unrealisedGain: '1255',
       },
+      // The full trade history: performance runs from the first entry.
+      performanceSince: '2026-01-05',
     });
   });
 
@@ -257,6 +259,147 @@ describe('Portfolios and ledger (e2e)', () => {
         price: '4000',
         ...override,
       }).expect(400);
+    });
+  });
+
+  describe('opening positions', () => {
+    let holder: string;
+    let portfolio: string;
+
+    const open = (token: string, portfolioId: string, body: object) =>
+      http()
+        .post(`/api/portfolios/${portfolioId}/opening-positions`)
+        .set('Authorization', as(token))
+        .send({ sgi: SGI, ...body });
+
+    beforeAll(async () => {
+      holder = await signUp();
+      portfolio = await createPortfolio(holder, 'Déjà investi');
+    });
+
+    it('starts an empty portfolio with no performance date', async () => {
+      const res = await http()
+        .get(`/api/portfolios/${portfolio}/valuation`)
+        .set('Authorization', as(holder))
+        .expect(200);
+      expect(res.body.performanceSince).toBeNull();
+    });
+
+    it('records an opening position as a ledger entry, its PMP as the price and no fees', async () => {
+      const res = await open(holder, portfolio, {
+        ticker: 'SNTS',
+        date: '2026-01-02',
+        quantity: '200',
+        pmp: '3850.25',
+      }).expect(201);
+      expect(res.body).toMatchObject({
+        kind: 'opening_position',
+        ticker: 'SNTS',
+        date: '2026-01-02',
+        quantity: '200',
+        price: '3850.25',
+        fees: '0',
+        sgi: SGI,
+      });
+    });
+
+    it('combines with later trades, and measures performance only from its date', async () => {
+      await record(holder, portfolio, {
+        kind: 'sell',
+        ticker: 'SNTS',
+        date: '2026-03-16',
+        quantity: '80',
+        price: '4200',
+        fees: '1680',
+      }).expect(201);
+      // A trade of another security dated before the opening position.
+      await record(holder, portfolio, {
+        kind: 'buy',
+        ticker: 'ORAC',
+        date: '2025-12-01',
+        quantity: '10',
+        price: '20500',
+      }).expect(201);
+
+      const res = await http()
+        .get(`/api/portfolios/${portfolio}/valuation`)
+        .set('Authorization', as(holder))
+        .expect(200);
+
+      // SNTS: realised (80 × 4200 − 1680) − 80 × 3850.25 = 334320 − 308020
+      //       = 26300; 120 left at 3850.25 = 462030; 120 × 4190 = 502800
+      // ORAC: 205000 at cost; 10 × 20000 = 200000
+      expect(
+        res.body.positions.find((p: { ticker: string }) => p.ticker === 'SNTS'),
+      ).toMatchObject({
+        quantity: '120',
+        pmp: '3850.25',
+        costBasis: '462030',
+        realisedGain: '26300',
+        valuation: { marketValue: '502800', unrealisedGain: '40770' },
+      });
+      expect(res.body.totals).toEqual({
+        costBasis: '667030',
+        realisedGain: '26300',
+        marketValue: '702800',
+        unrealisedGain: '35770',
+      });
+      // SNTS before 2026-01-02 is unknown: never earlier, despite ORAC.
+      expect(res.body.performanceSince).toBe('2026-01-02');
+    });
+
+    it('is refused when a later sale would then exceed the shares held', async () => {
+      // A new opening position of 50 on 2026-03-01 leaves the sale of 80
+      // on 2026-03-16 uncovered.
+      const res = await open(holder, portfolio, {
+        ticker: 'SNTS',
+        date: '2026-03-01',
+        quantity: '50',
+        pmp: '4000',
+      }).expect(422);
+      expect(res.body.errors[0]).toMatchObject({
+        code: 'LEDGER_ENTRY_001',
+        context: { ticker: 'SNTS', held: '50', sold: '80' },
+      });
+      expect(await entriesOf(holder, portfolio)).toHaveLength(3);
+    });
+
+    it('cannot be recorded through the buy and sell endpoint', async () => {
+      await record(holder, portfolio, {
+        kind: 'opening_position',
+        ticker: 'SNTS',
+        date: '2026-01-02',
+        quantity: '1',
+        price: '4000',
+      }).expect(400);
+    });
+
+    it.each([
+      ['an unknown ticker', { ticker: 'NOPE' }],
+      ['a date after today', { date: '2999-01-01' }],
+      ['a fractional quantity', { quantity: '1.5' }],
+      ['a zero quantity', { quantity: '0' }],
+      ['a negative PMP', { pmp: '-1' }],
+      ['a missing PMP', { pmp: undefined }],
+      ['a missing SGI', { sgi: '' }],
+    ])('rejects %s', async (_case, override) => {
+      await open(holder, portfolio, {
+        ticker: 'ORAC',
+        date: '2026-01-02',
+        quantity: '1',
+        pmp: '20000',
+        ...override,
+      }).expect(400);
+    });
+
+    it("cannot be recorded in another user's portfolio", async () => {
+      await open(bob, portfolio, {
+        ticker: 'SNTS',
+        date: '2026-01-02',
+        quantity: '1',
+        pmp: '1',
+      }).expect(404);
+      expect(await entriesOf(holder, portfolio)).toHaveLength(3);
     });
   });
 

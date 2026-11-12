@@ -19,3 +19,4 @@ Each portfolio has an **append-only ledger of ledger entries**, which is the sin
 - The engine can be tested exhaustively with hand-computed cases and property tests (deterministic replay, order independence within a date, never negative).
 - Replay cost grows with ledger size; caching derived positions is allowed as long as it is rebuildable from the ledger.
 - Data export can include the full ledger history.
+- Entries on the same date replay in a fixed order, whatever order they were recorded in: opening positions first (an opening position states the holding at the start of its day), then buys, then sells.

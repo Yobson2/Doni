@@ -503,11 +503,12 @@
     "missingPrice": "A position has no published closing price yet, so the total value cannot be computed.",
     "kind": {
       "buy": "Buy",
-      "sell": "Sell"
+      "sell": "Sell",
+      "opening_position": "Opening position"
     },
     "create": {
       "title": "Create your portfolio",
-      "description": "Then record your buys and sells: Doni computes your PMP and your gains.",
+      "description": "Then enter the shares you already hold, or your full history of buys and sells: Doni computes your PMP and your gains.",
       "name": "Portfolio name",
       "defaultName": "My portfolio",
       "submit": "Create portfolio"
@@ -521,7 +522,7 @@
     },
     "positions": {
       "title": "Positions",
-      "empty": "No positions yet. Record a first buy.",
+      "empty": "No positions yet. Enter the shares you already hold.",
       "security": "Security",
       "quantity": "Quantity",
       "pmp": "PMP",
@@ -534,7 +535,7 @@
     },
     "entries": {
       "title": "Ledger entries",
-      "description": "Every buy and sell recorded, oldest first.",
+      "description": "Every opening position, buy and sell recorded, oldest first.",
       "empty": "No ledger entries yet.",
       "date": "Date",
       "kind": "Type",
@@ -542,7 +543,8 @@
       "quantity": "Quantity",
       "price": "Price",
       "fees": "Fees",
-      "sgi": "SGI"
+      "sgi": "SGI",
+      "pmp": "PMP"
     },
     "form": {
       "title": "Record a buy or a sell",
@@ -567,6 +569,34 @@
         "insufficient": "Sale refused: you held only {{held}} shares at that date.",
         "invalid": "Check the values entered (date, security, amounts)."
       }
+    },
+    "performanceSince": "Performance measured since {{date}}: no return is computed before that date.",
+    "onboarding": {
+      "title": "How would you like to start?",
+      "description": "Fastest: enter what you hold today, with the PMP from your SGI statement. It takes about two minutes.",
+      "opening": {
+        "title": "I already hold shares",
+        "description": "Enter the quantity and PMP of each security as of a date. Performance is measured from that date."
+      },
+      "trades": {
+        "title": "Enter my full history",
+        "description": "Record every buy and sell from the start, with fees and SGI."
+      }
+    },
+    "mode": {
+      "label": "What do you want to record?",
+      "opening": "Opening position",
+      "trade": "Buy or sell"
+    },
+    "opening": {
+      "title": "Enter an opening position",
+      "description": "Copy the quantity held and the PMP shown on your SGI statement at that date. Buys and sells on that date apply on top.",
+      "date": "Held as of",
+      "quantity": "Quantity held",
+      "pmp": "PMP (XOF, fees included)",
+      "submit": "Record position",
+      "saved": "Opening position recorded",
+      "insufficient": "Position refused: a sale recorded after that date would exceed the {{held}} shares then held."
     }
   }
 }

@@ -503,11 +503,12 @@
     "missingPrice": "Une position n'a pas encore de cours de clôture publié : la valeur totale ne peut pas être calculée.",
     "kind": {
       "buy": "Achat",
-      "sell": "Vente"
+      "sell": "Vente",
+      "opening_position": "Position d’ouverture"
     },
     "create": {
       "title": "Créez votre portefeuille",
-      "description": "Enregistrez ensuite vos achats et vos ventes : Doni calcule votre PMP et vos plus-values.",
+      "description": "Saisissez ensuite les titres que vous détenez déjà, ou tout votre historique d'achats et de ventes : Doni calcule votre PMP et vos plus-values.",
       "name": "Nom du portefeuille",
       "defaultName": "Mon portefeuille",
       "submit": "Créer le portefeuille"
@@ -521,7 +522,7 @@
     },
     "positions": {
       "title": "Positions",
-      "empty": "Aucune position pour le moment. Enregistrez un premier achat.",
+      "empty": "Aucune position pour le moment. Saisissez les titres que vous détenez déjà.",
       "security": "Valeur",
       "quantity": "Quantité",
       "pmp": "PMP",
@@ -534,7 +535,7 @@
     },
     "entries": {
       "title": "Écritures",
-      "description": "Chaque achat et chaque vente enregistrés, du plus ancien au plus récent.",
+      "description": "Chaque position d’ouverture, achat et vente enregistrés, du plus ancien au plus récent.",
       "empty": "Aucune écriture pour le moment.",
       "date": "Date",
       "kind": "Type",
@@ -542,7 +543,8 @@
       "quantity": "Quantité",
       "price": "Cours",
       "fees": "Frais",
-      "sgi": "SGI"
+      "sgi": "SGI",
+      "pmp": "PMP"
     },
     "form": {
       "title": "Enregistrer un achat ou une vente",
@@ -567,6 +569,34 @@
         "insufficient": "Vente refusée : vous ne déteniez que {{held}} titres à cette date.",
         "invalid": "Vérifiez les valeurs saisies (date, valeur, montants)."
       }
+    },
+    "performanceSince": "Performance mesurée depuis le {{date}} : aucun rendement n’est calculé avant cette date.",
+    "onboarding": {
+      "title": "Comment voulez-vous commencer ?",
+      "description": "Le plus rapide : saisissez ce que vous détenez aujourd’hui, avec le PMP de votre relevé SGI. Cela prend environ deux minutes.",
+      "opening": {
+        "title": "J’ai déjà des actions",
+        "description": "Saisissez la quantité et le PMP de chaque valeur à une date. La performance est mesurée à partir de cette date."
+      },
+      "trades": {
+        "title": "Saisir tout mon historique",
+        "description": "Enregistrez chaque achat et chaque vente depuis le début, avec frais et SGI."
+      }
+    },
+    "mode": {
+      "label": "Que voulez-vous enregistrer ?",
+      "opening": "Position d’ouverture",
+      "trade": "Achat ou vente"
+    },
+    "opening": {
+      "title": "Saisir une position d’ouverture",
+      "description": "Reportez la quantité détenue et le PMP figurant sur votre relevé SGI à cette date. Les achats et ventes de cette date s’ajoutent ensuite.",
+      "date": "Détenu au",
+      "quantity": "Quantité détenue",
+      "pmp": "PMP (F CFA, frais inclus)",
+      "submit": "Enregistrer la position",
+      "saved": "Position d’ouverture enregistrée",
+      "insufficient": "Position refusée : une vente enregistrée après cette date dépasserait les {{held}} titres alors détenus."
     }
   }
 }

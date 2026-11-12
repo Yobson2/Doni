@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsEnum,
+  IsIn,
   IsISO8601,
   IsNotEmpty,
   IsOptional,
@@ -49,10 +49,12 @@ export class CreatePortfolioDto {
 
 // ─── Ledger entries ──────────────────────────────────────────
 
+const TRADE_KINDS = [LedgerEntryKind.BUY, LedgerEntryKind.SELL] as const;
+
 export class CreateLedgerEntryDto {
-  @ApiProperty({ enum: LedgerEntryKind, enumName: 'LedgerEntryKind' })
-  @IsEnum(LedgerEntryKind)
-  kind: LedgerEntryKind;
+  @ApiProperty({ enum: TRADE_KINDS, enumName: 'TradeKind' })
+  @IsIn(TRADE_KINDS)
+  kind: (typeof TRADE_KINDS)[number];
 
   @ApiProperty({ example: 'SNTS' })
   @IsString()
@@ -98,6 +100,53 @@ export class CreateLedgerEntryDto {
   sgi: string;
 }
 
+/**
+ * An opening position: the quantity held and its PMP as of a date, entered
+ * instead of the trades that led there (ADR 0001). It states the holding at
+ * the start of that day and replaces what earlier entries say about the
+ * security; performance is only measured from its date.
+ */
+export class CreateOpeningPositionDto {
+  @ApiProperty({ example: 'SNTS' })
+  @IsString()
+  @IsNotEmpty()
+  ticker: string;
+
+  @ApiProperty({
+    format: 'date',
+    example: '2026-01-02',
+    description:
+      'Day the holding is stated for (at the start of that day); not after today',
+  })
+  @Matches(ISO_DATE, { message: '$property must be a date as YYYY-MM-DD' })
+  @IsISO8601({ strict: true }, { message: '$property must be a real date' })
+  date: string;
+
+  @ApiProperty({ example: '200', description: 'Whole number of shares held' })
+  @Matches(SHARES, {
+    message: '$property must be a whole number of shares such as "100"',
+  })
+  quantity: string;
+
+  @ApiProperty({
+    example: '3850.25',
+    description: 'PMP of the shares held, fees included, XOF',
+  })
+  @Matches(DECIMAL, { message: '$property must be a decimal string' })
+  pmp: string;
+
+  @ApiProperty({
+    example: 'SGI Example',
+    description: 'The SGI the shares are held with',
+    maxLength: 100,
+  })
+  @Transform(trim)
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  sgi: string;
+}
+
 export class LedgerEntryDto {
   @ApiProperty({ format: 'uuid' })
   id: string;
@@ -117,10 +166,14 @@ export class LedgerEntryDto {
   @ApiProperty({ example: '100' })
   quantity: string;
 
-  @ApiProperty({ example: '4000' })
+  @ApiProperty({
+    example: '4000',
+    description:
+      'Price per share excluding fees; for an opening position, its PMP',
+  })
   price: string;
 
-  @ApiProperty({ example: '2000' })
+  @ApiProperty({ example: '2000', description: '0 for an opening position' })
   fees: string;
 
   @ApiProperty({ example: 'SGI Example' })
@@ -216,4 +269,14 @@ export class PortfolioValuationDto {
 
   @ApiProperty({ type: PortfolioTotalsDto })
   totals: PortfolioTotalsDto;
+
+  @ApiProperty({
+    type: String,
+    format: 'date',
+    nullable: true,
+    example: '2026-01-02',
+    description:
+      'Performance is measured from this day only: the latest opening position, or the first entry when the full trade history was entered. Null for an empty ledger.',
+  })
+  performanceSince: string | null;
 }

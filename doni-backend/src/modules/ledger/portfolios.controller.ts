@@ -20,6 +20,7 @@ import {
 import { GetUserId } from '@common/decorators/get-user.decorator';
 import {
   CreateLedgerEntryDto,
+  CreateOpeningPositionDto,
   CreatePortfolioDto,
   LedgerEntryDto,
   PortfolioDto,
@@ -111,5 +112,27 @@ export class PortfoliosController {
     @Body() dto: CreateLedgerEntryDto,
   ): Promise<LedgerEntryDto> {
     return this.portfolios.addEntry(userId, id, dto);
+  }
+
+  @Post(':id/opening-positions')
+  @ApiOperation({
+    operationId: 'addOpeningPosition',
+    summary:
+      'Record an opening position: the quantity held and its PMP as of a date, instead of the past trades',
+  })
+  @ApiCreatedResponse({ type: LedgerEntryDto })
+  @ApiBadRequestResponse({
+    description: 'Invalid values, unknown ticker or a date after today',
+  })
+  @ApiNotFoundResponse({ description: NOT_FOUND })
+  @ApiUnprocessableEntityResponse({
+    description: 'A later sale would then exceed the shares held at its date',
+  })
+  addOpeningPosition(
+    @GetUserId() userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateOpeningPositionDto,
+  ): Promise<LedgerEntryDto> {
+    return this.portfolios.addOpeningPosition(userId, id, dto);
   }
 }
