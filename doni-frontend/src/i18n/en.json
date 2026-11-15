@@ -642,6 +642,22 @@
       "saved": "Opening position recorded",
       "insufficient": "Position refused: a sale recorded after that date would exceed the {{held}} shares then held.",
       "duplicate": "An opening position for this security is already recorded on that date: correct it instead."
+    },
+    "currency": {
+      "label": "Display currency",
+      "XOF": "XOF",
+      "EUR": "EUR",
+      "peg": "Amounts converted at the fixed rate of €1 = 655.957 XOF. They remain stored in XOF.",
+      "saveError": "Your currency choice could not be saved. Try again."
+    },
+    "allocation": {
+      "title": "Allocation",
+      "description": "Each holding’s share of the market value, at the latest published closing price.",
+      "view": "Allocate",
+      "bySecurity": "By security",
+      "bySector": "By sector",
+      "empty": "No valued position to allocate yet.",
+      "unpriced": "Left out of the allocation, no published closing price yet: {{tickers}}."
     }
   }
 }
