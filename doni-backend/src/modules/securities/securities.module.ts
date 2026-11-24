@@ -14,6 +14,9 @@ import { CatalogueService } from './catalogue.service';
 import { CorporateAction } from './corporate-actions/corporate-action.entity';
 import { CorporateActionsController } from './corporate-actions/corporate-actions.controller';
 import { CorporateActionsService } from './corporate-actions/corporate-actions.service';
+import { ReferenceDividend } from './dividends/reference-dividend.entity';
+import { ReferenceDividendsController } from './dividends/reference-dividends.controller';
+import { ReferenceDividendsService } from './dividends/reference-dividends.service';
 import { EodPrice } from './entities/eod-price.entity';
 import { MarketIndex } from './entities/market-index.entity';
 import { Sector } from './entities/sector.entity';
@@ -40,8 +43,7 @@ import {
       MarketIndex,
       EodPrice,
       CorporateAction,
-      BocBulletin,
-      User,
+      ReferenceDividend,
     ]),
     MailModule,
   ],
@@ -50,12 +52,13 @@ import {
     SecuritiesController,
     IndicesController,
     CorporateActionsController,
-    BulletinsController,
+    ReferenceDividendsController,
   ],
   providers: [
     CatalogueService,
     PriceEntryService,
     CorporateActionsService,
+    ReferenceDividendsService,
     { provide: PRICE_SOURCE, useClass: DatabasePriceSource },
     // Daily BOC ingestion (the write side of the PriceSource).
     { provide: PRICE_DOCUMENT_PARSER, useClass: BocParser },
@@ -65,6 +68,6 @@ import {
     BocReviewService,
     BocIngestionJob,
   ],
-  exports: [PRICE_SOURCE, CorporateActionsService],
+  exports: [PRICE_SOURCE, CorporateActionsService, ReferenceDividendsService],
 })
 export class SecuritiesModule {}

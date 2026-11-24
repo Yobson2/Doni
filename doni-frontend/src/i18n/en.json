@@ -572,7 +572,8 @@
     "kind": {
       "buy": "Buy",
       "sell": "Sell",
-      "opening_position": "Opening position"
+      "opening_position": "Opening position",
+      "dividend": "Dividend"
     },
     "create": {
       "title": "Create your portfolio",
@@ -586,7 +587,10 @@
       "marketValue": "Market value",
       "unrealisedGain": "Unrealised gain",
       "realisedGain": "Realised gain",
-      "costBasis": "Cost basis"
+      "costBasis": "Cost basis",
+      "dividends": "Dividends received",
+      "totalGain": "Total gain",
+      "totalGainHint": "Total gain: realised and unrealised gains, plus the net dividends you confirmed."
     },
     "positions": {
       "title": "Positions",
@@ -599,7 +603,8 @@
       "marketValue": "Market value",
       "unrealisedGain": "Unrealised gain",
       "realisedGain": "Realised gain",
-      "closed": "Position closed"
+      "closed": "Position closed",
+      "dividends": "Dividends received"
     },
     "entries": {
       "title": "Ledger entries",
@@ -616,7 +621,8 @@
       "actions": "Actions",
       "name": "{{ticker}} of {{date}}",
       "edit": "Edit ledger entry {{entry}}",
-      "delete": "Delete ledger entry {{entry}}"
+      "delete": "Delete ledger entry {{entry}}",
+      "net": "net received"
     },
     "correction": {
       "title": "Correct the ledger entry",
@@ -702,6 +708,48 @@
       "bySector": "By sector",
       "empty": "No valued position to allocate yet.",
       "unpriced": "Left out of the allocation, no published closing price yet: {{tickers}}."
+    },
+    "dividends": {
+      "title": "Dividends",
+      "description": "Dividends declared on the securities you hold. Doni suggests a gross amount from the shares held at the ex-date; only the net amount you confirm is counted.",
+      "empty": "No dividend declared on your securities yet.",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "security": "Security",
+      "exDate": "Ex-date",
+      "paymentDate": "Payment",
+      "shares": "Shares",
+      "grossPerShare": "Gross per share",
+      "amount": "Amount",
+      "gross": "suggested gross",
+      "estimate": "estimate on the shares you hold now",
+      "net": "net received",
+      "notice": "Notice",
+      "status": {
+        "label": "Status",
+        "upcoming": "Upcoming",
+        "awaiting_payment": "Awaiting payment",
+        "suggested": "To confirm",
+        "confirmed": "Confirmed",
+        "dismissed": "Dismissed"
+      },
+      "confirm": "Confirm",
+      "confirmLabel": "Confirm the dividend {{dividend}}",
+      "dismiss": "Dismiss",
+      "dismissLabel": "Dismiss the dividend {{dividend}}",
+      "restore": "Restore",
+      "restoreLabel": "Restore the dividend {{dividend}}",
+      "dismissed": "Suggestion dismissed: it is not counted",
+      "restored": "Suggestion restored",
+      "form": {
+        "title": "Confirm the {{ticker}} dividend received",
+        "description": "Enter the net amount credited to your account, after withholding tax, as shown on your SGI statement. Suggested gross for {{shares}} shares: {{gross}}.",
+        "amount": "Net amount received (F CFA)",
+        "submit": "Save the dividend",
+        "saved": "Dividend saved: it counts toward your total gain",
+        "invalid": "Enter an amount greater than zero, for example 140675.",
+        "already": "This dividend is already recorded."
+      }
     }
   }
 }

@@ -336,59 +336,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/bulletins": {
+    "/api/securities/{ticker}/dividends": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List ingested BOCs, newest first */
-        get: operations["listBulletins"];
+        /** Dividends declared on a security, by ex-date, oldest first */
+        get: operations["listReferenceDividends"];
         put?: never;
-        post?: never;
+        /** Enter a declared dividend from its notice */
+        post: operations["createReferenceDividend"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/bulletins/{date}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read one day’s BOC: rows read and failed checks */
-        get: operations["getBulletin"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Correct misread values of a held day; checks run again */
-        patch: operations["correctBulletin"];
-        trace?: never;
-    };
-    "/api/bulletins/{date}/document": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Download the original BOC PDF */
-        get: operations["getBulletinDocument"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/bulletins/{date}/ingest": {
+    "/api/securities/{ticker}/dividends/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -396,26 +362,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
-        /** Fetch and ingest that day’s BOC now (same as the daily job) */
-        post: operations["ingestBulletin"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/bulletins/{date}/publish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Publish a held day: its prices are shown from now on */
-        post: operations["publishBulletin"];
+        /** Correct a declared dividend: suggestions follow, confirmed user dividends keep their amounts */
+        put: operations["replaceReferenceDividend"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -522,6 +471,58 @@ export interface paths {
         put: operations["editOpeningPosition"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolios/{id}/dividends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Upcoming and past dividends on the securities held, with their suggestion or confirmed amount, by payment date */
+        get: operations["getDividendCalendar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolios/{id}/dividends/{referenceDividendId}/confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the net amount received for a suggested dividend: it is recorded in the ledger as a user dividend */
+        post: operations["confirmDividend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolios/{id}/dividends/{referenceDividendId}/dismissal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Dismiss a dividend suggestion: it stays listed as dismissed and counts nowhere */
+        put: operations["dismissDividend"];
+        post?: never;
+        /** Undo a dismissal: the suggestion shows again */
+        delete: operations["restoreDividend"];
         options?: never;
         head?: never;
         patch?: never;
@@ -948,123 +949,52 @@ export interface components {
             /** @example https://www.brvm.org/fr/avis/example */
             sourceNoticeUrl: string;
         };
-        /** @enum {string} */
-        BocCheck: "trading_date" | "readable" | "securities_present" | "variation_limits" | "index_consistency" | "volumes" | "agrees_with_published";
-        CheckFailureDto: {
-            check: components["schemas"]["BocCheck"];
-            /**
-             * @description The security ticker or index code concerned
-             * @example SNTS
-             */
-            subject: string | null;
-            /** @example SNTS is in the catalogue but not listed in the bulletin. */
-            reason: string;
-        };
-        BulletinSummaryDto: {
-            /**
-             * Format: date
-             * @example 2026-11-11
-             */
-            tradingDate: string;
-            status: components["schemas"]["PriceStatus"];
-            /** @example 215 */
-            reference: string | null;
-            /** @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf */
-            sourceUrl: string;
-            /** @description SHA-256 of the original PDF, hex */
-            checksum: string;
-            /** Format: date-time */
-            fetchedAt: string;
-            failures: components["schemas"]["CheckFailureDto"][];
-            /** Format: date-time */
-            reviewedAt: string | null;
-        };
-        BulletinSecurityRowDto: {
+        ReferenceDividendDto: {
+            /** Format: uuid */
+            id: string;
             /** @example SNTS */
             ticker: string;
-            /** @example SONATEL SN */
-            name: string;
-            /** @description Whether the security is in the catalogue */
-            inCatalogue: boolean;
-            /** @example 4000 */
-            previousClose: string | null;
-            /** @example 4000 */
-            open: string | null;
-            /** @example 4190 */
-            close: string;
-            /** @example 85624 */
-            volume: string | null;
             /**
-             * @description Daily variation as printed, in percent
-             * @example 4.75
+             * @description Gross amount per share, XOF
+             * @example 1655
              */
-            variation: string | null;
-            /** @description False when suspended or not quoted that day */
-            traded: boolean;
-        };
-        BulletinIndexRowDto: {
-            /** @example BRVM-C */
-            code: string;
-            /** @example BRVM COMPOSITE */
-            name: string;
-            /** @description Whether the index is in the catalogue */
-            inCatalogue: boolean;
-            /** @example 517.17 */
-            value: string;
-            /** @example 0.85 */
-            variation: string | null;
-        };
-        BulletinDto: {
+            grossPerShare: string;
             /**
              * Format: date
-             * @example 2026-11-11
+             * @description First trading day without the dividend: shares held at the close of the day before earn it
+             * @example 2026-05-12
              */
-            tradingDate: string;
-            status: components["schemas"]["PriceStatus"];
-            /** @example 215 */
-            reference: string | null;
-            /** @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf */
-            sourceUrl: string;
-            /** @description SHA-256 of the original PDF, hex */
-            checksum: string;
-            /** Format: date-time */
-            fetchedAt: string;
-            failures: components["schemas"]["CheckFailureDto"][];
-            /** Format: date-time */
-            reviewedAt: string | null;
-            securities: components["schemas"]["BulletinSecurityRowDto"][];
-            indices: components["schemas"]["BulletinIndexRowDto"][];
-        };
-        /** @enum {string} */
-        IngestionOutcome: "published" | "held" | "unchanged" | "published_kept" | "not_available";
-        IngestionResultDto: {
+            exDate: string;
             /**
              * Format: date
-             * @example 2026-11-11
+             * @example 2026-05-20
              */
-            tradingDate: string;
-            outcome: components["schemas"]["IngestionOutcome"];
-            failures: components["schemas"]["CheckFailureDto"][];
+            paymentDate: string;
+            /**
+             * @description The notice the dividend was read from
+             * @example https://www.brvm.org/fr/avis/example
+             */
+            sourceNoticeUrl: string;
         };
-        SecurityCorrectionDto: {
-            /** @example SNTS */
-            ticker: string;
-            /** @example 4000 */
-            open?: string | null;
-            /** @example 4190 */
-            close: string;
-            /** @example 85624 */
-            volume?: string | null;
-        };
-        IndexCorrectionDto: {
-            /** @example BRVM-C */
-            code: string;
-            /** @example 517.17 */
-            value: string;
-        };
-        CorrectBulletinDto: {
-            securities?: components["schemas"]["SecurityCorrectionDto"][];
-            indices?: components["schemas"]["IndexCorrectionDto"][];
+        CreateReferenceDividendDto: {
+            /**
+             * @description Gross amount per share, XOF
+             * @example 1655
+             */
+            grossPerShare: string;
+            /**
+             * Format: date
+             * @example 2026-05-12
+             */
+            exDate: string;
+            /**
+             * Format: date
+             * @description On or after the ex-date
+             * @example 2026-05-20
+             */
+            paymentDate: string;
+            /** @example https://www.brvm.org/fr/avis/example */
+            sourceNoticeUrl: string;
         };
         PortfolioDto: {
             /** Format: uuid */
@@ -1123,6 +1053,11 @@ export interface components {
             costBasis: string;
             /** @example 21420 */
             realisedGain: string;
+            /**
+             * @description User dividends received on the security (net amounts)
+             * @example 14940
+             */
+            dividends: string;
             /** @description Null when the position is closed or has no price */
             valuation: components["schemas"]["PositionValuationDto"] | null;
         };
@@ -1141,6 +1076,16 @@ export interface components {
              * @example 6255
              */
             unrealisedGain: string | null;
+            /**
+             * @description User dividends received (net amounts confirmed by the user); dividend suggestions never count
+             * @example 14940
+             */
+            dividends: string;
+            /**
+             * @description Total gain: realisedGain + unrealisedGain + dividends. Null when an open position has no end-of-day price
+             * @example 42615
+             */
+            totalGain: string | null;
         };
         SecurityAllocationDto: {
             /** @example SNTS */
@@ -1203,7 +1148,7 @@ export interface components {
             allocation: components["schemas"]["PortfolioAllocationDto"];
         };
         /** @enum {string} */
-        LedgerEntryKind: "buy" | "sell" | "opening_position";
+        LedgerEntryKind: "buy" | "sell" | "opening_position" | "dividend";
         LedgerEntryDto: {
             /** Format: uuid */
             id: string;
@@ -1225,10 +1170,20 @@ export interface components {
              */
             price: string;
             /**
-             * @description 0 for an opening position
+             * @description 0 for an opening position or a dividend
              * @example 2000
              */
             fees: string;
+            /**
+             * @description A dividend’s net amount received, XOF; null for every other kind. For a dividend, quantity is the shares held at the ex-date and price the gross amount per share declared.
+             * @example 140675
+             */
+            amount: string | null;
+            /**
+             * Format: uuid
+             * @description The reference dividend a dividend was confirmed from; null for every other kind
+             */
+            referenceDividendId: string | null;
             /** @example SGI Example */
             sgi: string;
             /**
@@ -1299,6 +1254,70 @@ export interface components {
              * @example SGI Example
              */
             sgi: string;
+        };
+        /**
+         * @description upcoming: ex-date not reached, shares not final. awaiting_payment: entitled, not paid yet. suggested: paid, waiting for the user to confirm the net amount received. confirmed: recorded in the ledger. dismissed: the user dismissed the suggestion.
+         * @enum {string}
+         */
+        DividendStatus: "upcoming" | "awaiting_payment" | "suggested" | "confirmed" | "dismissed";
+        DividendCalendarItemDto: {
+            /** Format: uuid */
+            referenceDividendId: string;
+            /** @example SNTS */
+            ticker: string;
+            /** @example Sonatel */
+            securityName: string;
+            /**
+             * Format: date
+             * @example 2026-05-12
+             */
+            exDate: string;
+            /**
+             * Format: date
+             * @example 2026-05-20
+             */
+            paymentDate: string;
+            /**
+             * @description Gross amount per share, XOF
+             * @example 1655
+             */
+            grossPerShare: string;
+            /** @example https://www.brvm.org/fr/avis/example */
+            sourceNoticeUrl: string;
+            /**
+             * @description Shares held at the close of the day before the ex-date; for an upcoming dividend, the shares held now. For a confirmed dividend, as recorded.
+             * @example 100
+             */
+            shares: string;
+            /**
+             * @description shares × grossPerShare: the suggestion, before withholding. Never counted until confirmed.
+             * @example 165500
+             */
+            grossAmount: string;
+            /** @description upcoming: ex-date not reached, shares not final. awaiting_payment: entitled, not paid yet. suggested: paid, waiting for the user to confirm the net amount received. confirmed: recorded in the ledger. dismissed: the user dismissed the suggestion. */
+            status: components["schemas"]["DividendStatus"];
+            /**
+             * @description The net amount the user confirmed; null unless confirmed
+             * @example 140675
+             */
+            netAmount: string | null;
+            /**
+             * Format: uuid
+             * @description The ledger entry recording it; null unless confirmed
+             */
+            entryId: string | null;
+        };
+        ConfirmDividendDto: {
+            /**
+             * @description Net amount received, XOF, after withholding tax and charges, as the SGI statement shows
+             * @example 140675
+             */
+            amount: string;
+            /**
+             * @description The SGI the dividend was paid into; defaults to the SGI of the latest buy or opening position of the security before the ex-date
+             * @example SGI Example
+             */
+            sgi?: string;
         };
         WatchlistItemDto: {
             /** @example SNTS */
@@ -2334,47 +2353,12 @@ export interface operations {
             };
         };
     };
-    listBulletins: {
-        parameters: {
-            query?: {
-                status?: components["schemas"]["PriceStatus"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BulletinSummaryDto"][];
-                };
-            };
-            /** @description Missing or invalid access token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Admin role required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    getBulletin: {
+    listReferenceDividends: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                date: string;
+                ticker: string;
             };
             cookie?: never;
         };
@@ -2385,7 +2369,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BulletinDto"];
+                    "application/json": components["schemas"]["ReferenceDividendDto"][];
                 };
             };
             /** @description Missing or invalid access token */
@@ -2395,14 +2379,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Admin role required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description No BOC stored for that day */
+            /** @description Unknown ticker or reference dividend */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2411,28 +2388,35 @@ export interface operations {
             };
         };
     };
-    correctBulletin: {
+    createReferenceDividend: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                date: string;
+                ticker: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CorrectBulletinDto"];
+                "application/json": components["schemas"]["CreateReferenceDividendDto"];
             };
         };
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BulletinDto"];
+                    "application/json": components["schemas"]["ReferenceDividendDto"];
                 };
+            };
+            /** @description Invalid values, or a payment date before the ex-date */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Missing or invalid access token */
             401: {
@@ -2448,14 +2432,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description No BOC stored for that day */
+            /** @description Unknown ticker or reference dividend */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description The day is already published */
+            /** @description A dividend already has that ex-date */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2464,65 +2448,36 @@ export interface operations {
             };
         };
     };
-    getBulletinDocument: {
+    replaceReferenceDividend: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                date: string;
+                ticker: string;
+                id: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
-        responses: {
-            /** @description The PDF as downloaded */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Missing or invalid access token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Admin role required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description No BOC stored for that day */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateReferenceDividendDto"];
             };
         };
-    };
-    ingestBulletin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                date: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IngestionResultDto"];
+                    "application/json": components["schemas"]["ReferenceDividendDto"];
                 };
+            };
+            /** @description Invalid values, or a payment date before the ex-date */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Missing or invalid access token */
             401: {
@@ -2538,49 +2493,14 @@ export interface operations {
                 };
                 content?: never;
             };
-        };
-    };
-    publishBulletin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                date: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BulletinDto"];
-                };
-            };
-            /** @description Missing or invalid access token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Admin role required */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description No BOC stored for that day */
+            /** @description Unknown ticker or reference dividend */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description The day is already published */
+            /** @description A dividend already has that ex-date */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2966,6 +2886,179 @@ export interface operations {
             };
             /** @description A later sale would then exceed the shares held, or another opening position for the security has that date */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getDividendCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DividendCalendarItemDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    confirmDividend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                referenceDividendId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmDividendDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryDto"];
+                };
+            };
+            /** @description Invalid amount or SGI */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you, or it has no suggestion from that reference dividend (no shares held at its ex-date, or the ex-date is still to come) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description This dividend is already recorded */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The dividend is not paid yet */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    dismissDividend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                referenceDividendId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dismissed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you, or it has no suggestion from that reference dividend (no shares held at its ex-date, or the ex-date is still to come) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description This dividend is already recorded */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    restoreDividend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                referenceDividendId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Restored, or was not dismissed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

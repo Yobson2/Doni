@@ -572,7 +572,8 @@
     "kind": {
       "buy": "Achat",
       "sell": "Vente",
-      "opening_position": "Position d’ouverture"
+      "opening_position": "Position d’ouverture",
+      "dividend": "Dividende"
     },
     "create": {
       "title": "Créez votre portefeuille",
@@ -586,7 +587,10 @@
       "marketValue": "Valeur de marché",
       "unrealisedGain": "Plus-value latente",
       "realisedGain": "Plus-value réalisée",
-      "costBasis": "Coût d'acquisition"
+      "costBasis": "Coût d'acquisition",
+      "dividends": "Dividendes reçus",
+      "totalGain": "Gain total",
+      "totalGainHint": "Gain total : plus-values réalisées et latentes, plus les dividendes nets que vous avez confirmés."
     },
     "positions": {
       "title": "Positions",
@@ -599,7 +603,8 @@
       "marketValue": "Valeur de marché",
       "unrealisedGain": "Plus-value latente",
       "realisedGain": "Plus-value réalisée",
-      "closed": "Position soldée"
+      "closed": "Position soldée",
+      "dividends": "Dividendes reçus"
     },
     "entries": {
       "title": "Écritures",
@@ -616,7 +621,8 @@
       "actions": "Actions",
       "name": "{{ticker}} du {{date}}",
       "edit": "Modifier l’écriture {{entry}}",
-      "delete": "Supprimer l’écriture {{entry}}"
+      "delete": "Supprimer l’écriture {{entry}}",
+      "net": "net reçu"
     },
     "correction": {
       "title": "Corriger l’écriture",
@@ -702,6 +708,48 @@
       "bySector": "Par secteur",
       "empty": "Aucune position valorisée à répartir pour l’instant.",
       "unpriced": "Hors répartition, faute de cours de clôture publié : {{tickers}}."
+    },
+    "dividends": {
+      "title": "Dividendes",
+      "description": "Les dividendes déclarés sur les valeurs que vous détenez. Doni suggère un montant brut à partir des titres détenus à la date de détachement ; seul le montant net que vous confirmez est compté.",
+      "empty": "Aucun dividende déclaré sur vos valeurs pour le moment.",
+      "upcoming": "À venir",
+      "past": "Passés",
+      "security": "Valeur",
+      "exDate": "Détachement",
+      "paymentDate": "Paiement",
+      "shares": "Titres",
+      "grossPerShare": "Brut par titre",
+      "amount": "Montant",
+      "gross": "brut suggéré",
+      "estimate": "estimation sur vos titres actuels",
+      "net": "net reçu",
+      "notice": "Avis",
+      "status": {
+        "label": "Statut",
+        "upcoming": "À venir",
+        "awaiting_payment": "En attente de paiement",
+        "suggested": "À confirmer",
+        "confirmed": "Confirmé",
+        "dismissed": "Ignoré"
+      },
+      "confirm": "Confirmer",
+      "confirmLabel": "Confirmer le dividende {{dividend}}",
+      "dismiss": "Ignorer",
+      "dismissLabel": "Ignorer le dividende {{dividend}}",
+      "restore": "Rétablir",
+      "restoreLabel": "Rétablir le dividende {{dividend}}",
+      "dismissed": "Suggestion ignorée : elle n’est pas comptée",
+      "restored": "Suggestion rétablie",
+      "form": {
+        "title": "Confirmer le dividende {{ticker}} reçu",
+        "description": "Saisissez le montant net crédité sur votre compte, après retenue à la source, tel qu’il figure sur votre relevé SGI. Brut suggéré pour {{shares}} titres : {{gross}}.",
+        "amount": "Montant net reçu (F CFA)",
+        "submit": "Enregistrer le dividende",
+        "saved": "Dividende enregistré : il compte dans votre gain total",
+        "invalid": "Saisissez un montant supérieur à zéro, par exemple 140675.",
+        "already": "Ce dividende est déjà enregistré."
+      }
     }
   }
 }

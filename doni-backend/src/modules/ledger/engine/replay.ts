@@ -6,6 +6,7 @@ import {
   InvalidLedgerEntryError,
 } from './errors';
 import type {
+  DividendEntry,
   LedgerEntry,
   OpeningPositionEntry,
   Position,
@@ -45,6 +46,8 @@ const SAME_DAY_ORDER: Record<LedgerEntry['kind'], number> = {
   opening_position: 0,
   buy: 1,
   sell: 2,
+  // A user dividend changes no quantity; it is placed last for a fixed order.
+  dividend: 3,
 };
 
 const byReplayOrder = (a: LedgerEntry, b: LedgerEntry): number =>
@@ -55,6 +58,9 @@ const byReplayOrder = (a: LedgerEntry, b: LedgerEntry): number =>
 /**
  * Derives a portfolio's positions from its ledger (ADR 0004) and values them
  * at end-of-day prices. Pure: same input, same result, no I/O.
+ *
+ * A user dividend changes neither quantity nor PMP: its net amount adds to
+ * the position's dividends and to the portfolio's total gain.
  *
  * Cost basis is the PMP, fees included (ADR 0006): a buy recomputes the PMP,
  * a sale realises its net proceeds minus PMP × quantity sold and leaves the
@@ -69,6 +75,7 @@ const byReplayOrder = (a: LedgerEntry, b: LedgerEntry): number =>
  */
 export function replay(input: ReplayInput): ReplayResult {
   const holdings = new Map<string, Holding>();
+  const dividends = new Map<string, Decimal>();
   const corporateActions = new CorporateActionTimeline(input.corporateActions);
   const openings = new Set<string>();
   for (const entry of [...input.entries].sort(byReplayOrder)) {
@@ -85,6 +92,14 @@ export function replay(input: ReplayInput): ReplayResult {
     }
     corporateActions.applyUpTo(holdings, entry.date);
     const holding = holdings.get(entry.securityId) ?? EMPTY;
+    if (entry.kind === 'dividend') {
+      holdings.set(entry.securityId, holding);
+      dividends.set(
+        entry.securityId,
+        (dividends.get(entry.securityId) ?? ZERO).plus(dividendAmount(entry)),
+      );
+      continue;
+    }
     holdings.set(
       entry.securityId,
       entry.kind === 'opening_position'
@@ -100,6 +115,7 @@ export function replay(input: ReplayInput): ReplayResult {
       toPosition(
         securityId,
         holding,
+        dividends.get(securityId) ?? ZERO,
         corporateActions.restate(securityId, input.prices.get(securityId)),
       ),
     );
@@ -171,9 +187,14 @@ function applyTrade(holding: Holding, entry: TradeEntry): Holding {
   };
 }
 
+/** A user dividend's net amount: it changes nothing else. */
+const dividendAmount = (entry: DividendEntry): Decimal =>
+  parse(entry, 'amount', positive);
+
 function toPosition(
   securityId: string,
   holding: Holding,
+  dividends: Decimal,
   price: ValuationPrice | undefined,
 ): Position {
   const costBasis = holding.cost;
@@ -193,6 +214,7 @@ function toPosition(
     pmp: toDecimalString(pmpOf(holding)),
     costBasis: toDecimalString(costBasis),
     realisedGain: toDecimalString(holding.realisedGain),
+    dividends: toDecimalString(dividends),
     valuation,
   };
 }
@@ -202,15 +224,22 @@ function totalsOf(positions: Position[]): ReplayResult['totals'] {
     values.reduce((total, value) => total.plus(value), ZERO);
   const open = positions.filter((p) => p.quantity !== '0');
   const valued = open.every((p) => p.valuation !== null);
+  const realisedGain = sum(positions.map((p) => p.realisedGain));
+  const dividends = sum(positions.map((p) => p.dividends));
+  const unrealisedGain = valued
+    ? sum(open.map((p) => p.valuation!.unrealisedGain))
+    : null;
 
   return {
     costBasis: toDecimalString(sum(positions.map((p) => p.costBasis))),
-    realisedGain: toDecimalString(sum(positions.map((p) => p.realisedGain))),
+    realisedGain: toDecimalString(realisedGain),
     marketValue: valued
       ? toDecimalString(sum(open.map((p) => p.valuation!.marketValue)))
       : null,
-    unrealisedGain: valued
-      ? toDecimalString(sum(open.map((p) => p.valuation!.unrealisedGain)))
+    unrealisedGain: unrealisedGain ? toDecimalString(unrealisedGain) : null,
+    dividends: toDecimalString(dividends),
+    totalGain: unrealisedGain
+      ? toDecimalString(realisedGain.plus(unrealisedGain).plus(dividends))
       : null,
   };
 }

@@ -1225,16 +1225,16 @@
         ]
       }
     },
-    "/api/bulletins": {
+    "/api/securities/{ticker}/dividends": {
       "get": {
-        "operationId": "listBulletins",
+        "operationId": "listReferenceDividends",
         "parameters": [
           {
-            "name": "status",
-            "required": false,
-            "in": "query",
+            "name": "ticker",
+            "required": true,
+            "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/PriceStatus"
+              "type": "string"
             }
           }
         ],
@@ -1246,7 +1246,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/BulletinSummaryDto"
+                    "$ref": "#/components/schemas/ReferenceDividendDto"
                   }
                 }
               }
@@ -1255,55 +1255,8 @@
           "401": {
             "description": "Missing or invalid access token"
           },
-          "403": {
-            "description": "Admin role required"
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "List ingested BOCs, newest first",
-        "tags": [
-          "Bulletins"
-        ]
-      }
-    },
-    "/api/bulletins/{date}": {
-      "get": {
-        "operationId": "getBulletin",
-        "parameters": [
-          {
-            "name": "date",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "date",
-              "example": "2026-11-11",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BulletinDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid access token"
-          },
-          "403": {
-            "description": "Admin role required"
-          },
           "404": {
-            "description": "No BOC stored for that day"
+            "description": "Unknown ticker or reference dividend"
           }
         },
         "security": [
@@ -1311,21 +1264,19 @@
             "JWT-auth": []
           }
         ],
-        "summary": "Read one day’s BOC: rows read and failed checks",
+        "summary": "Dividends declared on a security, by ex-date, oldest first",
         "tags": [
-          "Bulletins"
+          "Catalogue"
         ]
       },
-      "patch": {
-        "operationId": "correctBulletin",
+      "post": {
+        "operationId": "createReferenceDividend",
         "parameters": [
           {
-            "name": "date",
+            "name": "ticker",
             "required": true,
             "in": "path",
             "schema": {
-              "format": "date",
-              "example": "2026-11-11",
               "type": "string"
             }
           }
@@ -1335,21 +1286,24 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CorrectBulletinDto"
+                "$ref": "#/components/schemas/CreateReferenceDividendDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BulletinDto"
+                  "$ref": "#/components/schemas/ReferenceDividendDto"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid values, or a payment date before the ex-date"
           },
           "401": {
             "description": "Missing or invalid access token"
@@ -1358,10 +1312,10 @@
             "description": "Admin role required"
           },
           "404": {
-            "description": "No BOC stored for that day"
+            "description": "Unknown ticker or reference dividend"
           },
           "409": {
-            "description": "The day is already published"
+            "description": "A dividend already has that ex-date"
           }
         },
         "security": [
@@ -1369,30 +1323,56 @@
             "JWT-auth": []
           }
         ],
-        "summary": "Correct misread values of a held day; checks run again",
+        "summary": "Enter a declared dividend from its notice",
         "tags": [
-          "Bulletins"
+          "Catalogue"
         ]
       }
     },
-    "/api/bulletins/{date}/document": {
-      "get": {
-        "operationId": "getBulletinDocument",
+    "/api/securities/{ticker}/dividends/{id}": {
+      "put": {
+        "operationId": "replaceReferenceDividend",
         "parameters": [
           {
-            "name": "date",
+            "name": "ticker",
             "required": true,
             "in": "path",
             "schema": {
-              "format": "date",
-              "example": "2026-11-11",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
               "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReferenceDividendDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "The PDF as downloaded"
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceDividendDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, or a payment date before the ex-date"
           },
           "401": {
             "description": "Missing or invalid access token"
@@ -1401,101 +1381,10 @@
             "description": "Admin role required"
           },
           "404": {
-            "description": "No BOC stored for that day"
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "Download the original BOC PDF",
-        "tags": [
-          "Bulletins"
-        ]
-      }
-    },
-    "/api/bulletins/{date}/ingest": {
-      "post": {
-        "operationId": "ingestBulletin",
-        "parameters": [
-          {
-            "name": "date",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "date",
-              "example": "2026-11-11",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IngestionResultDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid access token"
-          },
-          "403": {
-            "description": "Admin role required"
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "Fetch and ingest that day’s BOC now (same as the daily job)",
-        "tags": [
-          "Bulletins"
-        ]
-      }
-    },
-    "/api/bulletins/{date}/publish": {
-      "post": {
-        "operationId": "publishBulletin",
-        "parameters": [
-          {
-            "name": "date",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "date",
-              "example": "2026-11-11",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BulletinDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid access token"
-          },
-          "403": {
-            "description": "Admin role required"
-          },
-          "404": {
-            "description": "No BOC stored for that day"
+            "description": "Unknown ticker or reference dividend"
           },
           "409": {
-            "description": "The day is already published"
+            "description": "A dividend already has that ex-date"
           }
         },
         "security": [
@@ -1503,9 +1392,9 @@
             "JWT-auth": []
           }
         ],
-        "summary": "Publish a held day: its prices are shown from now on",
+        "summary": "Correct a declared dividend: suggestions follow, confirmed user dividends keep their amounts",
         "tags": [
-          "Bulletins"
+          "Catalogue"
         ]
       }
     },
@@ -1952,6 +1841,207 @@
           }
         ],
         "summary": "Correct an opening position: a new entry replaces it and the portfolio is recomputed",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/dividends": {
+      "get": {
+        "operationId": "getDividendCalendar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DividendCalendarItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Upcoming and past dividends on the securities held, with their suggestion or confirmed amount, by payment date",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/dividends/{referenceDividendId}/confirmation": {
+      "post": {
+        "operationId": "confirmDividend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "referenceDividendId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmDividendDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid amount or SGI"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or it has no suggestion from that reference dividend (no shares held at its ex-date, or the ex-date is still to come)"
+          },
+          "409": {
+            "description": "This dividend is already recorded"
+          },
+          "422": {
+            "description": "The dividend is not paid yet"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Confirm the net amount received for a suggested dividend: it is recorded in the ledger as a user dividend",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/dividends/{referenceDividendId}/dismissal": {
+      "put": {
+        "operationId": "dismissDividend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "referenceDividendId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dismissed"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or it has no suggestion from that reference dividend (no shares held at its ex-date, or the ex-date is still to come)"
+          },
+          "409": {
+            "description": "This dividend is already recorded"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Dismiss a dividend suggestion: it stays listed as dismissed and counts nowhere",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "delete": {
+        "operationId": "restoreDividend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "referenceDividendId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Restored, or was not dismissed"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Undo a dismissal: the suggestion shows again",
         "tags": [
           "Portfolios"
         ]
@@ -3016,357 +3106,78 @@
           "sourceNoticeUrl"
         ]
       },
-      "BocCheck": {
-        "type": "string",
-        "enum": [
-          "trading_date",
-          "readable",
-          "securities_present",
-          "variation_limits",
-          "index_consistency",
-          "volumes",
-          "agrees_with_published"
-        ]
-      },
-      "CheckFailureDto": {
+      "ReferenceDividendDto": {
         "type": "object",
         "properties": {
-          "check": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/BocCheck"
-              }
-            ]
-          },
-          "subject": {
+          "id": {
             "type": "string",
-            "nullable": true,
-            "example": "SNTS",
-            "description": "The security ticker or index code concerned"
+            "format": "uuid"
           },
-          "reason": {
-            "type": "string",
-            "example": "SNTS is in the catalogue but not listed in the bulletin."
-          }
-        },
-        "required": [
-          "check",
-          "subject",
-          "reason"
-        ]
-      },
-      "BulletinSummaryDto": {
-        "type": "object",
-        "properties": {
-          "tradingDate": {
-            "type": "string",
-            "format": "date",
-            "example": "2026-11-11"
-          },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PriceStatus"
-              }
-            ]
-          },
-          "reference": {
-            "type": "string",
-            "nullable": true,
-            "example": "215"
-          },
-          "sourceUrl": {
-            "type": "string",
-            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf"
-          },
-          "checksum": {
-            "type": "string",
-            "description": "SHA-256 of the original PDF, hex"
-          },
-          "fetchedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "failures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CheckFailureDto"
-            }
-          },
-          "reviewedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "tradingDate",
-          "status",
-          "reference",
-          "sourceUrl",
-          "checksum",
-          "fetchedAt",
-          "failures",
-          "reviewedAt"
-        ]
-      },
-      "BulletinSecurityRowDto": {
-        "type": "object",
-        "properties": {
           "ticker": {
             "type": "string",
             "example": "SNTS"
           },
-          "name": {
+          "grossPerShare": {
             "type": "string",
-            "example": "SONATEL SN"
+            "example": "1655",
+            "description": "Gross amount per share, XOF"
           },
-          "inCatalogue": {
-            "type": "boolean",
-            "description": "Whether the security is in the catalogue"
-          },
-          "previousClose": {
-            "type": "string",
-            "nullable": true,
-            "example": "4000"
-          },
-          "open": {
-            "type": "string",
-            "nullable": true,
-            "example": "4000"
-          },
-          "close": {
-            "type": "string",
-            "example": "4190"
-          },
-          "volume": {
-            "type": "string",
-            "nullable": true,
-            "example": "85624"
-          },
-          "variation": {
-            "type": "string",
-            "nullable": true,
-            "example": "4.75",
-            "description": "Daily variation as printed, in percent"
-          },
-          "traded": {
-            "type": "boolean",
-            "description": "False when suspended or not quoted that day"
-          }
-        },
-        "required": [
-          "ticker",
-          "name",
-          "inCatalogue",
-          "previousClose",
-          "open",
-          "close",
-          "volume",
-          "variation",
-          "traded"
-        ]
-      },
-      "BulletinIndexRowDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "example": "BRVM-C"
-          },
-          "name": {
-            "type": "string",
-            "example": "BRVM COMPOSITE"
-          },
-          "inCatalogue": {
-            "type": "boolean",
-            "description": "Whether the index is in the catalogue"
-          },
-          "value": {
-            "type": "string",
-            "example": "517.17"
-          },
-          "variation": {
-            "type": "string",
-            "nullable": true,
-            "example": "0.85"
-          }
-        },
-        "required": [
-          "code",
-          "name",
-          "inCatalogue",
-          "value",
-          "variation"
-        ]
-      },
-      "BulletinDto": {
-        "type": "object",
-        "properties": {
-          "tradingDate": {
+          "exDate": {
             "type": "string",
             "format": "date",
-            "example": "2026-11-11"
+            "example": "2026-05-12",
+            "description": "First trading day without the dividend: shares held at the close of the day before earn it"
           },
-          "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PriceStatus"
-              }
-            ]
-          },
-          "reference": {
-            "type": "string",
-            "nullable": true,
-            "example": "215"
-          },
-          "sourceUrl": {
-            "type": "string",
-            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf"
-          },
-          "checksum": {
-            "type": "string",
-            "description": "SHA-256 of the original PDF, hex"
-          },
-          "fetchedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "failures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CheckFailureDto"
-            }
-          },
-          "reviewedAt": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time"
-          },
-          "securities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BulletinSecurityRowDto"
-            }
-          },
-          "indices": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BulletinIndexRowDto"
-            }
-          }
-        },
-        "required": [
-          "tradingDate",
-          "status",
-          "reference",
-          "sourceUrl",
-          "checksum",
-          "fetchedAt",
-          "failures",
-          "reviewedAt",
-          "securities",
-          "indices"
-        ]
-      },
-      "IngestionOutcome": {
-        "type": "string",
-        "enum": [
-          "published",
-          "held",
-          "unchanged",
-          "published_kept",
-          "not_available"
-        ]
-      },
-      "IngestionResultDto": {
-        "type": "object",
-        "properties": {
-          "tradingDate": {
+          "paymentDate": {
             "type": "string",
             "format": "date",
-            "example": "2026-11-11"
+            "example": "2026-05-20"
           },
-          "outcome": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/IngestionOutcome"
-              }
-            ]
-          },
-          "failures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CheckFailureDto"
-            }
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example",
+            "description": "The notice the dividend was read from"
           }
         },
         "required": [
-          "tradingDate",
-          "outcome",
-          "failures"
-        ]
-      },
-      "SecurityCorrectionDto": {
-        "type": "object",
-        "properties": {
-          "ticker": {
-            "type": "string",
-            "example": "SNTS"
-          },
-          "open": {
-            "type": "string",
-            "nullable": true,
-            "example": "4000"
-          },
-          "close": {
-            "type": "string",
-            "example": "4190"
-          },
-          "volume": {
-            "type": "string",
-            "nullable": true,
-            "example": "85624"
-          }
-        },
-        "required": [
+          "id",
           "ticker",
-          "close"
+          "grossPerShare",
+          "exDate",
+          "paymentDate",
+          "sourceNoticeUrl"
         ]
       },
-      "IndexCorrectionDto": {
+      "CreateReferenceDividendDto": {
         "type": "object",
         "properties": {
-          "code": {
+          "grossPerShare": {
             "type": "string",
-            "example": "BRVM-C"
+            "example": "1655",
+            "description": "Gross amount per share, XOF"
           },
-          "value": {
+          "exDate": {
             "type": "string",
-            "example": "517.17"
+            "format": "date",
+            "example": "2026-05-12"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-20",
+            "description": "On or after the ex-date"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example"
           }
         },
         "required": [
-          "code",
-          "value"
+          "grossPerShare",
+          "exDate",
+          "paymentDate",
+          "sourceNoticeUrl"
         ]
-      },
-      "CorrectBulletinDto": {
-        "type": "object",
-        "properties": {
-          "securities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SecurityCorrectionDto"
-            }
-          },
-          "indices": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IndexCorrectionDto"
-            }
-          }
-        }
       },
       "PortfolioDto": {
         "type": "object",
@@ -3465,6 +3276,11 @@
             "type": "string",
             "example": "21420"
           },
+          "dividends": {
+            "type": "string",
+            "example": "14940",
+            "description": "User dividends received on the security (net amounts)"
+          },
           "valuation": {
             "nullable": true,
             "description": "Null when the position is closed or has no price",
@@ -3482,6 +3298,7 @@
           "pmp",
           "costBasis",
           "realisedGain",
+          "dividends",
           "valuation"
         ]
       },
@@ -3507,13 +3324,26 @@
             "nullable": true,
             "example": "6255",
             "description": "Null when an open position has no end-of-day price"
+          },
+          "dividends": {
+            "type": "string",
+            "example": "14940",
+            "description": "User dividends received (net amounts confirmed by the user); dividend suggestions never count"
+          },
+          "totalGain": {
+            "type": "string",
+            "nullable": true,
+            "example": "42615",
+            "description": "Total gain: realisedGain + unrealisedGain + dividends. Null when an open position has no end-of-day price"
           }
         },
         "required": [
           "costBasis",
           "realisedGain",
           "marketValue",
-          "unrealisedGain"
+          "unrealisedGain",
+          "dividends",
+          "totalGain"
         ]
       },
       "SecurityAllocationDto": {
@@ -3671,7 +3501,8 @@
         "enum": [
           "buy",
           "sell",
-          "opening_position"
+          "opening_position",
+          "dividend"
         ]
       },
       "LedgerEntryDto": {
@@ -3713,7 +3544,19 @@
           "fees": {
             "type": "string",
             "example": "2000",
-            "description": "0 for an opening position"
+            "description": "0 for an opening position or a dividend"
+          },
+          "amount": {
+            "type": "string",
+            "nullable": true,
+            "example": "140675",
+            "description": "A dividend’s net amount received, XOF; null for every other kind. For a dividend, quantity is the shares held at the ex-date and price the gross amount per share declared."
+          },
+          "referenceDividendId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The reference dividend a dividend was confirmed from; null for every other kind"
           },
           "sgi": {
             "type": "string",
@@ -3740,6 +3583,8 @@
           "quantity",
           "price",
           "fees",
+          "amount",
+          "referenceDividendId",
           "sgi",
           "recordedAt",
           "replacesId"
@@ -3839,6 +3684,116 @@
           "quantity",
           "pmp",
           "sgi"
+        ]
+      },
+      "DividendStatus": {
+        "type": "string",
+        "enum": [
+          "upcoming",
+          "awaiting_payment",
+          "suggested",
+          "confirmed",
+          "dismissed"
+        ],
+        "description": "upcoming: ex-date not reached, shares not final. awaiting_payment: entitled, not paid yet. suggested: paid, waiting for the user to confirm the net amount received. confirmed: recorded in the ledger. dismissed: the user dismissed the suggestion."
+      },
+      "DividendCalendarItemDto": {
+        "type": "object",
+        "properties": {
+          "referenceDividendId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "securityName": {
+            "type": "string",
+            "example": "Sonatel"
+          },
+          "exDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-12"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-20"
+          },
+          "grossPerShare": {
+            "type": "string",
+            "example": "1655",
+            "description": "Gross amount per share, XOF"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example"
+          },
+          "shares": {
+            "type": "string",
+            "example": "100",
+            "description": "Shares held at the close of the day before the ex-date; for an upcoming dividend, the shares held now. For a confirmed dividend, as recorded."
+          },
+          "grossAmount": {
+            "type": "string",
+            "example": "165500",
+            "description": "shares × grossPerShare: the suggestion, before withholding. Never counted until confirmed."
+          },
+          "status": {
+            "description": "upcoming: ex-date not reached, shares not final. awaiting_payment: entitled, not paid yet. suggested: paid, waiting for the user to confirm the net amount received. confirmed: recorded in the ledger. dismissed: the user dismissed the suggestion.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DividendStatus"
+              }
+            ]
+          },
+          "netAmount": {
+            "type": "string",
+            "nullable": true,
+            "example": "140675",
+            "description": "The net amount the user confirmed; null unless confirmed"
+          },
+          "entryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The ledger entry recording it; null unless confirmed"
+          }
+        },
+        "required": [
+          "referenceDividendId",
+          "ticker",
+          "securityName",
+          "exDate",
+          "paymentDate",
+          "grossPerShare",
+          "sourceNoticeUrl",
+          "shares",
+          "grossAmount",
+          "status",
+          "netAmount",
+          "entryId"
+        ]
+      },
+      "ConfirmDividendDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "140675",
+            "description": "Net amount received, XOF, after withholding tax and charges, as the SGI statement shows"
+          },
+          "sgi": {
+            "type": "string",
+            "example": "SGI Example",
+            "maxLength": 100,
+            "description": "The SGI the dividend was paid into; defaults to the SGI of the latest buy or opening position of the security before the ex-date"
+          }
+        },
+        "required": [
+          "amount"
         ]
       },
       "WatchlistItemDto": {

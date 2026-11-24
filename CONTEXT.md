@@ -45,6 +45,10 @@ _Avoid_: event, adjustment (on its own)
 The dividend an issuer declares for a security (gross amount per share, ex-date, payment date, source notice). Entered once by an admin and shared by all users.
 _Avoid_: dividend (unqualified), announced dividend
 
+**Ex-date**:
+The first trading day on which a security trades without its declared dividend. Shares held at the close of the day before earn the dividend: shares bought on the ex-date do not, shares sold on it still do.
+_Avoid_: record date, detachment date (in code)
+
 ### Portfolio
 
 **Ledger entry**:
@@ -70,6 +74,14 @@ _Avoid_: average cost, average price, cost price, PRU
 **User dividend**:
 The net dividend amount a user confirms they actually received for a holding. Only user dividends enter the ledger and count toward returns; a suggestion derived from a reference dividend does not count until confirmed.
 _Avoid_: dividend (unqualified)
+
+**Dividend suggestion**:
+What a portfolio is owed from a reference dividend: the shares held at its ex-date (corporate actions included) × the gross amount per share. Derived on every read, never stored and never counted; the user confirms it (recording a user dividend with the net amount received) or dismisses it.
+_Avoid_: pending dividend, expected dividend, dividend (unqualified)
+
+**Total gain**:
+Realised gain + unrealised gain + user dividends of a portfolio: what it has gained overall, in XOF. A sum, not a return: it ignores timing (see XIRR and TWR).
+_Avoid_: total return, performance, rendement
 
 **SGI** (Société de Gestion et d'Intermédiation):
 A licensed BRVM broker through which a user buys and sells securities.
