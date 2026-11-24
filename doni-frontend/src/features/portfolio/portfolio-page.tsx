@@ -45,6 +45,7 @@ import { EntryForm } from './components/entry-form'
 import { ENTRY_MODES, type EntryMode } from './components/form-fields'
 import { Onboarding } from './components/onboarding'
 import { OpeningPositionForm } from './components/opening-position-form'
+import { ReturnsSection } from './components/returns'
 import { CurrencyToggle } from './display-currency'
 import { signOf } from './format'
 import { useMoney } from './use-money'
@@ -109,6 +110,8 @@ function PortfolioView({ portfolio }: { portfolio: Portfolio }) {
           )}
         </>
       )}
+
+      <ReturnsSection portfolioId={portfolio.id} />
 
       <DividendCalendar portfolioId={portfolio.id} />
 

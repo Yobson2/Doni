@@ -614,6 +614,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portfolios/{id}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mon rendement (XIRR) and the portfolio TWR against the BRVM Composite over a period, with the days on which data is missing */
+        get: operations["getPortfolioReturns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/watchlist": {
         parameters: {
             query?: never;
@@ -1522,6 +1539,98 @@ export interface components {
              * @example SGI Example
              */
             sgi?: string;
+        };
+        /** @enum {string} */
+        ReturnsPeriod: "1M" | "3M" | "YTD" | "1Y" | "ALL";
+        /**
+         * @description solved; no_solution when the cash flows have none (e.g. a single day); unpriced when a security held at the start or end of the period has no end-of-day price on or before that day
+         * @enum {string}
+         */
+        XirrStatus: "solved" | "no_solution" | "unpriced";
+        XirrDto: {
+            /**
+             * @description Money-weighted (XIRR)
+             * @enum {string}
+             */
+            method: "xirr";
+            /**
+             * @description Always true: the XIRR is a rate per year
+             * @example true
+             */
+            annualised: boolean;
+            /** @description solved; no_solution when the cash flows have none (e.g. a single day); unpriced when a security held at the start or end of the period has no end-of-day price on or before that day */
+            status: components["schemas"]["XirrStatus"];
+            /**
+             * @description Annual rate as a percentage; null unless solved
+             * @example 12.34
+             */
+            percent: string | null;
+        };
+        BenchmarkDto: {
+            /** @example BRVM-C */
+            code: string;
+            /** @example BRVM Composite */
+            name: string;
+        };
+        ReturnsPointDto: {
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            date: string;
+            /**
+             * @description Portfolio TWR since the start of the period, as a percentage; null on a data gap (never interpolated)
+             * @example 4.20
+             */
+            portfolio: string | null;
+            /**
+             * @description Benchmark change since the start of the period, as a percentage; null on a data gap (never interpolated)
+             * @example 3.10
+             */
+            benchmark: string | null;
+        };
+        ComparisonDto: {
+            /**
+             * @description Time-weighted (TWR)
+             * @enum {string}
+             */
+            method: "twr";
+            benchmark: components["schemas"]["BenchmarkDto"];
+            /** @description Oldest first */
+            points: components["schemas"]["ReturnsPointDto"][];
+        };
+        DataGapDto: {
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            date: string;
+            /** @description The benchmark has no value that day */
+            benchmark: boolean;
+            /**
+             * @description Securities held that day with no end-of-day price
+             * @example [
+             *       "SNTS"
+             *     ]
+             */
+            tickers: string[];
+        };
+        PortfolioReturnsDto: {
+            period: components["schemas"]["ReturnsPeriod"];
+            /**
+             * Format: date
+             * @description First day measured: the later of the period start and the performance start. Null when there is nothing to measure.
+             */
+            from: string | null;
+            /**
+             * Format: date
+             * @description Last day measured: the last trading day on or before today. Null when there is nothing to measure.
+             */
+            to: string | null;
+            xirr: components["schemas"]["XirrDto"];
+            comparison: components["schemas"]["ComparisonDto"];
+            /** @description Days of the period with data missing, oldest first */
+            gaps: components["schemas"]["DataGapDto"][];
         };
         WatchlistItemDto: {
             /** @example SNTS */
@@ -3504,6 +3613,51 @@ export interface operations {
         responses: {
             /** @description Restored, or was not dismissed */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No portfolio with that id belongs to you */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getPortfolioReturns: {
+        parameters: {
+            query?: {
+                /** @description One month, three months, year to date, one year, or since the performance start (ALL). A period is never measured from before the performance start. */
+                period?: components["schemas"]["ReturnsPeriod"];
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioReturnsDto"];
+                };
+            };
+            /** @description Unknown period */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

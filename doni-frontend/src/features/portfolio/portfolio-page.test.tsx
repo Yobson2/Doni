@@ -21,6 +21,25 @@ const portfolio = {
 const VALUATION = `GET /api/portfolios/${PORTFOLIO_ID}/valuation`
 const ENTRIES = `/api/portfolios/${PORTFOLIO_ID}/entries`
 const DIVIDENDS = `/api/portfolios/${PORTFOLIO_ID}/dividends`
+const RETURNS = `/api/portfolios/${PORTFOLIO_ID}/returns`
+// Nothing to measure: the returns have their own tests (returns.test.tsx).
+const noReturns = {
+  period: 'ALL',
+  from: null,
+  to: null,
+  xirr: {
+    method: 'xirr',
+    annualised: true,
+    status: 'no_solution',
+    percent: null,
+  },
+  comparison: {
+    method: 'twr',
+    benchmark: { code: 'BRVM-C', name: 'BRVM Composite' },
+    points: [],
+  },
+  gaps: [],
+}
 
 // The reference case of the ledger engine, as the API returns it.
 const valuation = {
@@ -106,6 +125,7 @@ const portfolioApi = (routes = {}) =>
     [VALUATION]: () => json(200, valuation),
     [`GET ${ENTRIES}`]: () => json(200, [entry]),
     [`GET ${DIVIDENDS}`]: () => json(200, []),
+    [`GET ${RETURNS}`]: () => json(200, noReturns),
     'GET /api/securities': () => json(200, [sonatel]),
     ...routes,
   })
