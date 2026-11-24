@@ -1,88 +1,84 @@
-# React Admin Template
+# Doni frontend
 
-<div align="center">
-  <img src="https://img.shields.io/badge/React-19.1.0-blue?style=for-the-badge&logo=react" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-5.8-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite" alt="Vite" />
-  <img src="https://img.shields.io/badge/TailwindCSS-4.1-38B2AC?style=for-the-badge&logo=tailwind-css" alt="TailwindCSS" />
-</div>
+The Doni web app: a React + TypeScript **progressive web app** for tracking BRVM holdings, mobile-first, in French (default) and English. For the project overview and full local setup, see the [root README](../README.md).
 
-<br />
+## Tech stack
 
-A production-ready, reusable React + TypeScript admin dashboard template with authentication, data tables, settings, and a modular feature-based architecture.
+- **React 19** + **TypeScript 5.8** (strict), **Vite 6**
+- **TanStack Router**: file-based routing with automatic code splitting
+- **TanStack Query**: server state, persisted to IndexedDB for offline reads
+- **openapi-fetch** + **openapi-typescript**: API client typed from the backend's `openapi.json`
+- **Tailwind CSS 4**, **shadcn/ui** on **Radix UI**, **Tabler** and **Lucide** icons
+- **React Hook Form** + **Zod** for forms, **Zustand** for the in-memory session
+- **i18next** (FR/EN), **lightweight-charts**, **Framer Motion**, **Sonner** toasts
+- **vite-plugin-pwa** (Workbox) for the service worker
+- **Vitest** + Testing Library, **Playwright**, **Lighthouse CI**
 
-## Tech Stack
+## Getting started
 
-- **React 19** + **TypeScript 5.8** (strict mode)
-- **Vite 6** - Build tool with HMR
-- **TanStack Router** - File-based routing with code-splitting
-- **TanStack Table** - Data tables with sorting, filtering, pagination
-- **TanStack Query** - Server state management
-- **ShadcnUI** + **Radix UI** - Component library
-- **TailwindCSS v4** - Utility-first CSS
-- **Zustand** - Global state management
-- **React Hook Form** + **Zod** - Form handling with validation
-- **axios** - HTTP client with interceptors
-- **i18next** - Internationalization
-- **Sonner** - Toast notifications
-
-## Features
-
-- Authentication flow (sign-in, sign-up, forgot password, OTP)
-- Dashboard with stats cards and activity feed
-- Users management (CRUD with data table)
-- Tasks management (data table with filters)
-- Settings (profile, account, appearance, notifications, display)
-- Collapsible sidebar with navigation
-- Light/dark theme toggle
-- Command palette (Ctrl+K)
-- Error pages (401, 403, 404, 500, 503)
-- Centralized API layer with typed endpoints
-- Environment-based configuration
-
-## Getting Started
+From the repository root (one pnpm workspace):
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-
-# Install dependencies
 pnpm install
-
-# Copy environment variables
-cp .env.example .env
-
-# Start development server
-pnpm dev
+pnpm --filter doni-frontend dev     # http://localhost:5173
 ```
 
-## Project Structure
+The dev server proxies `/api` to `http://localhost:3000`, so start the backend first (see [`doni-backend/README.md`](../doni-backend/README.md)). No `.env` is needed in development.
 
-```
+## Environment variables
+
+| Variable             | Default                 | Description                                                                                                    |
+| -------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_URL`       | _(empty: same origin)_  | API origin for builds where the API is on another domain, e.g. `https://api.example.com`. Read at build time.  |
+| `VITE_DEV_API_PROXY` | `http://localhost:3000` | Target of the dev server's `/api` proxy. Read by `vite.config.ts` from the shell environment, not from `.env`. |
+
+`.env.example` also lists `VITE_APP_NAME`; nothing in the app reads it (the app name comes from `src/config/app.ts`).
+
+## Project structure
+
+```text
 src/
-├── api/              # Centralized API layer (axios, endpoints, types)
+├── api/              # openapi-fetch client (auth refresh on 401) + generated schema.d.ts
 ├── components/
-│   ├── layout/       # Sidebar, header, navigation
-│   ├── ui/           # ShadcnUI components
-│   └── *.tsx         # Shared components
-├── config/           # App configuration, fonts
-├── context/          # React contexts (theme, font, search)
+│   ├── layout/       # sidebar, header, navigation (admin group shown to admins only)
+│   ├── offline/      # offline banner, SyncedAt, OnlineButton
+│   ├── legal/        # disclaimer and legal links
+│   ├── content/      # Markdown renderer
+│   ├── ui/           # shadcn/ui components
+│   └── …             # logo, theme/language switches, command menu
+├── config/           # app name, fonts
+├── content/          # bundled Markdown: guides/, legal/ (fr + en), sgi/ directory data
+├── context/          # theme, font, search providers
 ├── features/
-│   ├── auth/         # Authentication pages
-│   ├── dashboard/    # Dashboard overview
-│   ├── errors/       # Error pages
-│   ├── settings/     # User settings
-│   ├── tasks/        # Task management (example)
-│   └── users/        # User management (example)
-├── hooks/            # Custom React hooks
-├── i18n/             # Internationalization
-├── lib/              # Utilities (cn helper)
-├── routes/           # TanStack Router file-based routes
-├── stores/           # Zustand stores
-├── styles/           # Design tokens
-├── types/            # TypeScript types
-└── utils/            # Utility functions
+│   ├── landing-page/ # public marketing page
+│   ├── auth/         # sign-in, sign-up, session restore
+│   ├── portfolio/    # valuation, allocation, returns, dividends, ledger forms
+│   ├── securities/   # catalogue, company page, admin catalogue and corporate actions
+│   ├── watchlist/
+│   ├── bulletins/    # admin review of held BOC days
+│   ├── content/      # guides, SGI directory, legal pages
+│   ├── settings/     # appearance, account (export, deletion)
+│   ├── dashboard/    # placeholder
+│   └── errors/       # 401, 403, 404, 500, 503
+├── hooks/
+├── i18n/             # fr.json (default), en.json
+├── lib/              # money formatting, motion, utils; offline/ (service worker, cache persistence)
+├── routes/           # file-based routes (see below); routeTree.gen.ts is generated
+├── stores/           # authStore (access token, in memory only)
+└── test/             # test setup, fake API, render helpers
+e2e/                  # Playwright offline test and its mock API
+scripts/              # check-bundle-size.mjs
 ```
+
+### Routes
+
+| Group                    | Paths                                                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `_public`                | `/`, `/guides`, `/guides/$slug`, `/sgi`, `/disclaimer`, `/privacy`                                               |
+| `(auth)`                 | `/sign-in`, `/sign-up`, `/forgot-password` (placeholder: no reset API yet)                                       |
+| `_authenticated`         | `/dashboard`, `/portfolio`, `/securities`, `/securities/$ticker`, `/watchlist`, `/settings`, `/settings/account` |
+| `_authenticated` (admin) | `/admin/catalogue`, `/admin/bulletins`                                                                           |
+| `(errors)`               | `/401`, `/403`, `/404`, `/500`, `/503`                                                                           |
 
 ## Scripts
 
@@ -91,13 +87,26 @@ pnpm dev              # Start dev server
 pnpm build            # Type-check + production build
 pnpm preview          # Preview production build
 pnpm lint             # Run ESLint
+pnpm typecheck        # TypeScript, no emit
+pnpm test             # Unit and component tests (Vitest)
 pnpm format           # Format with Prettier
 pnpm format:check     # Check formatting
-pnpm knip             # Check for unused dependencies
+pnpm knip             # Check for unused files, exports and dependencies
+pnpm api:generate     # Regenerate src/api/schema.d.ts from ../doni-backend/openapi.json
 pnpm size             # JavaScript budget: first-load JS < 200 KB gzipped (after pnpm build)
 pnpm test:browser     # Playwright offline test (after pnpm build; first: pnpm exec playwright install chromium)
 pnpm lighthouse       # Lighthouse CI, mobile profile, installability assertions (after pnpm build)
 ```
+
+## API client and session
+
+- `src/api/schema.d.ts` is generated; never edit it by hand. After a backend API change: `pnpm --filter doni-backend openapi:emit`, then `pnpm api:generate`.
+- The access token lives only in memory (`stores/authStore.ts`). On load, and when a request gets a `401`, the client calls `/api/auth/refresh`, which uses the `HttpOnly` refresh cookie, and retries.
+- Requests are sent with `credentials: 'include'`. Since the cookie is `SameSite=Strict`, the app and the API must be on the same site in production (see [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md#same-site-requirement-for-the-session-cookie)).
+
+## Internationalisation (ADR 0012)
+
+French is the default; the choice is saved in `localStorage` (`doni-lang`). Every visible string goes through i18next, with keys in both `fr.json` and `en.json`; `eslint-plugin-i18next` flags literal strings. Guides and legal pages exist as Markdown in both languages under `src/content/`.
 
 ## PWA and offline mode (ADR 0010)
 
@@ -108,23 +117,10 @@ pnpm lighthouse       # Lighthouse CI, mobile profile, installability assertions
 - **Push notifications (#19)** will add their handler to the service worker via `workbox.importScripts`, or by switching to `injectManifest`.
 - **Budget**: `scripts/check-bundle-size.mjs` reads the Vite manifest and sums the gzipped entry chunk, its static imports and the landing page's route chunks; CI fails above 200 KB.
 
-## Environment Variables
+## Brand
 
-See `.env.example` for all available variables:
+The logo, colours and icon set are described in [`docs/brand/logo.md`](../docs/brand/logo.md); the SVG masters are in `public/images/brand/`.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_URL` | Backend API base URL | `http://localhost:3000/api` |
-| `VITE_AUTH_TOKEN_KEY` | Cookie key for auth token | `app_access_token` |
-| `VITE_APP_NAME` | Application display name | `React Admin Template` |
+## Deployment
 
-## Docker
-
-```bash
-docker build -t react-admin .
-docker run -p 80:80 react-admin
-```
-
-## License
-
-MIT
+The frontend is a static build (`dist/`). `vercel.json` configures Vercel (SPA rewrites to `index.html`). See [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md), including the caveat that the `Dockerfile` in this folder does not build inside the pnpm workspace as written.

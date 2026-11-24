@@ -1,6 +1,6 @@
-# NestJS Monolithic Template
+# Doni backend
 
-A production-ready NestJS monolithic starter template with battle-tested infrastructure patterns.
+The Doni API: a NestJS monolith on PostgreSQL that ingests the BRVM's daily bulletins (BOC), keeps end-of-day prices, and computes each user's portfolio from an append-only ledger. For the project overview see the [root README](../README.md); for design see [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).
 
 ## Tech Stack
 
@@ -54,12 +54,22 @@ src/
 │   ├── exceptions/                # Domain exceptions
 │   ├── filters/                   # Global exception filter
 │   ├── guards/                    # Access-token guard (401), Roles guard (403)
+│   ├── user-data/                 # Registry of per-module data for export and deletion
 │   └── utils/                     # Error context utility
 ├── modules/
 │   ├── auth/                      # Sign-up, sign-in, refresh, sign-out (ADR 0011)
 │   ├── users/                     # Own account (/me) and account administration
+│   ├── account/                   # Data export and account deletion (ADR 0016)
 │   ├── securities/                # Catalogue, end-of-day prices, PriceSource (ADR 0003)
+│   │   ├── boc/                   # BOC fetch, parsers, checks, ingestion, backfill, review
+│   │   ├── corporate-actions/     # Splits, free shares, rights issues (ADR 0015)
+│   │   ├── dividends/             # Reference (declared) dividends
+│   │   └── prices/                # PriceSource and manual price entry
+│   ├── ledger/                    # Portfolios, ledger entries, valuation, returns, dividends
+│   │   └── engine/                # Pure replay, corporate actions, XIRR, TWR, allocation
+│   ├── watchlist/                 # Watched securities
 │   └── health/                    # Health check (database + job runner)
+scripts/                           # seed-catalogue, backfill-boc, emit-openapi
 templates/                         # Handlebars email templates
 ```
 
@@ -182,27 +192,20 @@ docker compose logs -f     # View logs
 
 ## API Endpoints
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/health` | No | Health check: database and job runner (503 if either is down) |
-| `POST` | `/api/auth/sign-up` | No | Create an account (the only way to create one); signs in |
-| `POST` | `/api/auth/sign-in` | No | Sign in |
-| `POST` | `/api/auth/refresh` | Refresh cookie | Rotate the refresh token, get a new access token |
-| `POST` | `/api/auth/sign-out` | Refresh cookie | End the session, clear the cookie |
-| `GET` | `/api/users/me` | Yes | Read my account |
-| `PATCH` | `/api/users/me` | Yes | Update my account (name only) |
-| `GET` | `/api/users` | Admin | List accounts (paginated) |
-| `GET` | `/api/users/:id` | Admin | Read an account |
-| `PATCH` | `/api/users/:id` | Admin | Update an account |
-| `DELETE` | `/api/users/:id` | Admin | Deactivate an account |
-| `GET` | `/api/bulletins` | Admin | Ingested BOCs (`?status=pending_review` for held days) |
-| `GET` | `/api/bulletins/:date` | Admin | One day's BOC: rows read and failed checks |
-| `GET` | `/api/bulletins/:date/document` | Admin | The original BOC PDF |
-| `POST` | `/api/bulletins/:date/ingest` | Admin | Fetch and ingest that day's BOC now |
-| `PATCH` | `/api/bulletins/:date` | Admin | Correct a held day's values (checks run again) |
-| `POST` | `/api/bulletins/:date/publish` | Admin | Publish a held day |
+The full endpoint reference (auth, users, catalogue, corporate actions,
+dividends, bulletins, portfolios, returns, watchlist, account), the error
+format and the rate limits are in [`docs/API.md`](../docs/API.md). Swagger UI
+runs at `/api/docs`.
 
 No or invalid access token: `401`. Authenticated without the required role: `403`.
+
+### Roles
+
+Sign-up creates regular accounts (`MEMBRE`, the database default). `ADMIN`
+unlocks catalogue management and bulletin review. No endpoint grants it:
+promote an account in the database
+(`UPDATE users SET role = 'ADMIN' WHERE email = '…'`). The `CHEF_ZONE` value
+in `roles.constant.ts` is left over from the template and is not used.
 
 ### Sessions (ADR 0011)
 
@@ -247,8 +250,10 @@ export class Product extends BaseEntity {
   @Column()
   name: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
+  // Money is Postgres numeric, read as a string and computed with big.js,
+  // never a JS number (ADR 0005).
+  @Column({ type: 'numeric' })
+  price: string;
 
   @Column({ default: true })
   isActive: boolean;
@@ -281,13 +286,21 @@ Key variables:
 ## Production Build
 
 ```bash
-# Build Docker image
-docker build -t my-app .
+# Compile and run without Docker
+pnpm build
+pnpm start:prod
 
-# Run container
-docker run -p 3000:3000 --env-file .env my-app
+# Or build the Docker image
+docker build -t doni-backend .
+docker run -p 3000:3000 --env-file .env doni-backend
 ```
+
+The `Dockerfile` predates the pnpm workspace: it finds no lockfile in this
+folder and installs dependencies unlocked. See
+[`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md) for migrations on deploy and
+this caveat.
 
 ## License
 
-MIT
+No license file has been added to the repository yet (see the
+[root README](../README.md#license)).
