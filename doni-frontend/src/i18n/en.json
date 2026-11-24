@@ -702,6 +702,43 @@
       "peg": "Amounts converted at the fixed rate of €1 = 655.957 XOF. They remain stored in XOF.",
       "saveError": "Your currency choice could not be saved. Try again."
     },
+    "returns": {
+      "title": "Returns",
+      "description": "Your personal return and how it compares with the market, over the period you choose.",
+      "empty": "Record your entries to see your return.",
+      "periodLabel": "Period",
+      "period": {
+        "1M": "1 month",
+        "3M": "3 months",
+        "YTD": "Year to date",
+        "1Y": "1 year",
+        "ALL": "Since the start"
+      },
+      "range": "From {{from}} to {{to}}",
+      "xirr": {
+        "title": "My return",
+        "method": "XIRR, money-weighted, annualised: accounts for the timing and size of your buys, sells and dividends.",
+        "perYear": "per year",
+        "no_solution": "Not enough history in this period to compute a return.",
+        "unpriced": "Cannot be computed: a security held has no published closing price at the start or end of the period."
+      },
+      "comparison": {
+        "title": "Compared with the {{benchmark}}",
+        "method": "TWR, time-weighted: removes the effect of when you bought and sold, for a fair comparison with the index. Cumulative returns over the period.",
+        "portfolio": "My portfolio (TWR)",
+        "chartLabel": "Cumulative return of your portfolio (TWR) and of the {{benchmark}}, from {{from}} to {{to}}",
+        "latest": "{{value}} as of {{date}}",
+        "empty": "No trading session in this period."
+      },
+      "gaps": {
+        "title": "Missing data",
+        "description": "These days have no point on the chart: Doni never fills in missing data.",
+        "prices": "no closing price for {{tickers}}",
+        "benchmark": "no {{benchmark}} value",
+        "day": "{{date}}: {{missing}}",
+        "separator": "; "
+      }
+    },
     "allocation": {
       "title": "Allocation",
       "description": "Each holding’s share of the market value, at the latest published closing price.",

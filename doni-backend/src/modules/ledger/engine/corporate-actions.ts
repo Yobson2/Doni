@@ -91,6 +91,25 @@ function sharesAfter(action: CorporateAction): Decimal {
 }
 
 /**
+ * The cash a holder of `quantity` shares receives from the action for a
+ * fraction of a share: the fraction × the cash-in-lieu price, 0 when there
+ * is no fraction, no price, or the action is a rights issue.
+ */
+export function cashInLieu(
+  action: CorporateAction,
+  quantity: Decimal,
+): Decimal {
+  if (action.kind === 'rights_issue' || action.cashInLieuPrice == null) {
+    return ZERO;
+  }
+  const entitled = quantity
+    .times(sharesAfter(action))
+    .div(new Decimal(action.held));
+  const fraction = entitled.minus(entitled.round(0, Decimal.roundDown));
+  return fraction.times(action.cashInLieuPrice);
+}
+
+/**
  * The holding after the action: quantity scaled by the ratio, total cost
  * preserved. Shares are whole, so a fraction of a share is cut off and
  * settled in cash: at the cash-in-lieu price when there is one (realising a

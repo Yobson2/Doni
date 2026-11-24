@@ -2331,6 +2331,60 @@
         ]
       }
     },
+    "/api/portfolios/{id}/returns": {
+      "get": {
+        "operationId": "getPortfolioReturns",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "description": "One month, three months, year to date, one year, or since the performance start (ALL). A period is never measured from before the performance start.",
+            "schema": {
+              "$ref": "#/components/schemas/ReturnsPeriod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioReturnsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown period"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Mon rendement (XIRR) and the portfolio TWR against the BRVM Composite over a period, with the days on which data is missing",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
     "/api/watchlist": {
       "get": {
         "operationId": "listWatchlist",
@@ -4430,6 +4484,207 @@
         },
         "required": [
           "amount"
+        ]
+      },
+      "ReturnsPeriod": {
+        "type": "string",
+        "enum": [
+          "1M",
+          "3M",
+          "YTD",
+          "1Y",
+          "ALL"
+        ]
+      },
+      "XirrStatus": {
+        "type": "string",
+        "enum": [
+          "solved",
+          "no_solution",
+          "unpriced"
+        ],
+        "description": "solved; no_solution when the cash flows have none (e.g. a single day); unpriced when a security held at the start or end of the period has no end-of-day price on or before that day"
+      },
+      "XirrDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "xirr"
+            ],
+            "description": "Money-weighted (XIRR)"
+          },
+          "annualised": {
+            "type": "boolean",
+            "example": true,
+            "description": "Always true: the XIRR is a rate per year"
+          },
+          "status": {
+            "description": "solved; no_solution when the cash flows have none (e.g. a single day); unpriced when a security held at the start or end of the period has no end-of-day price on or before that day",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/XirrStatus"
+              }
+            ]
+          },
+          "percent": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.34",
+            "description": "Annual rate as a percentage; null unless solved"
+          }
+        },
+        "required": [
+          "method",
+          "annualised",
+          "status",
+          "percent"
+        ]
+      },
+      "BenchmarkDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BRVM-C"
+          },
+          "name": {
+            "type": "string",
+            "example": "BRVM Composite"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "ReturnsPointDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11"
+          },
+          "portfolio": {
+            "type": "string",
+            "nullable": true,
+            "example": "4.20",
+            "description": "Portfolio TWR since the start of the period, as a percentage; null on a data gap (never interpolated)"
+          },
+          "benchmark": {
+            "type": "string",
+            "nullable": true,
+            "example": "3.10",
+            "description": "Benchmark change since the start of the period, as a percentage; null on a data gap (never interpolated)"
+          }
+        },
+        "required": [
+          "date",
+          "portfolio",
+          "benchmark"
+        ]
+      },
+      "ComparisonDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "twr"
+            ],
+            "description": "Time-weighted (TWR)"
+          },
+          "benchmark": {
+            "$ref": "#/components/schemas/BenchmarkDto"
+          },
+          "points": {
+            "description": "Oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnsPointDto"
+            }
+          }
+        },
+        "required": [
+          "method",
+          "benchmark",
+          "points"
+        ]
+      },
+      "DataGapDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-10"
+          },
+          "benchmark": {
+            "type": "boolean",
+            "description": "The benchmark has no value that day"
+          },
+          "tickers": {
+            "example": [
+              "SNTS"
+            ],
+            "description": "Securities held that day with no end-of-day price",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "benchmark",
+          "tickers"
+        ]
+      },
+      "PortfolioReturnsDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReturnsPeriod"
+              }
+            ]
+          },
+          "from": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "First day measured: the later of the period start and the performance start. Null when there is nothing to measure."
+          },
+          "to": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Last day measured: the last trading day on or before today. Null when there is nothing to measure."
+          },
+          "xirr": {
+            "$ref": "#/components/schemas/XirrDto"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/ComparisonDto"
+          },
+          "gaps": {
+            "description": "Days of the period with data missing, oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataGapDto"
+            }
+          }
+        },
+        "required": [
+          "period",
+          "from",
+          "to",
+          "xirr",
+          "comparison",
+          "gaps"
         ]
       },
       "WatchlistItemDto": {

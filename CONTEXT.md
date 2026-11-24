@@ -97,6 +97,14 @@ _Avoid_: IRR, yield, ROI, performance (unqualified)
 The return of a portfolio with the effect of the user's cash-flow timing removed, used to compare the portfolio fairly with a benchmark such as the BRVM Composite.
 _Avoid_: Mon rendement, performance (unqualified)
 
+**Benchmark**:
+The market index a portfolio's TWR is compared with over the same days: the BRVM Composite (BRVM-C).
+_Avoid_: market (unqualified), reference index
+
+**Data gap**:
+A trading day in a return period on which a value needed is missing: the end-of-day price of a security held that day, or the benchmark's value. The day gets no point on the affected series and is listed to the user; nothing is interpolated or carried forward.
+_Avoid_: missing day, hole, interpolation
+
 ### Money
 
 **XOF**:

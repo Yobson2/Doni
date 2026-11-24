@@ -26,6 +26,24 @@ export const valuationQuery = (id: string) =>
       ),
   })
 
+export type PortfolioReturns = components['schemas']['PortfolioReturnsDto']
+export type ReturnsPeriod = PortfolioReturns['period']
+
+/**
+ * The portfolio's returns over a period: "Mon rendement" (XIRR), its TWR
+ * against the BRVM Composite, and the days on which data is missing.
+ */
+export const returnsQuery = (id: string, period: ReturnsPeriod) =>
+  queryOptions({
+    queryKey: ['portfolios', id, 'returns', period],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/portfolios/{id}/returns', {
+          params: { path: { id }, query: { period } },
+        })
+      ),
+  })
+
 export const entriesQuery = (id: string) =>
   queryOptions({
     queryKey: ['portfolios', id, 'entries'],

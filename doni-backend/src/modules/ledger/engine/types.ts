@@ -248,3 +248,111 @@ export interface Allocation {
   /** Largest market value first, then by key. */
   lines: AllocationLine[];
 }
+
+/**
+ * A dated amount of money between the investor and the portfolio, XOF, from
+ * the investor's side: negative when paid in (a buy, the starting value),
+ * positive when received (a sale, a user dividend, the final valuation).
+ */
+export interface CashFlow {
+  date: string;
+  amount: string;
+}
+
+/**
+ * An XIRR: the annual rate as a decimal fraction ("0.1" is 10 %), rounded to
+ * 10 decimal places, or "no solution" when the flows have none.
+ */
+export type XirrResult =
+  | { status: 'solved'; rate: string }
+  | { status: 'no_solution' };
+
+/** One trading day of a portfolio, as the TWR links it. */
+export interface TwrDay {
+  date: string;
+  /**
+   * Market value of the holdings at the day's close, XOF; null when it
+   * cannot be known (a held security has no end-of-day price that day).
+   */
+  value: string | null;
+  /**
+   * Money put in since the previous day: buys, cost and fees, and on the
+   * first day the value of the holdings the period starts with.
+   */
+  inflow: string;
+  /**
+   * Money taken out since the previous day: sale proceeds net of fees, user
+   * dividends, cash paid for fractions of shares.
+   */
+  outflow: string;
+}
+
+/** The cumulative TWR at a day's close, as a fraction; null on a data gap. */
+export interface TwrPoint {
+  date: string;
+  twr: string | null;
+}
+
+/** A value on a date: an end-of-day close, an index value. */
+export interface DatedValue {
+  date: string;
+  value: string;
+}
+
+export interface ReturnsInput {
+  /** The ledger entries, in any order. */
+  entries: readonly LedgerEntry[];
+  /** Corporate actions on the securities, in any order; omitted means none. */
+  corporateActions?: readonly CorporateAction[];
+  /**
+   * Each security's published end-of-day closes, oldest first, in the
+   * shares of their own date (not restated for later corporate actions).
+   * They may begin before the period.
+   */
+  prices: ReadonlyMap<string, readonly DatedValue[]>;
+  /** The benchmark's (BRVM Composite) values, oldest first. */
+  benchmark: readonly DatedValue[];
+  /** First day asked for; moved to the performance start if earlier. */
+  from: string;
+  /** Last day asked for, usually today. */
+  to: string;
+}
+
+/**
+ * A trading day of the period on which something needed is missing: the
+ * benchmark's value, or the end-of-day price of a security held that day.
+ * Nothing is interpolated: the day has no point on the affected series.
+ */
+export interface DataGap {
+  date: string;
+  benchmark: boolean;
+  /** Securities held that day with no end-of-day price, ordered by id. */
+  securityIds: string[];
+}
+
+/** One trading day of the comparison: both cumulative returns, fractions. */
+export interface ReturnsPoint {
+  date: string;
+  /** The portfolio's TWR since the start of the period; null on a gap. */
+  portfolio: string | null;
+  /** The benchmark's change since the start of the period; null on a gap. */
+  benchmark: string | null;
+}
+
+export interface ReturnsResult {
+  /**
+   * The period measured: from the later of the day asked for and the
+   * performance start, to the last trading day on or before the day asked
+   * for. Null when the ledger has nothing to measure in it.
+   */
+  period: { from: string; to: string } | null;
+  /**
+   * "Mon rendement" over the period; `unpriced` when a security held at
+   * its start or end has no end-of-day price on or before that day.
+   */
+  xirr: XirrResult | { status: 'unpriced' };
+  /** Every trading day of the period, oldest first. */
+  series: ReturnsPoint[];
+  /** The period's data gaps, oldest first. */
+  gaps: DataGap[];
+}

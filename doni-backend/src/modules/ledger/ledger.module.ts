@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarketIndex } from '@modules/securities/entities/market-index.entity';
 import { Security } from '@modules/securities/entities/security.entity';
 import { SecuritiesModule } from '@modules/securities/securities.module';
 import { DividendsController } from './dividends.controller';
@@ -11,13 +12,15 @@ import { Portfolio } from './entities/portfolio.entity';
 import { PortfoliosController } from './portfolios.controller';
 import { PortfoliosService } from './portfolios.service';
 import { PortfoliosUserData } from './portfolios-user-data';
+import { ReturnsController } from './returns.controller';
+import { ReturnsService } from './returns.service';
 
 /**
- * Portfolios, their append-only ledgers, valuation, and the dividend
- * calendar (suggestions derived from reference dividends, confirmed into
- * the ledger as user dividends). Positions are
- * derived by the pure ledger engine in `./engine`; prices come only from
- * the PriceSource.
+ * Portfolios, their append-only ledgers, valuation, the dividend calendar
+ * (suggestions derived from reference dividends, confirmed into the ledger
+ * as user dividends), and returns (XIRR, TWR against the BRVM Composite).
+ * Positions are derived by the pure ledger engine in `./engine`; prices
+ * come only from the PriceSource.
  */
 @Module({
   imports: [
@@ -27,10 +30,16 @@ import { PortfoliosUserData } from './portfolios-user-data';
       LedgerEntryVoid,
       DividendDismissal,
       Security,
+      MarketIndex,
     ]),
     SecuritiesModule,
   ],
-  controllers: [PortfoliosController, DividendsController],
-  providers: [PortfoliosService, DividendsService, PortfoliosUserData],
+  controllers: [PortfoliosController, DividendsController, ReturnsController],
+  providers: [
+    PortfoliosService,
+    DividendsService,
+    ReturnsService,
+    PortfoliosUserData,
+  ],
 })
 export class LedgerModule {}
