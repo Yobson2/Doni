@@ -4,6 +4,7 @@ import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
+  onlineManager,
 } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
@@ -84,6 +85,9 @@ declare module '@tanstack/react-router' {
 
 // Offline mode (ADR 0010): last synced data from IndexedDB, and the service
 // worker (production only; it would cache the dev server's modules).
+// Start from the browser's connection state: after a reload offline no
+// `offline` event fires, so queries would fail and retry instead of waiting.
+onlineManager.setOnline(navigator.onLine)
 startQueryPersistence(queryClient)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   void import('@/lib/offline/register-sw').then((m) =>

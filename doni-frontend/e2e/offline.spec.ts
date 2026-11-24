@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- temporary CI diagnostics */
 import { expect, test, type Page } from '@playwright/test'
 
 const API = 'http://localhost:3999'
@@ -11,28 +10,55 @@ async function serviceWorkerInControl(page: Page) {
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null)
 }
 
-/** Waits until the query cache, with the portfolio, is saved to IndexedDB. */
-async function cacheSaved(page: Page) {
-  await page.waitForFunction(
+/** The queries saved to IndexedDB for offline use, as "hash:status". */
+function savedQueries(page: Page): Promise<string[]> {
+  return page.evaluate(
     () =>
-      new Promise<boolean>((resolve) => {
+      new Promise<string[]>((resolve) => {
         const open = indexedDB.open('keyval-store')
-        open.onerror = () => resolve(false)
+        open.onerror = () => resolve([])
         open.onsuccess = () => {
           const db = open.result
-          if (!db.objectStoreNames.contains('keyval')) return resolve(false)
+          if (!db.objectStoreNames.contains('keyval')) return resolve([])
           const get = db
             .transaction('keyval')
             .objectStore('keyval')
             .get('doni-query-cache')
-          get.onsuccess = () =>
-            resolve(String(get.result ?? '').includes('valuation'))
-          get.onerror = () => resolve(false)
+          get.onerror = () => resolve([])
+          get.onsuccess = () => {
+            if (typeof get.result !== 'string') return resolve([])
+            const saved = JSON.parse(get.result) as {
+              clientState: {
+                queries: { queryHash: string; state: { status: string } }[]
+              }
+            }
+            resolve(
+              saved.clientState.queries.map(
+                (q) => `${q.queryHash}:${q.state.status}`
+              )
+            )
+          }
         }
-      }),
-    undefined,
-    { polling: 250 }
+      })
   )
+}
+
+/**
+ * Waits until the portfolio's queries are saved to IndexedDB. Saving is
+ * throttled (1 s), so the first save may hold only the signed-in user.
+ * (`page.evaluate` awaits the promise; `waitForFunction` would not, and would
+ * pass at once on a fast machine.)
+ */
+async function cacheSaved(page: Page) {
+  const portfolio = /^\["portfolios"\]:success$/
+  const valuation = /^\["portfolios","[^"]+","valuation"\]:success$/
+  await expect
+    .poll(async () => {
+      const saved = await savedQueries(page)
+      return saved.some((q) => portfolio.test(q)) &&
+        saved.some((q) => valuation.test(q))
+    }, { timeout: 10_000 })
+    .toBe(true)
 }
 
 test('after one visit, the portfolio and the guides work offline, read-only', async ({
@@ -49,44 +75,11 @@ test('after one visit, the portfolio and the guides work offline, read-only', as
   await expect(page.getByRole('status').filter({ hasText: 'Hors ligne' })).toHaveCount(0)
   await serviceWorkerInControl(page)
   await cacheSaved(page)
-  const dump = () =>
-    page.evaluate(
-      () =>
-        new Promise((res) => {
-          const o = indexedDB.open('keyval-store')
-          o.onsuccess = () => {
-            const g = o.result
-              .transaction('keyval')
-              .objectStore('keyval')
-              .get('doni-query-cache')
-            g.onsuccess = () => {
-              if (!g.result) return res('none')
-              const c = JSON.parse(g.result)
-              res(
-                JSON.stringify({
-                  ts: c.timestamp,
-                  now: Date.now(),
-                  b: c.buster,
-                  q: c.clientState.queries.map(
-                    (q: { queryHash: string; state: { status: string } }) =>
-                      q.queryHash + ':' + q.state.status
-                  ),
-                })
-              )
-            }
-          }
-        })
-    )
-  console.log('DIAG before', await dump())
-  page.on('console', (m) => console.log('DIAG console', m.type(), m.text()))
 
   // The connection drops: the browser is offline and the API unreachable.
   await request.post(`${API}/__down`)
   await context.setOffline(true)
   await page.reload()
-  await page.waitForTimeout(3000)
-  console.log('DIAG after', await dump())
-  console.log('DIAG url', page.url())
 
   // The offline banner.
   const banner = page.getByRole('status').filter({ hasText: 'Hors ligne' })
