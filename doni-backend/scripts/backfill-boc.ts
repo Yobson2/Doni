@@ -8,6 +8,9 @@
  *     [--pause-ms 2000] [--report ../docs/backfill-report.md] [--retry-held]
  *
  * Run it against the database named by DB_* (or `.env`), migrations applied.
+ * For a sample, --ranges takes several periods instead of --from/--to:
+ *   --ranges 2017-11-01:2017-11-30,2019-03-01:2019-03-31
+ *
  * It can be stopped and run again: days already stored are not downloaded
  * again, published days are never overwritten. --pause-ms is the wait before
  * each request to brvm.org (at most two per weekday).
@@ -36,11 +39,18 @@ function option(name: string): string | undefined {
 }
 
 async function main(): Promise<void> {
-  const from = option('from');
-  const to = option('to');
-  if (!from || !to || !DATE.test(from) || !DATE.test(to) || from > to) {
-    throw new Error('Usage: backfill:boc --from YYYY-MM-DD --to YYYY-MM-DD');
+  const ranges = (option('ranges') ?? `${option('from')}:${option('to')}`)
+    .split(',')
+    .map((range) => range.split(':'));
+  for (const [start, end] of ranges) {
+    if (!DATE.test(start) || !DATE.test(end) || start > end) {
+      throw new Error(
+        'Usage: backfill:boc --from YYYY-MM-DD --to YYYY-MM-DD (or --ranges FROM:TO,FROM:TO)',
+      );
+    }
   }
+  const from = ranges[0][0];
+  const to = ranges[ranges.length - 1][1];
   const pauseMs = Number(option('pause-ms') ?? 2000);
   const reportPath = option('report') ?? `backfill-report-${from}-${to}.md`;
   const title = option('title') ?? `BOC backfill report, ${from} to ${to}`;
@@ -56,7 +66,7 @@ async function main(): Promise<void> {
       pauseMs,
     );
     const summary = await app.get(BocBackfillService).run({
-      days: weekdaysBetween(from, to),
+      days: ranges.flatMap(([start, end]) => weekdaysBetween(start, end)),
       fetcher,
       retryHeld: process.argv.includes('--retry-held'),
       onDay: (day) => console.log(`${day.tradingDate} ${day.outcome}`),
@@ -67,6 +77,8 @@ async function main(): Promise<void> {
         title,
         from,
         to,
+        ranges:
+          ranges.length > 1 ? ranges.map((r) => r.join(' to ')) : undefined,
         generatedAt: new Date().toISOString(),
       }),
     );

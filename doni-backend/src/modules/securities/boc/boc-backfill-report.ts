@@ -37,7 +37,14 @@ export function countBackfill(summary: BackfillSummary): BackfillCounts {
  */
 export function renderBackfillReport(
   summary: BackfillSummary,
-  meta: { title: string; from: string; to: string; generatedAt: string },
+  meta: {
+    title: string;
+    from: string;
+    to: string;
+    generatedAt: string;
+    /** The periods covered, when not the whole span from..to. */
+    ranges?: string[];
+  },
 ): string {
   const counts = countBackfill(summary);
   const held = summary.days.filter(
@@ -49,7 +56,7 @@ export function renderBackfillReport(
   const lines = [
     `# ${meta.title}`,
     '',
-    `Weekdays ${meta.from} to ${meta.to}; generated ${meta.generatedAt} by \`pnpm --filter doni-backend backfill:boc\`.`,
+    `Weekdays ${meta.ranges ? meta.ranges.join(', ') : `${meta.from} to ${meta.to}`}; generated ${meta.generatedAt} by \`pnpm --filter doni-backend backfill:boc\`.`,
     '',
     '| | Days |',
     '| --- | ---: |',
