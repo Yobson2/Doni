@@ -656,6 +656,43 @@
       "peg": "Montants convertis au taux fixe de 1 € = 655,957 F CFA. Ils restent enregistrés en F CFA.",
       "saveError": "Votre choix de devise n’a pas pu être enregistré. Réessayez."
     },
+    "returns": {
+      "title": "Rendement",
+      "description": "Votre rendement personnel et sa comparaison avec le marché, sur la période choisie.",
+      "empty": "Enregistrez vos opérations pour voir votre rendement.",
+      "periodLabel": "Période",
+      "period": {
+        "1M": "1 mois",
+        "3M": "3 mois",
+        "YTD": "Depuis le 1er janvier",
+        "1Y": "1 an",
+        "ALL": "Depuis le début"
+      },
+      "range": "Du {{from}} au {{to}}",
+      "xirr": {
+        "title": "Mon rendement",
+        "method": "XIRR, pondéré par les capitaux, annualisé : tient compte du moment et du montant de vos achats, ventes et dividendes.",
+        "perYear": "par an",
+        "no_solution": "Pas assez d’historique sur cette période pour calculer un rendement.",
+        "unpriced": "Incalculable : une valeur détenue n’a pas de cours de clôture publié au début ou à la fin de la période."
+      },
+      "comparison": {
+        "title": "Comparaison avec le {{benchmark}}",
+        "method": "TWR, pondéré par le temps : neutralise le moment de vos achats et ventes pour comparer équitablement avec l’indice. Rendements cumulés sur la période.",
+        "portfolio": "Mon portefeuille (TWR)",
+        "chartLabel": "Rendement cumulé de votre portefeuille (TWR) et du {{benchmark}}, du {{from}} au {{to}}",
+        "latest": "{{value}} au {{date}}",
+        "empty": "Aucune séance de cotation sur cette période."
+      },
+      "gaps": {
+        "title": "Données manquantes",
+        "description": "Ces jours n’ont pas de point sur le graphique : Doni ne comble jamais une donnée manquante.",
+        "prices": "pas de cours de clôture pour {{tickers}}",
+        "benchmark": "pas de valeur du {{benchmark}}",
+        "day": "{{date}} : {{missing}}",
+        "separator": " ; "
+      }
+    },
     "allocation": {
       "title": "Répartition",
       "description": "Part de chaque ligne dans la valeur de marché, au dernier cours de clôture publié.",

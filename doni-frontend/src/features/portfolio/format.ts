@@ -22,3 +22,17 @@ export function formatPercent(percent: string, language: string): string {
     maximumFractionDigits: 1,
   }).format(percent as unknown as number)
 }
+
+/**
+ * A return the API sent as a percentage with two decimal places, signed:
+ * "-3.61" as "-3,61 %", "0.96" as "+0,96 %".
+ */
+export function formatReturn(percent: string, language: string): string {
+  return new Intl.NumberFormat(language, {
+    style: 'unit',
+    unit: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    signDisplay: 'exceptZero',
+  }).format(percent as unknown as number)
+}
