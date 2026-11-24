@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf';
 import type {
   ParsedIndexValue,
   ParsedSecurityPrice,
   ParsedTradingDay,
   PriceDocumentParser,
 } from '../prices/price-source';
+import {
+  BocLayoutError,
+  isPercent,
+  type Line,
+  lineText,
+  readHeader,
+  readNumber,
+  readPages,
+} from './boc-pdf-text';
+
+export { readNumber };
 
 /**
- * Reads a BOC PDF in the layout the BRVM has used since 2026 (the pre-2026
- * layout needs its own parser). It only reads: whether the figures make
+ * Reads a BOC PDF in the layout the BRVM has used since 2026 (earlier layouts
+ * are read by boc-legacy-parser.ts). It only reads: whether the figures make
  * sense is for the checks (boc-checks.ts).
  *
  * The layout, as printed:
@@ -27,147 +37,35 @@ import type {
 @Injectable()
 export class BocParser implements PriceDocumentParser {
   async parse(document: Uint8Array): Promise<ParsedTradingDay> {
-    const pages = await readPages(document);
-    if (pages.length === 0) throw new BocLayoutError('the PDF has no pages');
-    const front = pages[0];
-    const { tradingDate, reference } = readHeader(front);
-    const { indices, repeated } = readIndices(front);
-    const shares = readShares(pages.slice(1));
-    return {
-      tradingDate,
-      reference,
-      securities: shares.securities,
-      indices,
-      controls: {
-        totalVolume: shares.totalVolume,
-        repeatedIndexValues: [...repeated, ...shares.repeated],
-      },
-      unreadableRows: shares.unreadableRows,
-    };
+    return read2026Layout(await readPages(document));
   }
 }
 
-/** The PDF is not a BOC in the layout this parser reads. */
-export class BocLayoutError extends Error {
-  constructor(detail: string) {
-    super(`Not a BOC in the 2026 layout: ${detail}`);
-    this.name = 'BocLayoutError';
-  }
+/** A day read from the pages of a BOC in the 2026 layout. */
+export function read2026Layout(pages: Line[][]): ParsedTradingDay {
+  if (pages.length === 0) throw layoutError('the PDF has no pages');
+  const front = pages[0];
+  const { tradingDate, reference } = readHeader(front, layoutError);
+  const { indices, repeated } = readIndices(front);
+  const shares = readShares(pages.slice(1));
+  return {
+    tradingDate,
+    reference,
+    layout: '2026',
+    securities: shares.securities,
+    indices,
+    controls: {
+      totalVolume: shares.totalVolume,
+      repeatedIndexValues: [...repeated, ...shares.repeated],
+    },
+    unreadableRows: shares.unreadableRows,
+  };
 }
 
-// ─── Text layout ─────────────────────────────────────────────
-
-interface TextCell {
-  x: number;
-  y: number;
-  text: string;
-}
-
-/** Cells that share a baseline: one printed line. */
-interface Line {
-  y: number;
-  cells: TextCell[];
-}
-
-// eslint-disable-next-line no-control-regex
-const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f\u200b]/g;
-
-/** Cells whose baselines are this close (PDF units) are one line. */
-const SAME_LINE = 1.5;
-
-async function readPages(document: Uint8Array): Promise<Line[][]> {
-  // pdf.js takes ownership of the buffer it is given, so it gets a copy.
-  const pdf = await getDocument({
-    data: new Uint8Array(document),
-    isEvalSupported: false,
-    disableFontFace: true,
-    useSystemFonts: false,
-    verbosity: 0,
-  }).promise;
-  try {
-    const pages: Line[][] = [];
-    for (let n = 1; n <= pdf.numPages; n++) {
-      const page = await pdf.getPage(n);
-      const content = await page.getTextContent();
-      const cells: TextCell[] = [];
-      for (const item of content.items) {
-        if (!('str' in item)) continue;
-        // Some cells hold only control characters (layout artefacts).
-        const text = item.str.replace(CONTROL_CHARACTERS, '').trim();
-        if (!text) continue;
-        cells.push({ x: item.transform[4], y: item.transform[5], text });
-      }
-      pages.push(toLines(cells));
-    }
-    return pages;
-  } finally {
-    await pdf.destroy();
-  }
-}
-
-/** Groups cells into lines, top of the page first, cells left to right. */
-function toLines(cells: TextCell[]): Line[] {
-  const sorted = [...cells].sort((a, b) => b.y - a.y || a.x - b.x);
-  const lines: Line[] = [];
-  for (const cell of sorted) {
-    const line = lines[lines.length - 1];
-    if (line && Math.abs(line.y - cell.y) <= SAME_LINE) line.cells.push(cell);
-    else lines.push({ y: cell.y, cells: [cell] });
-  }
-  for (const line of lines) line.cells.sort((a, b) => a.x - b.x);
-  return lines;
-}
-
-const lineText = (line: Line) => line.cells.map((c) => c.text).join(' ');
-
-// ─── Numbers ─────────────────────────────────────────────────
-
-/**
- * A printed number as a decimal string: "13 000" -> "13000",
- * "-0,21 %" -> "-0.21". Null when the text is not a number.
- */
-export function readNumber(text: string): string | null {
-  const compact = text.replace(/[\s\u00a0\u202f%]/g, '').replace(',', '.');
-  return /^-?\d+(\.\d+)?$/.test(compact) ? compact : null;
-}
-
-const isPercent = (text: string) => /%\s*$/.test(text);
+const layoutError = (detail: string) =>
+  new BocLayoutError(`Not a BOC in the 2026 layout: ${detail}`);
 
 // ─── Front page ──────────────────────────────────────────────
-
-const MONTHS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
-];
-
-function readHeader(front: Line[]): {
-  tradingDate: string;
-  reference: string | null;
-} {
-  const text = front.map(lineText).join('\n');
-  const date = new RegExp(
-    `(\\d{1,2})(?:er)?\\s+(${MONTHS.join('|')})\\s+(\\d{4})`,
-    'i',
-  ).exec(text);
-  if (!date) throw new BocLayoutError('no session date on the front page');
-  const month = MONTHS.indexOf(date[2].toLowerCase()) + 1;
-  const tradingDate = `${date[3]}-${pad(month)}-${pad(Number(date[1]))}`;
-  const number = /N°\s*(\d+)/.exec(text);
-  return { tradingDate, reference: number ? number[1] : null };
-}
-
-const pad = (n: number) => String(n).padStart(2, '0');
-
 /**
  * Doni's code for each index the BOC prints, by its printed name with the
  * "BRVM" prefix, dashes and extra spaces removed.
@@ -215,7 +113,7 @@ function readIndices(front: Line[]): {
     lineText(l).startsWith(INDEX_TABLES_HEADING),
   );
   if (tablesAt < 0) {
-    throw new BocLayoutError(`no "${INDEX_TABLES_HEADING}" on the front page`);
+    throw layoutError(`no "${INDEX_TABLES_HEADING}" on the front page`);
   }
   const indices = readHeadlineIndices(front.slice(0, tablesAt));
   const repeated: { code: string; value: string; where: string }[] = [];
@@ -259,7 +157,7 @@ function readHeadlineIndices(block: Line[]): ParsedIndexValue[] {
     }
   }
   if (labels.length === 0) {
-    throw new BocLayoutError('no headline indices on the front page');
+    throw layoutError('no headline indices on the front page');
   }
   labels.sort((a, b) => a.x - b.x);
   const labelFor = (x: number) =>
@@ -283,7 +181,7 @@ function readHeadlineIndices(block: Line[]): ParsedIndexValue[] {
     const value = next ? readNumber(next.text) : null;
     const code = indexCode(label.name);
     if (!value || !code) {
-      throw new BocLayoutError(`no value printed for ${label.name}`);
+      throw layoutError(`no value printed for ${label.name}`);
     }
     indices.push({
       code,
@@ -356,7 +254,7 @@ function readShares(pages: Line[][]): {
     }
   }
   if (securities.length === 0) {
-    throw new BocLayoutError('no share listing found');
+    throw layoutError('no share listing found');
   }
   return { securities, totalVolume: null, repeated, unreadableRows };
 }
