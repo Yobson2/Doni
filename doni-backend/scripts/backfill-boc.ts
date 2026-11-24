@@ -79,6 +79,7 @@ async function main(): Promise<void> {
         to,
         ranges:
           ranges.length > 1 ? ranges.map((r) => r.join(' to ')) : undefined,
+        downloadErrors: [...fetcher.downloadErrors].sort(),
         generatedAt: new Date().toISOString(),
       }),
     );

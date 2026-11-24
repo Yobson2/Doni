@@ -44,6 +44,8 @@ export function renderBackfillReport(
     generatedAt: string;
     /** The periods covered, when not the whole span from..to. */
     ranges?: string[];
+    /** Days not found because the download failed (network), not a 404. */
+    downloadErrors?: string[];
   },
 ): string {
   const counts = countBackfill(summary);
@@ -89,6 +91,15 @@ export function renderBackfillReport(
       ? 'None.'
       : `${notFound.length} weekday(s), BRVM holidays or bulletins not online: ${notFound.map((d) => d.tradingDate).join(', ')}.`,
   );
+  const errors = (meta.downloadErrors ?? []).filter((date) =>
+    notFound.some((d) => d.tradingDate === date),
+  );
+  if (errors.length > 0) {
+    lines.push(
+      '',
+      `Of these, ${errors.length} could not be downloaded (network error, not a 404); running the backfill again retries them: ${errors.join(', ')}.`,
+    );
+  }
   lines.push('', '## Listed securities not in the catalogue', '');
   lines.push(
     summary.uncatalogued.size === 0

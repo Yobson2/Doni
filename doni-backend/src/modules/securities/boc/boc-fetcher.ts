@@ -96,13 +96,18 @@ export class HttpBocFetcher implements BocFetcher {
  * listing page only shows recent ones). Old bulletins are named
  * `boc_YYYYMMDD.pdf` up to 2021 and `boc_YYYYMMDD_2.pdf` since, so the likelier
  * name is tried first. Waits `pauseMs` before every request, to be polite to
- * brvm.org during a long backfill.
+ * brvm.org during a long backfill. A request that fails on the network (not a
+ * 404) is tried once more; a day that still failed is remembered in
+ * `downloadErrors`, so the report does not mistake it for a day without a
+ * bulletin (running the backfill again retries it).
  */
 export class ArchivedBocFetcher implements BocFetcher {
   private readonly logger = new Logger(ArchivedBocFetcher.name);
   private readonly filesUrl: string;
   /** Requests made, for the backfill report. */
   requests = 0;
+  /** Days whose download failed on the network, not with a 404. */
+  readonly downloadErrors = new Set<string>();
 
   constructor(
     filesUrl: string = DEFAULT_BOC_FILES_URL,
@@ -117,10 +122,18 @@ export class ArchivedBocFetcher implements BocFetcher {
     if (tradingDate >= '2022') names.reverse();
     for (const name of names) {
       const url = `${this.filesUrl}/${name}`;
-      await new Promise((resolve) => setTimeout(resolve, this.pauseMs));
-      this.requests++;
-      const document = await downloadBoc(url, this.logger);
-      if (document) return { document, sourceUrl: url };
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, this.pauseMs));
+        this.requests++;
+        const failed = { network: false };
+        const document = await downloadBoc(url, this.logger, failed);
+        if (document) {
+          this.downloadErrors.delete(tradingDate);
+          return { document, sourceUrl: url };
+        }
+        if (!failed.network) break;
+        this.downloadErrors.add(tradingDate);
+      }
     }
     return null;
   }
@@ -130,6 +143,7 @@ export class ArchivedBocFetcher implements BocFetcher {
 async function downloadBoc(
   url: string,
   logger: Logger,
+  failed: { network: boolean } = { network: false },
 ): Promise<Buffer | null> {
   try {
     const response = await fetch(url, {
@@ -142,6 +156,7 @@ async function downloadBoc(
     if (document.length > MAX_BYTES || !isPdf(document)) return null;
     return document;
   } catch (error) {
+    failed.network = true;
     logger.warn(`Could not download ${url}: ${(error as Error).message}`);
     return null;
   }
