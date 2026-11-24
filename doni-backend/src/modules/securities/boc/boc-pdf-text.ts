@@ -27,7 +27,7 @@ export class BocLayoutError extends Error {
 }
 
 // eslint-disable-next-line no-control-regex
-const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f​]/g;
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f\u200b]/g;
 
 /** Cells whose baselines are this close (PDF units) are one line. */
 const SAME_LINE = 1.5;
@@ -86,7 +86,7 @@ export const lineText = (line: Line): string =>
  * "-0,21 %" -> "-0.21". Null when the text is not a number.
  */
 export function readNumber(text: string): string | null {
-  const compact = text.replace(/[\s  %]/g, '').replace(',', '.');
+  const compact = text.replace(/[\s\u00a0\u202f%]/g, '').replace(',', '.');
   return /^-?\d+(\.\d+)?$/.test(compact) ? compact : null;
 }
 
