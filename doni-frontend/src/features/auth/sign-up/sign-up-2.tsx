@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { AuthSplitLayout } from '../auth-split-layout'
 import { SignUpForm } from './components/sign-up-form'
+
+const legalLinkClass = 'text-foreground underline underline-offset-4'
 
 export default function SignUp2() {
   const { t } = useTranslation()
@@ -23,6 +25,15 @@ export default function SignUp2() {
       }
     >
       <SignUpForm />
+      <p className='text-muted-foreground mt-6 text-xs'>
+        <Trans
+          i18nKey='auth.signUp.legalConsent'
+          components={{
+            disclaimer: <Link to='/disclaimer' className={legalLinkClass} />,
+            privacy: <Link to='/privacy' className={legalLinkClass} />,
+          }}
+        />
+      </p>
     </AuthSplitLayout>
   )
 }

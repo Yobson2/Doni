@@ -14,6 +14,9 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
 import { Route as PublicIndexImport } from './routes/_public/index'
+import { Route as PublicSgiImport } from './routes/_public/sgi'
+import { Route as PublicPrivacyImport } from './routes/_public/privacy'
+import { Route as PublicDisclaimerImport } from './routes/_public/disclaimer'
 import { Route as errors503Import } from './routes/(errors)/503'
 import { Route as errors500Import } from './routes/(errors)/500'
 import { Route as errors404Import } from './routes/(errors)/404'
@@ -23,11 +26,13 @@ import { Route as authSignUpImport } from './routes/(auth)/sign-up'
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
 import { Route as authForgotPasswordImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings/route'
+import { Route as PublicGuidesIndexImport } from './routes/_public/guides/index'
 import { Route as AuthenticatedWatchlistIndexImport } from './routes/_authenticated/watchlist/index'
 import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSecuritiesIndexImport } from './routes/_authenticated/securities/index'
 import { Route as AuthenticatedPortfolioIndexImport } from './routes/_authenticated/portfolio/index'
 import { Route as AuthenticatedDashboardIndexImport } from './routes/_authenticated/dashboard/index'
+import { Route as PublicGuidesSlugImport } from './routes/_public/guides/$slug'
 import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedSecuritiesTickerImport } from './routes/_authenticated/securities/$ticker'
 import { Route as AuthenticatedAdminCatalogueImport } from './routes/_authenticated/admin/catalogue'
@@ -48,6 +53,24 @@ const AuthenticatedRouteRoute = AuthenticatedRouteImport.update({
 const PublicIndexRoute = PublicIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+
+const PublicSgiRoute = PublicSgiImport.update({
+  id: '/sgi',
+  path: '/sgi',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+
+const PublicPrivacyRoute = PublicPrivacyImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+
+const PublicDisclaimerRoute = PublicDisclaimerImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 
@@ -107,6 +130,12 @@ const AuthenticatedSettingsRouteRoute = AuthenticatedSettingsRouteImport.update(
   } as any,
 )
 
+const PublicGuidesIndexRoute = PublicGuidesIndexImport.update({
+  id: '/guides/',
+  path: '/guides/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+
 const AuthenticatedWatchlistIndexRoute =
   AuthenticatedWatchlistIndexImport.update({
     id: '/watchlist/',
@@ -142,6 +171,12 @@ const AuthenticatedDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+
+const PublicGuidesSlugRoute = PublicGuidesSlugImport.update({
+  id: '/guides/$slug',
+  path: '/guides/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 
 const AuthenticatedSettingsAccountRoute =
   AuthenticatedSettingsAccountImport.update({
@@ -252,6 +287,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof errors503Import
       parentRoute: typeof rootRoute
     }
+    '/_public/disclaimer': {
+      id: '/_public/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof PublicDisclaimerImport
+      parentRoute: typeof PublicRouteImport
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyImport
+      parentRoute: typeof PublicRouteImport
+    }
+    '/_public/sgi': {
+      id: '/_public/sgi'
+      path: '/sgi'
+      fullPath: '/sgi'
+      preLoaderRoute: typeof PublicSgiImport
+      parentRoute: typeof PublicRouteImport
+    }
     '/_public/': {
       id: '/_public/'
       path: '/'
@@ -287,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountImport
       parentRoute: typeof AuthenticatedSettingsRouteImport
     }
+    '/_public/guides/$slug': {
+      id: '/_public/guides/$slug'
+      path: '/guides/$slug'
+      fullPath: '/guides/$slug'
+      preLoaderRoute: typeof PublicGuidesSlugImport
+      parentRoute: typeof PublicRouteImport
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
@@ -321,6 +384,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/watchlist'
       preLoaderRoute: typeof AuthenticatedWatchlistIndexImport
       parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_public/guides/': {
+      id: '/_public/guides/'
+      path: '/guides'
+      fullPath: '/guides'
+      preLoaderRoute: typeof PublicGuidesIndexImport
+      parentRoute: typeof PublicRouteImport
     }
   }
 }
@@ -369,11 +439,21 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface PublicRouteRouteChildren {
+  PublicDisclaimerRoute: typeof PublicDisclaimerRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
+  PublicSgiRoute: typeof PublicSgiRoute
   PublicIndexRoute: typeof PublicIndexRoute
+  PublicGuidesSlugRoute: typeof PublicGuidesSlugRoute
+  PublicGuidesIndexRoute: typeof PublicGuidesIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicDisclaimerRoute: PublicDisclaimerRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
+  PublicSgiRoute: PublicSgiRoute,
   PublicIndexRoute: PublicIndexRoute,
+  PublicGuidesSlugRoute: PublicGuidesSlugRoute,
+  PublicGuidesIndexRoute: PublicGuidesIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
@@ -391,16 +471,21 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/disclaimer': typeof PublicDisclaimerRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/sgi': typeof PublicSgiRoute
   '/': typeof PublicIndexRoute
   '/admin/bulletins': typeof AuthenticatedAdminBulletinsRoute
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
+  '/guides/$slug': typeof PublicGuidesSlugRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/watchlist': typeof AuthenticatedWatchlistIndexRoute
+  '/guides': typeof PublicGuidesIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -413,16 +498,21 @@ export interface FileRoutesByTo {
   '/404': typeof errors404Route
   '/500': typeof errors500Route
   '/503': typeof errors503Route
+  '/disclaimer': typeof PublicDisclaimerRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/sgi': typeof PublicSgiRoute
   '/': typeof PublicIndexRoute
   '/admin/bulletins': typeof AuthenticatedAdminBulletinsRoute
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
+  '/guides/$slug': typeof PublicGuidesSlugRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/portfolio': typeof AuthenticatedPortfolioIndexRoute
   '/securities': typeof AuthenticatedSecuritiesIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/watchlist': typeof AuthenticatedWatchlistIndexRoute
+  '/guides': typeof PublicGuidesIndexRoute
 }
 
 export interface FileRoutesById {
@@ -438,16 +528,21 @@ export interface FileRoutesById {
   '/(errors)/404': typeof errors404Route
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
+  '/_public/disclaimer': typeof PublicDisclaimerRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
+  '/_public/sgi': typeof PublicSgiRoute
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/admin/bulletins': typeof AuthenticatedAdminBulletinsRoute
   '/_authenticated/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/_authenticated/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
+  '/_public/guides/$slug': typeof PublicGuidesSlugRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/portfolio/': typeof AuthenticatedPortfolioIndexRoute
   '/_authenticated/securities/': typeof AuthenticatedSecuritiesIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/watchlist/': typeof AuthenticatedWatchlistIndexRoute
+  '/_public/guides/': typeof PublicGuidesIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -463,16 +558,21 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/disclaimer'
+    | '/privacy'
+    | '/sgi'
     | '/'
     | '/admin/bulletins'
     | '/admin/catalogue'
     | '/securities/$ticker'
     | '/settings/account'
+    | '/guides/$slug'
     | '/dashboard'
     | '/portfolio'
     | '/securities'
     | '/settings/'
     | '/watchlist'
+    | '/guides'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -484,16 +584,21 @@ export interface FileRouteTypes {
     | '/404'
     | '/500'
     | '/503'
+    | '/disclaimer'
+    | '/privacy'
+    | '/sgi'
     | '/'
     | '/admin/bulletins'
     | '/admin/catalogue'
     | '/securities/$ticker'
     | '/settings/account'
+    | '/guides/$slug'
     | '/dashboard'
     | '/portfolio'
     | '/securities'
     | '/settings'
     | '/watchlist'
+    | '/guides'
   id:
     | '__root__'
     | '/_authenticated'
@@ -507,16 +612,21 @@ export interface FileRouteTypes {
     | '/(errors)/404'
     | '/(errors)/500'
     | '/(errors)/503'
+    | '/_public/disclaimer'
+    | '/_public/privacy'
+    | '/_public/sgi'
     | '/_public/'
     | '/_authenticated/admin/bulletins'
     | '/_authenticated/admin/catalogue'
     | '/_authenticated/securities/$ticker'
     | '/_authenticated/settings/account'
+    | '/_public/guides/$slug'
     | '/_authenticated/dashboard/'
     | '/_authenticated/portfolio/'
     | '/_authenticated/securities/'
     | '/_authenticated/settings/'
     | '/_authenticated/watchlist/'
+    | '/_public/guides/'
   fileRoutesById: FileRoutesById
 }
 
@@ -584,7 +694,12 @@ export const routeTree = rootRoute
     "/_public": {
       "filePath": "_public/route.tsx",
       "children": [
-        "/_public/"
+        "/_public/disclaimer",
+        "/_public/privacy",
+        "/_public/sgi",
+        "/_public/",
+        "/_public/guides/$slug",
+        "/_public/guides/"
       ]
     },
     "/_authenticated/settings": {
@@ -619,6 +734,18 @@ export const routeTree = rootRoute
     "/(errors)/503": {
       "filePath": "(errors)/503.tsx"
     },
+    "/_public/disclaimer": {
+      "filePath": "_public/disclaimer.tsx",
+      "parent": "/_public"
+    },
+    "/_public/privacy": {
+      "filePath": "_public/privacy.tsx",
+      "parent": "/_public"
+    },
+    "/_public/sgi": {
+      "filePath": "_public/sgi.tsx",
+      "parent": "/_public"
+    },
     "/_public/": {
       "filePath": "_public/index.tsx",
       "parent": "/_public"
@@ -639,6 +766,10 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/settings/account.tsx",
       "parent": "/_authenticated/settings"
     },
+    "/_public/guides/$slug": {
+      "filePath": "_public/guides/$slug.tsx",
+      "parent": "/_public"
+    },
     "/_authenticated/dashboard/": {
       "filePath": "_authenticated/dashboard/index.tsx",
       "parent": "/_authenticated"
@@ -658,6 +789,10 @@ export const routeTree = rootRoute
     "/_authenticated/watchlist/": {
       "filePath": "_authenticated/watchlist/index.tsx",
       "parent": "/_authenticated"
+    },
+    "/_public/guides/": {
+      "filePath": "_public/guides/index.tsx",
+      "parent": "/_public"
     }
   }
 }

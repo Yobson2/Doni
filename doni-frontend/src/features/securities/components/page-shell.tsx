@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { LanguageSwitch } from '@/components/language-switch'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { DisclaimerLink } from '@/components/legal/disclaimer-link'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -25,9 +26,7 @@ export function PageShell({ children }: { children: ReactNode }) {
       </Header>
       <Main>
         {children}
-        <p className='text-muted-foreground mt-8 text-xs'>
-          {t('securities.disclaimer')}
-        </p>
+        <DisclaimerLink notice={t('securities.disclaimer')} className='mt-8' />
       </Main>
     </>
   )
