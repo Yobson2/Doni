@@ -371,6 +371,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bulletins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List ingested BOCs, newest first */
+        get: operations["listBulletins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bulletins/{date}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one day’s BOC: rows read and failed checks */
+        get: operations["getBulletin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Correct misread values of a held day; checks run again */
+        patch: operations["correctBulletin"];
+        trace?: never;
+    };
+    "/api/bulletins/{date}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download the original BOC PDF */
+        get: operations["getBulletinDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bulletins/{date}/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fetch and ingest that day’s BOC now (same as the daily job) */
+        post: operations["ingestBulletin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bulletins/{date}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a held day: its prices are shown from now on */
+        post: operations["publishBulletin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolios": {
         parameters: {
             query?: never;
@@ -1012,6 +1098,124 @@ export interface components {
             paymentDate: string;
             /** @example https://www.brvm.org/fr/avis/example */
             sourceNoticeUrl: string;
+        };
+        /** @enum {string} */
+        BocCheck: "trading_date" | "readable" | "securities_present" | "variation_limits" | "index_consistency" | "volumes" | "agrees_with_published";
+        CheckFailureDto: {
+            check: components["schemas"]["BocCheck"];
+            /**
+             * @description The security ticker or index code concerned
+             * @example SNTS
+             */
+            subject: string | null;
+            /** @example SNTS is in the catalogue but not listed in the bulletin. */
+            reason: string;
+        };
+        BulletinSummaryDto: {
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            tradingDate: string;
+            status: components["schemas"]["PriceStatus"];
+            /** @example 215 */
+            reference: string | null;
+            /** @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf */
+            sourceUrl: string;
+            /** @description SHA-256 of the original PDF, hex */
+            checksum: string;
+            /** Format: date-time */
+            fetchedAt: string;
+            failures: components["schemas"]["CheckFailureDto"][];
+            /** Format: date-time */
+            reviewedAt: string | null;
+        };
+        BulletinSecurityRowDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example SONATEL SN */
+            name: string;
+            /** @description Whether the security is in the catalogue */
+            inCatalogue: boolean;
+            /** @example 4000 */
+            previousClose: string | null;
+            /** @example 4000 */
+            open: string | null;
+            /** @example 4190 */
+            close: string;
+            /** @example 85624 */
+            volume: string | null;
+            /**
+             * @description Daily variation as printed, in percent
+             * @example 4.75
+             */
+            variation: string | null;
+            /** @description False when suspended or not quoted that day */
+            traded: boolean;
+        };
+        BulletinIndexRowDto: {
+            /** @example BRVM-C */
+            code: string;
+            /** @example BRVM COMPOSITE */
+            name: string;
+            /** @description Whether the index is in the catalogue */
+            inCatalogue: boolean;
+            /** @example 517.17 */
+            value: string;
+            /** @example 0.85 */
+            variation: string | null;
+        };
+        BulletinDto: {
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            tradingDate: string;
+            status: components["schemas"]["PriceStatus"];
+            /** @example 215 */
+            reference: string | null;
+            /** @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf */
+            sourceUrl: string;
+            /** @description SHA-256 of the original PDF, hex */
+            checksum: string;
+            /** Format: date-time */
+            fetchedAt: string;
+            failures: components["schemas"]["CheckFailureDto"][];
+            /** Format: date-time */
+            reviewedAt: string | null;
+            securities: components["schemas"]["BulletinSecurityRowDto"][];
+            indices: components["schemas"]["BulletinIndexRowDto"][];
+        };
+        /** @enum {string} */
+        IngestionOutcome: "published" | "held" | "unchanged" | "published_kept" | "not_available";
+        IngestionResultDto: {
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            tradingDate: string;
+            outcome: components["schemas"]["IngestionOutcome"];
+            failures: components["schemas"]["CheckFailureDto"][];
+        };
+        SecurityCorrectionDto: {
+            /** @example SNTS */
+            ticker: string;
+            /** @example 4000 */
+            open?: string | null;
+            /** @example 4190 */
+            close: string;
+            /** @example 85624 */
+            volume?: string | null;
+        };
+        IndexCorrectionDto: {
+            /** @example BRVM-C */
+            code: string;
+            /** @example 517.17 */
+            value: string;
+        };
+        CorrectBulletinDto: {
+            securities?: components["schemas"]["SecurityCorrectionDto"][];
+            indices?: components["schemas"]["IndexCorrectionDto"][];
         };
         PortfolioDto: {
             /** Format: uuid */
@@ -2610,6 +2814,261 @@ export interface operations {
                 content?: never;
             };
             /** @description A dividend already has that ex-date */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listBulletins: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["PriceStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinSummaryDto"][];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getBulletin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No BOC stored for that day */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    correctBulletin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectBulletinDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No BOC stored for that day */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The day is already published */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getBulletinDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The PDF as downloaded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No BOC stored for that day */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ingestBulletin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IngestionResultDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    publishBulletin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                date: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinDto"];
+                };
+            };
+            /** @description Missing or invalid access token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Admin role required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No BOC stored for that day */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The day is already published */
             409: {
                 headers: {
                     [name: string]: unknown;

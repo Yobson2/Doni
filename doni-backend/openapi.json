@@ -1398,6 +1398,290 @@
         ]
       }
     },
+    "/api/bulletins": {
+      "get": {
+        "operationId": "listBulletins",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PriceStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BulletinSummaryDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List ingested BOCs, newest first",
+        "tags": [
+          "Bulletins"
+        ]
+      }
+    },
+    "/api/bulletins/{date}": {
+      "get": {
+        "operationId": "getBulletin",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulletinDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "No BOC stored for that day"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Read one day’s BOC: rows read and failed checks",
+        "tags": [
+          "Bulletins"
+        ]
+      },
+      "patch": {
+        "operationId": "correctBulletin",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectBulletinDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulletinDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "No BOC stored for that day"
+          },
+          "409": {
+            "description": "The day is already published"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Correct misread values of a held day; checks run again",
+        "tags": [
+          "Bulletins"
+        ]
+      }
+    },
+    "/api/bulletins/{date}/document": {
+      "get": {
+        "operationId": "getBulletinDocument",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The PDF as downloaded"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "No BOC stored for that day"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Download the original BOC PDF",
+        "tags": [
+          "Bulletins"
+        ]
+      }
+    },
+    "/api/bulletins/{date}/ingest": {
+      "post": {
+        "operationId": "ingestBulletin",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestionResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Fetch and ingest that day’s BOC now (same as the daily job)",
+        "tags": [
+          "Bulletins"
+        ]
+      }
+    },
+    "/api/bulletins/{date}/publish": {
+      "post": {
+        "operationId": "publishBulletin",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "date",
+              "example": "2026-11-11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulletinDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "No BOC stored for that day"
+          },
+          "409": {
+            "description": "The day is already published"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Publish a held day: its prices are shown from now on",
+        "tags": [
+          "Bulletins"
+        ]
+      }
+    },
     "/api/portfolios": {
       "get": {
         "operationId": "listPortfolios",
@@ -3232,6 +3516,358 @@
           "paymentDate",
           "sourceNoticeUrl"
         ]
+      },
+      "BocCheck": {
+        "type": "string",
+        "enum": [
+          "trading_date",
+          "readable",
+          "securities_present",
+          "variation_limits",
+          "index_consistency",
+          "volumes",
+          "agrees_with_published"
+        ]
+      },
+      "CheckFailureDto": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BocCheck"
+              }
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "nullable": true,
+            "example": "SNTS",
+            "description": "The security ticker or index code concerned"
+          },
+          "reason": {
+            "type": "string",
+            "example": "SNTS is in the catalogue but not listed in the bulletin."
+          }
+        },
+        "required": [
+          "check",
+          "subject",
+          "reason"
+        ]
+      },
+      "BulletinSummaryDto": {
+        "type": "object",
+        "properties": {
+          "tradingDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceStatus"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true,
+            "example": "215"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf"
+          },
+          "checksum": {
+            "type": "string",
+            "description": "SHA-256 of the original PDF, hex"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckFailureDto"
+            }
+          },
+          "reviewedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "tradingDate",
+          "status",
+          "reference",
+          "sourceUrl",
+          "checksum",
+          "fetchedAt",
+          "failures",
+          "reviewedAt"
+        ]
+      },
+      "BulletinSecurityRowDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "name": {
+            "type": "string",
+            "example": "SONATEL SN"
+          },
+          "inCatalogue": {
+            "type": "boolean",
+            "description": "Whether the security is in the catalogue"
+          },
+          "previousClose": {
+            "type": "string",
+            "nullable": true,
+            "example": "4000"
+          },
+          "open": {
+            "type": "string",
+            "nullable": true,
+            "example": "4000"
+          },
+          "close": {
+            "type": "string",
+            "example": "4190"
+          },
+          "volume": {
+            "type": "string",
+            "nullable": true,
+            "example": "85624"
+          },
+          "variation": {
+            "type": "string",
+            "nullable": true,
+            "example": "4.75",
+            "description": "Daily variation as printed, in percent"
+          },
+          "traded": {
+            "type": "boolean",
+            "description": "False when suspended or not quoted that day"
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "inCatalogue",
+          "previousClose",
+          "open",
+          "close",
+          "volume",
+          "variation",
+          "traded"
+        ]
+      },
+      "BulletinIndexRowDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BRVM-C"
+          },
+          "name": {
+            "type": "string",
+            "example": "BRVM COMPOSITE"
+          },
+          "inCatalogue": {
+            "type": "boolean",
+            "description": "Whether the index is in the catalogue"
+          },
+          "value": {
+            "type": "string",
+            "example": "517.17"
+          },
+          "variation": {
+            "type": "string",
+            "nullable": true,
+            "example": "0.85"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "inCatalogue",
+          "value",
+          "variation"
+        ]
+      },
+      "BulletinDto": {
+        "type": "object",
+        "properties": {
+          "tradingDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceStatus"
+              }
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true,
+            "example": "215"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf"
+          },
+          "checksum": {
+            "type": "string",
+            "description": "SHA-256 of the original PDF, hex"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckFailureDto"
+            }
+          },
+          "reviewedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "securities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulletinSecurityRowDto"
+            }
+          },
+          "indices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulletinIndexRowDto"
+            }
+          }
+        },
+        "required": [
+          "tradingDate",
+          "status",
+          "reference",
+          "sourceUrl",
+          "checksum",
+          "fetchedAt",
+          "failures",
+          "reviewedAt",
+          "securities",
+          "indices"
+        ]
+      },
+      "IngestionOutcome": {
+        "type": "string",
+        "enum": [
+          "published",
+          "held",
+          "unchanged",
+          "published_kept",
+          "not_available"
+        ]
+      },
+      "IngestionResultDto": {
+        "type": "object",
+        "properties": {
+          "tradingDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11"
+          },
+          "outcome": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IngestionOutcome"
+              }
+            ]
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckFailureDto"
+            }
+          }
+        },
+        "required": [
+          "tradingDate",
+          "outcome",
+          "failures"
+        ]
+      },
+      "SecurityCorrectionDto": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "open": {
+            "type": "string",
+            "nullable": true,
+            "example": "4000"
+          },
+          "close": {
+            "type": "string",
+            "example": "4190"
+          },
+          "volume": {
+            "type": "string",
+            "nullable": true,
+            "example": "85624"
+          }
+        },
+        "required": [
+          "ticker",
+          "close"
+        ]
+      },
+      "IndexCorrectionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "BRVM-C"
+          },
+          "value": {
+            "type": "string",
+            "example": "517.17"
+          }
+        },
+        "required": [
+          "code",
+          "value"
+        ]
+      },
+      "CorrectBulletinDto": {
+        "type": "object",
+        "properties": {
+          "securities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecurityCorrectionDto"
+            }
+          },
+          "indices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndexCorrectionDto"
+            }
+          }
+        }
       },
       "PortfolioDto": {
         "type": "object",
