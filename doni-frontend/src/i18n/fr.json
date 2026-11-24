@@ -116,7 +116,8 @@
       "subtitle": "Commencez par une position. Vous ajouterez le reste plus tard.",
       "signIn": "Se connecter",
       "emailTaken": "Un compte existe déjà avec cet e-mail.",
-      "success": "Compte créé"
+      "success": "Compte créé",
+      "legalConsent": "En créant un compte, vous confirmez avoir lu l'<disclaimer>avertissement</disclaimer> et la <privacy>politique de confidentialité</privacy>."
     },
     "forgotPassword": {
       "title": "Mot de passe oublié",
@@ -268,7 +269,8 @@
       "disclaimer": "Information et pédagogie uniquement. Pas un conseil en investissement.",
       "tagline": "Recherche BRVM et suivi de portefeuille, petit à petit.",
       "product": "Produit",
-      "account": "Compte"
+      "account": "Compte",
+      "learn": "Apprendre"
     },
     "preview": {
       "title": "Exemple de position",
@@ -658,6 +660,45 @@
       "bySector": "Par secteur",
       "empty": "Aucune position valorisée à répartir pour l’instant.",
       "unpriced": "Hors répartition, faute de cours de clôture publié : {{tickers}}."
+    }
+  },
+  "legal": {
+    "notice": "Information et éducation uniquement. Pas un conseil en investissement.",
+    "readDisclaimer": "Lire l'avertissement",
+    "disclaimer": "Avertissement",
+    "privacy": "Politique de confidentialité",
+    "footerLabel": "Mentions légales"
+  },
+  "content": {
+    "updated": "Mis à jour le {{date}}",
+    "frenchOnly": "Cette page n'est pas encore disponible dans votre langue. Elle est affichée en français."
+  },
+  "guides": {
+    "title": "Guides",
+    "description": "Des guides courts et factuels sur la BRVM et l'investissement par une SGI. Information et éducation uniquement.",
+    "all": "Tous les guides",
+    "inFrench": "En français uniquement pour l'instant",
+    "sgiPrompt": "Vous cherchez une SGI ?"
+  },
+  "sgi": {
+    "title": "Annuaire des SGI",
+    "description": "Les SGI (Sociétés de Gestion et d'Intermédiation) sont les intermédiaires agréés par lesquels on achète et vend des titres à la BRVM.",
+    "neutrality": "Classement par ordre alphabétique. Doni ne classe pas les SGI, n'est rémunéré par aucune d'entre elles et indique pour chaque frais sa source et sa date. Vérifiez les frais en vigueur auprès de la SGI avant d'ouvrir un compte.",
+    "placeholder": "Entrées d'exemple : l'annuaire n'est pas encore rempli. Les noms et frais ci-dessous sont des espaces réservés, pas des données réelles.",
+    "website": "Site web",
+    "noFees": "Aucun frais publié enregistré pour le moment.",
+    "feesOf": "Frais de {{name}}",
+    "columns": {
+      "fee": "Frais",
+      "value": "Montant",
+      "source": "Source",
+      "asOf": "En date du"
+    },
+    "fee": {
+      "accountOpening": "Ouverture de compte",
+      "brokerage": "Commission de courtage",
+      "custody": "Droits de garde",
+      "other": "Autres frais"
     }
   }
 }

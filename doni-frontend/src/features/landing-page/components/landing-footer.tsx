@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { APP_CONFIG } from '@/config/app'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitch } from '@/components/language-switch'
+import { LegalLinks } from '@/components/legal/legal-links'
 import { Wordmark } from '@/components/logo'
 import { navLinks } from '../lib/nav-links'
 
@@ -14,7 +15,7 @@ export function LandingFooter() {
   return (
     <footer className='bg-card border-t'>
       <div className='mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-12'>
-        <div className='md:col-span-6'>
+        <div className='md:col-span-4'>
           <Wordmark className='text-primary h-7 w-auto' />
           <p className='text-text-secondary mt-4 max-w-sm text-sm'>
             {t('landing.footer.tagline')}
@@ -23,7 +24,7 @@ export function LandingFooter() {
             {t('landing.footer.disclaimer')}
           </p>
         </div>
-        <nav aria-label={t('landing.footer.product')} className='md:col-span-3'>
+        <nav aria-label={t('landing.footer.product')} className='md:col-span-2'>
           <h2 className='text-sm font-semibold'>
             {t('landing.footer.product')}
           </h2>
@@ -37,7 +38,7 @@ export function LandingFooter() {
             ))}
           </ul>
         </nav>
-        <nav aria-label={t('landing.footer.account')} className='md:col-span-3'>
+        <nav aria-label={t('landing.footer.account')} className='md:col-span-2'>
           <h2 className='text-sm font-semibold'>
             {t('landing.footer.account')}
           </h2>
@@ -53,6 +54,25 @@ export function LandingFooter() {
               </Link>
             </li>
           </ul>
+        </nav>
+        <nav aria-label={t('landing.footer.learn')} className='md:col-span-2'>
+          <h2 className='text-sm font-semibold'>{t('landing.footer.learn')}</h2>
+          <ul className='mt-4 flex flex-col gap-3'>
+            <li>
+              <Link to='/guides' className={linkClass}>
+                {t('guides.title')}
+              </Link>
+            </li>
+            <li>
+              <Link to='/sgi' className={linkClass}>
+                {t('sgi.title')}
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        <nav aria-label={t('legal.footerLabel')} className='md:col-span-2'>
+          <h2 className='text-sm font-semibold'>{t('legal.footerLabel')}</h2>
+          <LegalLinks className='mt-4 flex-col gap-3' />
         </nav>
       </div>
       <div className='border-t'>

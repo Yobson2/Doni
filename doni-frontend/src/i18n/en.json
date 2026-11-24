@@ -116,7 +116,8 @@
       "subtitle": "Start with one position. You can add the rest later.",
       "signIn": "Sign in",
       "emailTaken": "An account already exists with this email.",
-      "success": "Account created"
+      "success": "Account created",
+      "legalConsent": "By creating an account, you confirm you have read the <disclaimer>disclaimer</disclaimer> and the <privacy>privacy policy</privacy>."
     },
     "forgotPassword": {
       "title": "Forgot password",
@@ -268,7 +269,8 @@
       "disclaimer": "Information and education only. Not investment advice.",
       "tagline": "BRVM research and portfolio tracking, little by little.",
       "product": "Product",
-      "account": "Account"
+      "account": "Account",
+      "learn": "Learn"
     },
     "preview": {
       "title": "Example position",
@@ -658,6 +660,45 @@
       "bySector": "By sector",
       "empty": "No valued position to allocate yet.",
       "unpriced": "Left out of the allocation, no published closing price yet: {{tickers}}."
+    }
+  },
+  "legal": {
+    "notice": "Information and education only. Not investment advice.",
+    "readDisclaimer": "Read the disclaimer",
+    "disclaimer": "Disclaimer",
+    "privacy": "Privacy policy",
+    "footerLabel": "Legal"
+  },
+  "content": {
+    "updated": "Updated {{date}}",
+    "frenchOnly": "This page is not yet available in English. It is shown in French."
+  },
+  "guides": {
+    "title": "Guides",
+    "description": "Short, factual guides to the BRVM and to investing through an SGI. Information and education only.",
+    "all": "All guides",
+    "inFrench": "In French only for now",
+    "sgiPrompt": "Looking for an SGI?"
+  },
+  "sgi": {
+    "title": "SGI directory",
+    "description": "The SGIs (Sociétés de Gestion et d'Intermédiation) are the licensed intermediaries through which you buy and sell securities on the BRVM.",
+    "neutrality": "Listed in alphabetical order. Doni does not rank SGIs, is not paid by any of them and shows each fee with its source and date. Check current fees with the SGI before opening an account.",
+    "placeholder": "Sample entries: the directory is not filled in yet. The names and fees below are placeholders, not real data.",
+    "website": "Website",
+    "noFees": "No published fees recorded yet.",
+    "feesOf": "Fees of {{name}}",
+    "columns": {
+      "fee": "Fee",
+      "value": "Amount",
+      "source": "Source",
+      "asOf": "As of"
+    },
+    "fee": {
+      "accountOpening": "Account opening",
+      "brokerage": "Brokerage commission",
+      "custody": "Custody fees",
+      "other": "Other fees"
     }
   }
 }

@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { IconArrowLeft, IconCheck } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitch } from '@/components/language-switch'
+import { LegalFooter } from '@/components/legal/legal-links'
 import { Logo, Wordmark } from '@/components/logo'
 import { AnimatedContainer } from '@/components/motion/animated-container'
 
@@ -94,6 +95,7 @@ export function AuthSplitLayout({
             </p>
           </AnimatedContainer>
         </main>
+        <LegalFooter className='px-0 pb-0' />
       </div>
     </div>
   )

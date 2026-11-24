@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-context'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
+import { LegalFooter } from '@/components/legal/legal-links'
 import { PageTransition } from '@/components/motion/page-transition'
 import SkipToMain from '@/components/skip-to-main'
 import { ensureSession } from '@/features/auth/session'
@@ -44,6 +45,7 @@ function RouteComponent() {
           <PageTransition>
             <Outlet />
           </PageTransition>
+          <LegalFooter className='mt-auto' />
         </div>
       </SidebarProvider>
     </SearchProvider>
