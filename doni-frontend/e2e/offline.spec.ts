@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- temporary CI diagnostics */
 import { expect, test, type Page } from '@playwright/test'
 
 const API = 'http://localhost:3999'
