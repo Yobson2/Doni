@@ -1,5 +1,5 @@
 import { IconCalendarEvent, IconTriangleFilled } from '@tabler/icons-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import {
@@ -68,7 +68,7 @@ export function PositionPreview({ className }: { className?: string }) {
         {ops.map((op, i) => {
           const latest = i === ops.length - 1
           return (
-            <motion.li
+            <m.li
               key={i}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -95,12 +95,12 @@ export function PositionPreview({ className }: { className?: string }) {
               <span className='text-sm font-medium tabular-nums'>
                 {op.amount}
               </span>
-            </motion.li>
+            </m.li>
           )
         })}
       </ol>
 
-      <motion.dl
+      <m.dl
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.45, duration: 0.5 }}
@@ -124,7 +124,7 @@ export function PositionPreview({ className }: { className?: string }) {
           gain
           emphasis
         />
-      </motion.dl>
+      </m.dl>
 
       <footer className='text-muted-foreground flex items-center gap-2 rounded-b-2xl border-t px-5 py-3 text-xs sm:px-6'>
         <IconCalendarEvent className='size-4 shrink-0' aria-hidden='true' />

@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -27,6 +26,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { OnlineButton } from '@/components/offline/online-button'
 import {
   createSecurity,
   putSecurityPrice,
@@ -195,9 +195,9 @@ function PriceEntryForm() {
               description
             />
             <TextField form={form} name='publishedOn' type='date' />
-            <Button disabled={mutation.isPending}>
+            <OnlineButton disabled={mutation.isPending}>
               {t('admin.catalogue.price.submit')}
-            </Button>
+            </OnlineButton>
           </form>
         </Form>
       </CardContent>
@@ -421,9 +421,9 @@ function SecurityForm() {
                 </FormItem>
               )}
             />
-            <Button disabled={mutation.isPending}>
+            <OnlineButton disabled={mutation.isPending}>
               {t('admin.catalogue.security.submit')}
-            </Button>
+            </OnlineButton>
           </form>
         </Form>
       </CardContent>

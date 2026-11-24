@@ -46,6 +46,67 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # ADR 0010: under 200 KB of gzipped JavaScript on first load. Fails the
+      # job when exceeded (scripts/check-bundle-size.mjs).
+      - name: JavaScript budget (frontend)
+        run: pnpm --filter doni-frontend size
+
+      - name: Keep the frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: doni-frontend/dist
+          include-hidden-files: true
+          retention-days: 1
+
+  frontend-pwa:
+    name: PWA (offline browser test, Lighthouse installability)
+    needs: checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: doni-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Get the frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: doni-frontend/dist
+
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Visit, go offline, reload: portfolio and guides render with their
+      # dates and writes are disabled. The API is a stub (e2e/mock-api.mjs).
+      - name: Offline browser test (Playwright)
+        run: pnpm test:browser
+
+      # Mobile profile; asserts the installability audits (lighthouserc.json).
+      - name: Lighthouse CI
+        run: pnpm lighthouse
+
+      - name: Keep reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pwa-reports
+          path: |
+            doni-frontend/test-results
+            doni-frontend/.lighthouseci
+          retention-days: 7
+
   backend-e2e:
     name: Backend e2e (Postgres)
     runs-on: ubuntu-latest

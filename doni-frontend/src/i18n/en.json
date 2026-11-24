@@ -829,5 +829,18 @@
       "custody": "Custody fees",
       "other": "Other fees"
     }
+  },
+  "offline": {
+    "banner": {
+      "title": "Offline.",
+      "description": "You are viewing the last synced data. Changes are disabled until the connection is back."
+    },
+    "writeDisabled": "Not available offline: reconnect to the internet to save.",
+    "syncedAt": "Data synced on {{date}}",
+    "update": {
+      "title": "A new version of Doni is available",
+      "description": "Reload to use it.",
+      "reload": "Reload"
+    }
   }
 }

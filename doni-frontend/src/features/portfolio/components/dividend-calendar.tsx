@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { OnlineButton } from '@/components/offline/online-button'
 import { formatQuantity, formatShortDate } from '@/features/securities/format'
 import {
   type DividendItem,
@@ -76,7 +77,7 @@ export function DividendCalendar({ portfolioId }: { portfolioId: string }) {
       <CardContent className='space-y-6'>
         {dividends.isPending ? (
           <Skeleton className='h-24 w-full' />
-        ) : dividends.isError ? (
+        ) : dividends.isLoadingError ? (
           <p role='alert'>{t('portfolio.loadError')}</p>
         ) : dividends.data.length === 0 ? (
           <p className='text-muted-foreground py-6 text-center text-sm'>
@@ -236,7 +237,7 @@ function DividendTable({
                 </TableCell>
                 <TableCell className='text-right whitespace-nowrap'>
                   {item.status === 'suggested' && (
-                    <Button
+                    <OnlineButton
                       size='sm'
                       aria-label={t('portfolio.dividends.confirmLabel', {
                         dividend: nameOf(item),
@@ -244,10 +245,10 @@ function DividendTable({
                       onClick={() => onConfirm(item)}
                     >
                       {t('portfolio.dividends.confirm')}
-                    </Button>
+                    </OnlineButton>
                   )}
                   {actionable && (
-                    <Button
+                    <OnlineButton
                       size='sm'
                       variant='ghost'
                       disabled={dismissal.isPending}
@@ -257,10 +258,10 @@ function DividendTable({
                       onClick={() => dismissal.mutate({ item, dismiss: true })}
                     >
                       {t('portfolio.dividends.dismiss')}
-                    </Button>
+                    </OnlineButton>
                   )}
                   {dismissed && (
-                    <Button
+                    <OnlineButton
                       size='sm'
                       variant='ghost'
                       disabled={dismissal.isPending}
@@ -270,7 +271,7 @@ function DividendTable({
                       onClick={() => dismissal.mutate({ item, dismiss: false })}
                     >
                       {t('portfolio.dividends.restore')}
-                    </Button>
+                    </OnlineButton>
                   )}
                 </TableCell>
               </TableRow>
@@ -387,9 +388,9 @@ function ConfirmDividendDialog({
                 {t('portfolio.correction.cancel')}
               </Button>
             </DialogClose>
-            <Button type='submit' disabled={mutation.isPending}>
+            <OnlineButton type='submit' disabled={mutation.isPending}>
               {t('portfolio.dividends.form.submit')}
-            </Button>
+            </OnlineButton>
           </DialogFooter>
         </form>
       </DialogContent>

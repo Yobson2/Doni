@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { api, unwrap } from '@/api/client'
 import { useAuthStore } from '@/stores/authStore'
 import type { DisplayCurrency } from '@/lib/money'
-import { Button } from '@/components/ui/button'
+import { OnlineButton } from '@/components/offline/online-button'
 import { useDisplayCurrency } from './use-money'
 
 const CURRENCIES: DisplayCurrency[] = ['XOF', 'EUR']
@@ -41,7 +41,7 @@ export function CurrencyToggle() {
         className='bg-muted inline-flex gap-1 rounded-md p-1'
       >
         {CURRENCIES.map((c) => (
-          <Button
+          <OnlineButton
             key={c}
             size='sm'
             variant={c === currency ? 'secondary' : 'ghost'}
@@ -50,7 +50,7 @@ export function CurrencyToggle() {
             onClick={() => c !== currency && save.mutate(c)}
           >
             {t(`portfolio.currency.${c}`)}
-          </Button>
+          </OnlineButton>
         ))}
       </div>
       {currency === 'EUR' && (

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { OnlineButton } from '@/components/offline/online-button'
 import { createPortfolio } from '../api'
 
 /** First visit: name and create the portfolio. */
@@ -53,9 +53,9 @@ export function CreatePortfolio() {
               onChange={(event) => setName(event.target.value)}
             />
           </div>
-          <Button disabled={mutation.isPending || !name.trim()}>
+          <OnlineButton disabled={mutation.isPending || !name.trim()}>
             {t('portfolio.create.submit')}
-          </Button>
+          </OnlineButton>
         </form>
       </CardContent>
     </Card>

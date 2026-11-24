@@ -1,0 +1,30 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm exec vite preview --port 4174 --strictPort",
+      "startServerReadyPattern": "4174",
+      "url": ["http://localhost:4174/"],
+      "numberOfRuns": 1,
+      "settings": {
+        "formFactor": "mobile",
+        "throttlingMethod": "simulate",
+        "onlyCategories": ["pwa", "performance"],
+        "chromeFlags": "--no-sandbox --headless=new"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "installable-manifest": "error",
+        "maskable-icon": "error",
+        "splash-screen": "error",
+        "themed-omnibox": "error",
+        "viewport": "error",
+        "categories:performance": ["warn", { "minScore": 0.8 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
+import { OnlineButton } from '@/components/offline/online-button'
 import { addToWatchlist, removeFromWatchlist, watchlistQuery } from './api'
 
 /** Adds the security to the user's watchlist, or removes it. */
@@ -25,7 +25,7 @@ export function WatchButton({ ticker }: { ticker: string }) {
 
   const Icon = watched ? IconStarFilled : IconStar
   return (
-    <Button
+    <OnlineButton
       variant='outline'
       size='sm'
       aria-pressed={watched}
@@ -34,6 +34,6 @@ export function WatchButton({ ticker }: { ticker: string }) {
     >
       <Icon aria-hidden='true' />
       {watched ? t('watchlist.watching') : t('watchlist.add')}
-    </Button>
+    </OnlineButton>
   )
 }

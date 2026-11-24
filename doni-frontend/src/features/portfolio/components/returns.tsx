@@ -69,7 +69,7 @@ export function ReturnsSection({ portfolioId }: { portfolioId: string }) {
 
       {returns.isPending ? (
         <Skeleton className='h-64 w-full' />
-      ) : returns.isError ? (
+      ) : returns.isLoadingError ? (
         <p role='alert'>{t('portfolio.loadError')}</p>
       ) : returns.data.from === null || returns.data.to === null ? (
         <p className='text-muted-foreground text-sm'>

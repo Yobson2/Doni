@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { SyncedAt } from '@/components/offline/synced-at'
 import { WatchButton } from '@/features/watchlist/watch-button'
 import {
   type CorporateAction,
@@ -56,11 +57,12 @@ export function CompanyPage({ ticker }: { ticker: string }) {
 
       {security.isPending ? (
         <Skeleton className='h-24 w-full' />
-      ) : security.isError ? (
+      ) : security.isLoadingError ? (
         <p role='alert'>{t('securities.loadError')}</p>
       ) : (
         <div className='space-y-6'>
           <CompanyHeader security={security.data} />
+          <SyncedAt query={security} />
           <Card>
             <CardHeader>
               <CardTitle>{t('securities.history.title')}</CardTitle>
@@ -68,7 +70,7 @@ export function CompanyPage({ ticker }: { ticker: string }) {
             <CardContent>
               {prices.isPending ? (
                 <Skeleton className='h-64 w-full' />
-              ) : prices.isError ? (
+              ) : prices.isLoadingError ? (
                 <p role='alert'>{t('securities.loadError')}</p>
               ) : prices.data.length === 0 ? (
                 <p className='text-muted-foreground text-sm'>

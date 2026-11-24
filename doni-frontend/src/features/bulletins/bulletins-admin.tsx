@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -21,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { OnlineButton } from '@/components/offline/online-button'
 import { PageShell } from '@/features/securities/components/page-shell'
 import {
   type Bulletin,
@@ -256,7 +256,7 @@ function HeldDay({ date }: { date: string }) {
             })}
           </p>
           <div className='flex flex-wrap gap-2'>
-            <Button
+            <OnlineButton
               variant='outline'
               disabled={
                 Object.keys(edits).length === 0 || invalid || correct.isPending
@@ -264,8 +264,8 @@ function HeldDay({ date }: { date: string }) {
               onClick={() => correct.mutate()}
             >
               {t('admin.bulletins.saveCorrections')}
-            </Button>
-            <Button
+            </OnlineButton>
+            <OnlineButton
               disabled={
                 data.status === 'published' ||
                 Object.keys(edits).length > 0 ||
@@ -274,7 +274,7 @@ function HeldDay({ date }: { date: string }) {
               onClick={() => publish.mutate()}
             >
               {t('admin.bulletins.publish')}
-            </Button>
+            </OnlineButton>
           </div>
           <p className='text-muted-foreground text-sm'>
             {t('admin.bulletins.publishHelp')}

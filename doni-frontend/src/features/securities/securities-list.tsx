@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { SyncedAt } from '@/components/offline/synced-at'
 import { securitiesQuery } from './api'
 import { PageShell } from './components/page-shell'
 import { formatShortDate, formatXof } from './format'
@@ -28,13 +29,14 @@ export function SecuritiesList() {
           {t('securities.title')}
         </h1>
         <p className='text-muted-foreground'>{t('securities.description')}</p>
+        <SyncedAt query={securities} />
       </div>
 
       <Card>
         <CardContent>
           {securities.isPending ? (
             <Skeleton className='h-48 w-full' />
-          ) : securities.isError ? (
+          ) : securities.isLoadingError ? (
             <p role='alert'>{t('securities.loadError')}</p>
           ) : securities.data.length === 0 ? (
             <p className='text-muted-foreground py-8 text-center text-sm'>

@@ -94,7 +94,19 @@ pnpm lint             # Run ESLint
 pnpm format           # Format with Prettier
 pnpm format:check     # Check formatting
 pnpm knip             # Check for unused dependencies
+pnpm size             # JavaScript budget: first-load JS < 200 KB gzipped (after pnpm build)
+pnpm test:browser     # Playwright offline test (after pnpm build; first: pnpm exec playwright install chromium)
+pnpm lighthouse       # Lighthouse CI, mobile profile, installability assertions (after pnpm build)
 ```
+
+## PWA and offline mode (ADR 0010)
+
+- **Service worker** (`vite-plugin-pwa`, Workbox `generateSW`, configured in `vite.config.ts`): precaches the app shell and every built JS/CSS chunk, so guides and legal pages (bundled Markdown) work offline. API reads (portfolio, securities and prices, sectors, watchlist, `users/me`) are cached network-first; `/api/auth/*` and non-GET requests never are. Registered in production builds only.
+- **Updates: prompt.** A new version is downloaded in the background; a toast offers to reload into it. Until accepted, the running version stays (nothing being typed is lost); it takes over once every Doni tab is closed.
+- **Persisted query cache**: the TanStack Query cache is saved to IndexedDB (`src/lib/offline/`), kept 7 days, discarded when the app version changes. Sign-out (or an expired session) deletes it, along with the service worker's API cache. Offline after a reload, the last signed-in user's synced data is shown read-only.
+- **Offline UI**: `useOnline()` is the single source of truth. A banner shows while offline; pages show when their data was synced (`SyncedAt`); every write uses `OnlineButton`, disabled offline with the reason. There are no offline writes and no queued mutations.
+- **Push notifications (#19)** will add their handler to the service worker via `workbox.importScripts`, or by switching to `injectManifest`.
+- **Budget**: `scripts/check-bundle-size.mjs` reads the Vite manifest and sums the gzipped entry chunk, its static imports and the landing page's route chunks; CI fails above 200 KB.
 
 ## Environment Variables
 

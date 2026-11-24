@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { OnlineButton } from '@/components/offline/online-button'
 import { type LedgerEntry, deleteLedgerEntry } from '../api'
 import { ledgerRefusal } from './form-fields'
 
@@ -77,13 +78,13 @@ export function DeleteEntryDialog({
               {t('portfolio.correction.cancel')}
             </Button>
           </DialogClose>
-          <Button
+          <OnlineButton
             variant='destructive'
             disabled={mutation.isPending}
             onClick={() => entry && mutation.mutate(entry.id)}
           >
             {t('portfolio.delete.confirm')}
-          </Button>
+          </OnlineButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

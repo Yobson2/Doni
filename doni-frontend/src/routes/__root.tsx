@@ -1,6 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { Toaster } from '@/components/ui/sonner'
 import { NavigationProgress } from '@/components/navigation-progress'
+import { OfflineBanner } from '@/components/offline/offline-banner'
 import GeneralError from '@/features/errors/general-error'
 import NotFoundError from '@/features/errors/not-found-error'
 
@@ -9,6 +10,7 @@ export const Route = createRootRoute({
     return (
       <>
         <NavigationProgress />
+        <OfflineBanner />
         <Outlet />
         <Toaster duration={50000} />
         {import.meta.env.MODE === 'development' && (

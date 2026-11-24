@@ -20,6 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { OnlineButton } from '@/components/offline/online-button'
+import { SyncedAt } from '@/components/offline/synced-at'
 import { AsOfLabel } from '@/features/securities/components/as-of-label'
 import { PageShell } from '@/features/securities/components/page-shell'
 import {
@@ -67,7 +69,7 @@ export function PortfolioPage() {
     <PageShell>
       {portfolios.isPending ? (
         <Skeleton className='h-64 w-full' />
-      ) : portfolios.isError ? (
+      ) : portfolios.isLoadingError ? (
         <p role='alert'>{t('portfolio.loadError')}</p>
       ) : portfolios.data.length === 0 ? (
         <CreatePortfolio />
@@ -90,13 +92,14 @@ function PortfolioView({ portfolio }: { portfolio: Portfolio }) {
             {portfolio.name}
           </h1>
           <p className='text-muted-foreground'>{t('portfolio.description')}</p>
+          <SyncedAt query={valuation} />
         </div>
         <CurrencyToggle />
       </div>
 
       {valuation.isPending ? (
         <Skeleton className='h-48 w-full' />
-      ) : valuation.isError ? (
+      ) : valuation.isLoadingError ? (
         <p role='alert'>{t('portfolio.loadError')}</p>
       ) : (
         <>
@@ -428,7 +431,7 @@ function Entries({
       <CardContent>
         {entries.isPending ? (
           <Skeleton className='h-32 w-full' />
-        ) : entries.isError ? (
+        ) : entries.isLoadingError ? (
           <p role='alert'>{t('portfolio.loadError')}</p>
         ) : entries.data.length === 0 ? (
           <p className='text-muted-foreground py-6 text-center text-sm'>
@@ -501,7 +504,7 @@ function Entries({
                       {/* A dividend is corrected by deleting it and
                           confirming it again from the dividend calendar. */}
                       {!dividend && (
-                        <Button
+                        <OnlineButton
                           size='icon'
                           variant='ghost'
                           aria-label={t('portfolio.entries.edit', {
@@ -510,9 +513,9 @@ function Entries({
                           onClick={() => onEdit(entry)}
                         >
                           <Pencil />
-                        </Button>
+                        </OnlineButton>
                       )}
-                      <Button
+                      <OnlineButton
                         size='icon'
                         variant='ghost'
                         aria-label={t('portfolio.entries.delete', {
@@ -521,7 +524,7 @@ function Entries({
                         onClick={() => setDeleting(entry)}
                       >
                         <Trash2 />
-                      </Button>
+                      </OnlineButton>
                     </TableCell>
                   </TableRow>
                 )
