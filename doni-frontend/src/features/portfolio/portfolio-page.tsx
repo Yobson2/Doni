@@ -38,6 +38,7 @@ import {
 import { AllocationCard } from './components/allocation'
 import { CreatePortfolio } from './components/create-portfolio'
 import { DeleteEntryDialog } from './components/delete-entry-dialog'
+import { DividendCalendar } from './components/dividend-calendar'
 import { EntryForm } from './components/entry-form'
 import { ENTRY_MODES, type EntryMode } from './components/form-fields'
 import { Onboarding } from './components/onboarding'
@@ -105,6 +106,8 @@ function PortfolioView({ portfolio }: { portfolio: Portfolio }) {
           )}
         </>
       )}
+
+      <DividendCalendar portfolioId={portfolio.id} />
 
       <Ledger portfolioId={portfolio.id} />
     </div>
@@ -217,6 +220,16 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
       className: gainClass(totals.realisedGain),
     },
     {
+      label: t('portfolio.totals.dividends'),
+      value: money.gain(totals.dividends),
+      className: gainClass(totals.dividends),
+    },
+    {
+      label: t('portfolio.totals.totalGain'),
+      value: totals.totalGain ? money.gain(totals.totalGain) : unknown,
+      className: totals.totalGain ? gainClass(totals.totalGain) : undefined,
+    },
+    {
       label: t('portfolio.totals.costBasis'),
       value: money.amount(totals.costBasis),
     },
@@ -224,7 +237,7 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
 
   return (
     <section aria-label={t('portfolio.totals.title')} className='space-y-3'>
-      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
         {tiles.map((tile) => (
           <Card key={tile.label} className='gap-2 py-4'>
             <CardContent className='space-y-1 px-4'>
@@ -242,6 +255,9 @@ function Totals({ valuation }: { valuation: PortfolioValuation }) {
         ))}
       </div>
       {asOf && <AsOfLabel date={asOf} />}
+      <p className='text-muted-foreground text-sm'>
+        {t('portfolio.totals.totalGainHint')}
+      </p>
       {valuation.performanceSince && (
         <p className='text-muted-foreground text-sm'>
           {t('portfolio.performanceSince', {
@@ -297,6 +313,9 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
                 </TableHead>
                 <TableHead className='text-right'>
                   {t('portfolio.positions.realisedGain')}
+                </TableHead>
+                <TableHead className='text-right'>
+                  {t('portfolio.positions.dividends')}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -357,6 +376,14 @@ function Positions({ valuation }: { valuation: PortfolioValuation }) {
                       )}
                     >
                       {money.gain(position.realisedGain)}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        'text-right',
+                        gainClass(position.dividends)
+                      )}
+                    >
+                      {money.gain(position.dividends)}
                     </TableCell>
                   </TableRow>
                 )
@@ -432,6 +459,8 @@ function Entries({
               {entries.data.map((entry) => {
                 // An opening position's price is its PMP, fees included.
                 const opening = entry.kind === 'opening_position'
+                // A dividend: shares held at the ex-date, net amount received.
+                const dividend = entry.kind === 'dividend'
                 return (
                   <TableRow key={entry.id}>
                     <TableCell className='tabular-nums'>
@@ -450,25 +479,36 @@ function Entries({
                             {t('portfolio.entries.pmp')}
                           </span>
                         </>
+                      ) : dividend && entry.amount ? (
+                        <>
+                          {money.amount(entry.amount)}
+                          <span className='text-muted-foreground block text-xs'>
+                            {t('portfolio.entries.net')}
+                          </span>
+                        </>
                       ) : (
                         money.amount(entry.price)
                       )}
                     </TableCell>
                     <TableCell className='text-right tabular-nums'>
-                      {opening ? '—' : money.amount(entry.fees)}
+                      {opening || dividend ? '—' : money.amount(entry.fees)}
                     </TableCell>
                     <TableCell>{entry.sgi}</TableCell>
                     <TableCell className='text-right whitespace-nowrap'>
-                      <Button
-                        size='icon'
-                        variant='ghost'
-                        aria-label={t('portfolio.entries.edit', {
-                          entry: nameOf(entry),
-                        })}
-                        onClick={() => onEdit(entry)}
-                      >
-                        <Pencil />
-                      </Button>
+                      {/* A dividend is corrected by deleting it and
+                          confirming it again from the dividend calendar. */}
+                      {!dividend && (
+                        <Button
+                          size='icon'
+                          variant='ghost'
+                          aria-label={t('portfolio.entries.edit', {
+                            entry: nameOf(entry),
+                          })}
+                          onClick={() => onEdit(entry)}
+                        >
+                          <Pencil />
+                        </Button>
+                      )}
                       <Button
                         size='icon'
                         variant='ghost'

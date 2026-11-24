@@ -20,6 +20,7 @@ const portfolio = {
 }
 const VALUATION = `GET /api/portfolios/${PORTFOLIO_ID}/valuation`
 const ENTRIES = `/api/portfolios/${PORTFOLIO_ID}/entries`
+const DIVIDENDS = `/api/portfolios/${PORTFOLIO_ID}/dividends`
 
 // The reference case of the ledger engine, as the API returns it.
 const valuation = {
@@ -32,6 +33,7 @@ const valuation = {
       pmp: '4120.5',
       costBasis: '370845',
       realisedGain: '21420',
+      dividends: '14940',
       valuation: {
         price: '4190',
         priceDate: '2026-11-11',
@@ -45,6 +47,8 @@ const valuation = {
     realisedGain: '21420',
     marketValue: '377100',
     unrealisedGain: '6255',
+    dividends: '14940',
+    totalGain: '42615',
   },
   performanceSince: '2026-01-05',
   allocation: {
@@ -101,6 +105,7 @@ const portfolioApi = (routes = {}) =>
     'GET /api/portfolios': () => json(200, [portfolio]),
     [VALUATION]: () => json(200, valuation),
     [`GET ${ENTRIES}`]: () => json(200, [entry]),
+    [`GET ${DIVIDENDS}`]: () => json(200, []),
     'GET /api/securities': () => json(200, [sonatel]),
     ...routes,
   })
@@ -148,6 +153,191 @@ describe('portfolio page', () => {
     expect(summary).toContain('Valeur de marché377 100 F CFA')
     expect(summary).toContain('Plus-value latente+6 255 F CFA')
     expect(summary).toContain('Plus-value réalisée+21 420 F CFA')
+  })
+
+  it('counts confirmed dividends toward the total gain', async () => {
+    portfolioApi()
+    renderApp('/portfolio')
+
+    const summary = await screen.findByRole('region', {
+      name: 'Synthèse du portefeuille',
+    })
+    // 21 420 realised + 6 255 unrealised + 14 940 dividends
+    expect(text(summary.textContent)).toContain('Dividendes reçus+14 940 F CFA')
+    expect(text(summary.textContent)).toContain('Gain total+42 615 F CFA')
+    const table = within(
+      screen
+        .getByRole('heading', { name: 'Positions' })
+        .closest('[data-slot="card"]') as HTMLElement
+    )
+    expect(text(table.getByText('SNTS').closest('tr')!.textContent)).toContain(
+      '+14 940 F CFA'
+    )
+  })
+
+  describe('dividends', () => {
+    const dividend = {
+      referenceDividendId: 'rd-past',
+      ticker: 'SNTS',
+      securityName: 'SONATEL',
+      exDate: '2026-05-12',
+      paymentDate: '2026-05-20',
+      grossPerShare: '1655',
+      sourceNoticeUrl: 'https://www.brvm.org/fr/avis/example',
+      shares: '100',
+      grossAmount: '165500',
+      status: 'suggested',
+      netAmount: null,
+      entryId: null,
+    }
+    const calendar = [
+      {
+        ...dividend,
+        referenceDividendId: 'rd-confirmed',
+        exDate: '2025-05-12',
+        paymentDate: '2025-05-20',
+        grossPerShare: '1500',
+        grossAmount: '150000',
+        status: 'confirmed',
+        netAmount: '135000',
+        entryId: 'e9',
+      },
+      dividend,
+      {
+        ...dividend,
+        referenceDividendId: 'rd-upcoming',
+        exDate: '2027-05-12',
+        paymentDate: '2027-05-20',
+        shares: '90',
+        grossAmount: '148950',
+        status: 'upcoming',
+      },
+    ]
+    const section = async (name: string) =>
+      text((await screen.findByRole('region', { name })).textContent) as string
+
+    it('shows upcoming and past dividends of the securities held, with their state', async () => {
+      portfolioApi({ [`GET ${DIVIDENDS}`]: () => json(200, calendar) })
+      renderApp('/portfolio')
+
+      await screen.findByRole('heading', { name: 'Dividendes' })
+      const upcoming = await section('À venir')
+      expect(upcoming).toContain('SNTS')
+      expect(upcoming).toContain('12/05/2027')
+      expect(upcoming).toContain('148 950 F CFA')
+      expect(upcoming).toContain('estimation sur vos titres actuels')
+      expect(upcoming).not.toContain('2026')
+
+      const past = await section('Passés')
+      expect(past).toContain('À confirmer')
+      expect(past).toContain('165 500 F CFA')
+      expect(past).toContain('brut suggéré')
+      expect(past).toContain('Confirmé')
+      expect(past).toContain('135 000 F CFA')
+      expect(past).toContain('net reçu')
+      // Most recent first.
+      expect(past.indexOf('20/05/2026')).toBeLessThan(
+        past.indexOf('20/05/2025')
+      )
+    })
+
+    it('records the net amount received when a suggestion is confirmed', async () => {
+      let sent: unknown
+      portfolioApi({
+        [`GET ${DIVIDENDS}`]: () => json(200, [dividend]),
+        [`POST ${DIVIDENDS}/rd-past/confirmation`]: async (
+          request: Request
+        ) => {
+          sent = await request.json()
+          return json(201, { ...entry, kind: 'dividend', amount: '140675' })
+        },
+      })
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Confirmer le dividende SNTS du 20/05/2026',
+        })
+      )
+      const dialog = within(await screen.findByRole('dialog'))
+      expect(text(dialog.getByText(/Brut suggéré/).textContent)).toContain(
+        'Brut suggéré pour 100 titres : 165 500 F CFA.'
+      )
+      const amount = dialog.getByLabelText('Montant net reçu (F CFA)')
+      fireEvent.change(amount, { target: { value: '0' } })
+      fireEvent.click(
+        dialog.getByRole('button', { name: 'Enregistrer le dividende' })
+      )
+      expect((await dialog.findByRole('alert')).textContent).toBe(
+        'Saisissez un montant supérieur à zéro, par exemple 140675.'
+      )
+      expect(sent).toBeUndefined()
+
+      fireEvent.change(amount, { target: { value: '140675' } })
+      fireEvent.click(
+        dialog.getByRole('button', { name: 'Enregistrer le dividende' })
+      )
+      await waitFor(() => expect(sent).toEqual({ amount: '140675' }))
+    })
+
+    it('dismisses a suggestion', async () => {
+      let dismissed = false
+      portfolioApi({
+        [`GET ${DIVIDENDS}`]: () => json(200, [dividend]),
+        [`PUT ${DIVIDENDS}/rd-past/dismissal`]: () => {
+          dismissed = true
+          return new Response(null, { status: 204 })
+        },
+      })
+      renderApp('/portfolio')
+
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Ignorer le dividende SNTS du 20/05/2026',
+        })
+      )
+      await waitFor(() => expect(dismissed).toBe(true))
+    })
+
+    it('lists a confirmed dividend in the ledger with its net amount, to delete but not edit', async () => {
+      portfolioApi({
+        [`GET ${ENTRIES}`]: () =>
+          json(200, [
+            {
+              ...entry,
+              id: 'e9',
+              kind: 'dividend',
+              date: '2026-05-20',
+              price: '1655',
+              fees: '0',
+              amount: '140675',
+              referenceDividendId: 'rd-past',
+            },
+          ]),
+      })
+      renderApp('/portfolio')
+
+      const card = within(
+        (await screen.findByRole('heading', { name: 'Écritures' })).closest(
+          '[data-slot="card"]'
+        ) as HTMLElement
+      )
+      const row = text(
+        (await card.findByText('Dividende')).closest('tr')!.textContent
+      )
+      expect(row).toContain('140 675 F CFA')
+      expect(row).toContain('net reçu')
+      expect(
+        card.queryByRole('button', {
+          name: 'Modifier l’écriture SNTS du 20/05/2026',
+        })
+      ).toBeNull()
+      expect(
+        card.getByRole('button', {
+          name: 'Supprimer l’écriture SNTS du 20/05/2026',
+        })
+      ).toBeTruthy()
+    })
   })
 
   describe('allocation', () => {
@@ -659,6 +849,8 @@ describe('portfolio page', () => {
               realisedGain: '0',
               marketValue: '0',
               unrealisedGain: '0',
+              dividends: '0',
+              totalGain: '0',
             },
             performanceSince: null,
             allocation: {

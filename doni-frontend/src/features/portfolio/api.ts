@@ -7,6 +7,7 @@ export type PortfolioValuation = components['schemas']['PortfolioValuationDto']
 export type LedgerEntry = components['schemas']['LedgerEntryDto']
 type NewLedgerEntry = components['schemas']['CreateLedgerEntryDto']
 type NewOpeningPosition = components['schemas']['CreateOpeningPositionDto']
+export type DividendItem = components['schemas']['DividendCalendarItemDto']
 
 export const portfoliosQuery = () =>
   queryOptions({
@@ -97,5 +98,48 @@ export async function addLedgerEntry(id: string, body: NewLedgerEntry) {
       params: { path: { id } },
       body,
     })
+  )
+}
+
+/**
+ * The portfolio's dividend calendar: declared dividends on the securities
+ * held, each with its suggestion (shares held at the ex-date × gross per
+ * share) or the net amount the user confirmed.
+ */
+export const dividendsQuery = (id: string) =>
+  queryOptions({
+    queryKey: ['portfolios', id, 'dividends'],
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/portfolios/{id}/dividends', {
+          params: { path: { id } },
+        })
+      ),
+  })
+
+/** Records the net amount received for a suggested dividend in the ledger. */
+export async function confirmDividend(
+  id: string,
+  referenceDividendId: string,
+  amount: string
+) {
+  return unwrap(
+    await api.POST(
+      '/api/portfolios/{id}/dividends/{referenceDividendId}/confirmation',
+      { params: { path: { id, referenceDividendId } }, body: { amount } }
+    )
+  )
+}
+
+/** Dismisses a dividend suggestion, or (`dismissed` false) restores it. */
+export async function setDividendDismissed(
+  id: string,
+  referenceDividendId: string,
+  dismissed: boolean
+) {
+  const options = { params: { path: { id, referenceDividendId } } }
+  const path = '/api/portfolios/{id}/dividends/{referenceDividendId}/dismissal'
+  unwrap(
+    dismissed ? await api.PUT(path, options) : await api.DELETE(path, options)
   )
 }
