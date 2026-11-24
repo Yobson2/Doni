@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 /**
@@ -17,7 +17,7 @@ export function Reveal({
   delay?: number
   as?: 'div' | 'li'
 }) {
-  const Comp = as === 'li' ? motion.li : motion.div
+  const Comp = as === 'li' ? m.li : m.div
   return (
     <Comp
       className={className}

@@ -7,7 +7,6 @@ import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -25,6 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { OnlineButton } from '@/components/offline/online-button'
 import {
   type CorporateAction,
   corporateActionsQuery,
@@ -210,9 +210,9 @@ export function CorporateActionForm({ selectClass }: { selectClass: string }) {
               />
             </div>
             <ActionField form={form} name='sourceNoticeUrl' help />
-            <Button disabled={mutation.isPending}>
+            <OnlineButton disabled={mutation.isPending}>
               {t('admin.catalogue.corporateAction.submit')}
-            </Button>
+            </OnlineButton>
           </form>
         </Form>
         {ticker && <EnteredActions ticker={ticker} />}
@@ -309,7 +309,7 @@ function EnteredActions({ ticker }: { ticker: string }) {
                 </a>
               </p>
             </div>
-            <Button
+            <OnlineButton
               type='button'
               variant='outline'
               size='sm'
@@ -317,7 +317,7 @@ function EnteredActions({ ticker }: { ticker: string }) {
               onClick={() => remove.mutate(action)}
             >
               {t('admin.catalogue.corporateAction.remove')}
-            </Button>
+            </OnlineButton>
           </li>
         ))}
       </ul>

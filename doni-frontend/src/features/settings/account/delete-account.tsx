@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { OnlineButton } from '@/components/offline/online-button'
 import { PasswordInput } from '@/components/password-input'
 import { deleteMyAccount } from './api'
 
@@ -64,9 +65,9 @@ export function DeleteAccount() {
       </p>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
-          <Button variant='destructive'>
+          <OnlineButton variant='destructive'>
             {t('settings.account.delete.open')}
-          </Button>
+          </OnlineButton>
         </DialogTrigger>
         <DialogContent>
           <form
@@ -124,13 +125,13 @@ export function DeleteAccount() {
                   {t('settings.account.delete.cancel')}
                 </Button>
               </DialogClose>
-              <Button
+              <OnlineButton
                 type='submit'
                 variant='destructive'
                 disabled={!password || !understood || mutation.isPending}
               >
                 {t('settings.account.delete.submit')}
-              </Button>
+              </OnlineButton>
             </DialogFooter>
           </form>
         </DialogContent>

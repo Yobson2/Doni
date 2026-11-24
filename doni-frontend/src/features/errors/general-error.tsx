@@ -1,6 +1,5 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { AnimatedContainer } from '@/components/motion/animated-container'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -17,7 +16,7 @@ export default function GeneralError({
   const { history } = useRouter()
   return (
     <div className={cn('h-svh w-full', className)}>
-      <AnimatedContainer variant='fadeSlideUp' className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
+      <div className='animate-in fade-in slide-in-from-bottom-4 m-auto flex h-full w-full flex-col items-center justify-center gap-2 duration-300 motion-reduce:animate-none'>
         {!minimal && (
           <h1 className='text-[7rem] leading-tight font-bold'>500</h1>
         )}
@@ -30,10 +29,12 @@ export default function GeneralError({
             <Button variant='outline' onClick={() => history.go(-1)}>
               {t('errors.goBack')}
             </Button>
-            <Button onClick={() => navigate({ to: '/' })}>{t('errors.backHome')}</Button>
+            <Button onClick={() => navigate({ to: '/' })}>
+              {t('errors.backHome')}
+            </Button>
           </div>
         )}
-      </AnimatedContainer>
+      </div>
     </div>
   )
 }

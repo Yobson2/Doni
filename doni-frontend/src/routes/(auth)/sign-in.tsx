@@ -1,14 +1,15 @@
-import { z } from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 import SignIn2 from '@/features/auth/sign-in/sign-in-2'
 
-const searchSchema = z.object({
-  /** The protected page the user was sent away from. */
-  redirect: z.string().optional().catch(undefined),
-})
-
 export const Route = createFileRoute('/(auth)/sign-in')({
-  validateSearch: (search: Record<string, unknown>) =>
-    searchSchema.parse(search),
+  // A plain check rather than a schema library: route definitions are in the
+  // first-load bundle (ADR 0010 JavaScript budget).
+  validateSearch: (
+    search: Record<string, unknown>
+  ): {
+    /** The protected page the user was sent away from. */
+    redirect?: string
+  } =>
+    typeof search.redirect === 'string' ? { redirect: search.redirect } : {},
   component: SignIn2,
 })

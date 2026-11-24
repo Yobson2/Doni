@@ -792,5 +792,18 @@
       "custody": "Droits de garde",
       "other": "Autres frais"
     }
+  },
+  "offline": {
+    "banner": {
+      "title": "Hors ligne.",
+      "description": "Vous consultez les dernières données synchronisées. Les modifications sont désactivées jusqu’au retour de la connexion."
+    },
+    "writeDisabled": "Indisponible hors ligne : reconnectez-vous à Internet pour enregistrer.",
+    "syncedAt": "Données synchronisées le {{date}}",
+    "update": {
+      "title": "Nouvelle version de Doni disponible",
+      "description": "Rechargez pour l’utiliser.",
+      "reload": "Recharger"
+    }
   }
 }

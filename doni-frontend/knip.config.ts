@@ -2,6 +2,8 @@ import type { KnipConfig } from 'knip'
 
 const config: KnipConfig = {
   ignore: ['src/components/ui/**', 'src/routeTree.gen.ts', 'src/api/schema.d.ts'],
+  // Started by playwright.config.ts as a web server, not imported.
+  entry: ['src/main.tsx', 'e2e/mock-api.mjs'],
   // Let knip see the packages imported from CSS (Tailwind, self-hosted fonts).
   compilers: {
     css: (text: string) =>

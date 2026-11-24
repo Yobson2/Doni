@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -15,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { OnlineButton } from '@/components/offline/online-button'
 
 type ForgotFormProps = HTMLAttributes<HTMLFormElement>
 
@@ -72,9 +72,9 @@ export function ForgotPasswordForm({ className, ...props }: ForgotFormProps) {
             </FormItem>
           )}
         />
-        <Button className='mt-2 h-11' disabled={isLoading}>
+        <OnlineButton className='mt-2 h-11' disabled={isLoading}>
           {t('auth.forgotPassword.submit')}
-        </Button>
+        </OnlineButton>
       </form>
     </Form>
   )

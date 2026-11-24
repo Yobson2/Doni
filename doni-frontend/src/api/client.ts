@@ -47,32 +47,41 @@ export const sessionApi = createClient<paths>({
   fetch: send,
 })
 
-let refreshing: Promise<boolean> | null = null
+/** Outcome of a silent refresh. */
+type RefreshOutcome = 'refreshed' | 'rejected' | 'unreachable'
+
+let refreshing: Promise<RefreshOutcome> | null = null
 
 /**
- * Silent refresh: exchanges the refresh cookie for a new access token.
- * Single-flight: concurrent callers share one request, because the server
- * rotates the token on each refresh and treats reuse as theft.
+ * Silent refresh, telling a refused session (`rejected`) from a server that
+ * could not be reached (`unreachable`, e.g. offline). Single-flight:
+ * concurrent callers share one request, because the server rotates the
+ * token on each refresh and treats reuse as theft.
  */
-export function refreshSession(): Promise<boolean> {
+export function tryRefreshSession(): Promise<RefreshOutcome> {
   refreshing ??= sessionApi
     .POST('/api/auth/refresh')
-    .then(({ data }) => {
+    .then(({ data }): RefreshOutcome => {
       if (data) {
         useAuthStore.getState().auth.setSession(data)
-        return true
+        return 'refreshed'
       }
       useAuthStore.getState().auth.reset()
-      return false
+      return 'rejected'
     })
-    .catch(() => {
+    .catch((): RefreshOutcome => {
       useAuthStore.getState().auth.reset()
-      return false
+      return 'unreachable'
     })
     .finally(() => {
       refreshing = null
     })
   return refreshing
+}
+
+/** Silent refresh: exchanges the refresh cookie for a new access token. */
+async function refreshSession(): Promise<boolean> {
+  return (await tryRefreshSession()) === 'refreshed'
 }
 
 const withBearer = (request: Request): Request => {

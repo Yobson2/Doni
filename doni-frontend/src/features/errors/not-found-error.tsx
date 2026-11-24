@@ -1,6 +1,5 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { AnimatedContainer } from '@/components/motion/animated-container'
 import { Button } from '@/components/ui/button'
 
 export default function NotFoundError() {
@@ -9,7 +8,7 @@ export default function NotFoundError() {
   const { history } = useRouter()
   return (
     <div className='h-svh'>
-      <AnimatedContainer variant='fadeSlideUp' className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
+      <div className='animate-in fade-in slide-in-from-bottom-4 m-auto flex h-full w-full flex-col items-center justify-center gap-2 duration-300 motion-reduce:animate-none'>
         <h1 className='text-[7rem] leading-tight font-bold'>404</h1>
         <span className='font-medium'>{t('errors.notFound.title')}</span>
         <p className='text-muted-foreground max-w-sm text-center'>
@@ -19,9 +18,11 @@ export default function NotFoundError() {
           <Button variant='outline' onClick={() => history.go(-1)}>
             {t('errors.goBack')}
           </Button>
-          <Button onClick={() => navigate({ to: '/' })}>{t('errors.backHome')}</Button>
+          <Button onClick={() => navigate({ to: '/' })}>
+            {t('errors.backHome')}
+          </Button>
         </div>
-      </AnimatedContainer>
+      </div>
     </div>
   )
 }

@@ -7,7 +7,6 @@
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png" />
     <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary Meta Tags -->
@@ -16,6 +15,10 @@
     <meta name="description" content="Suivez vos titres de la BRVM et votre portefeuille, petit à petit." />
     <meta name="application-name" content="Doni" />
     <meta name="apple-mobile-web-app-title" content="Doni" />
+    <!-- Installed on iOS: full screen, like the manifest's display: standalone. The manifest link is injected by vite-plugin-pwa. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <!-- Open Graph / social. Use an absolute og:image URL once the production domain is set. -->
     <meta property="og:type" content="website" />

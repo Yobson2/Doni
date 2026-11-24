@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ApiError } from '@/api/client'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
@@ -18,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { OnlineButton } from '@/components/offline/online-button'
 import { PasswordInput } from '@/components/password-input'
 import { afterSignInPath, signIn } from '@/features/auth/session'
 
@@ -117,9 +117,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             </FormItem>
           )}
         />
-        <Button className='mt-2 h-11' disabled={isLoading}>
+        <OnlineButton className='mt-2 h-11' disabled={isLoading}>
           {t('auth.signIn.submit')}
-        </Button>
+        </OnlineButton>
       </form>
     </Form>
   )

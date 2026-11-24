@@ -3,7 +3,6 @@ import { Link } from '@tanstack/react-router'
 import { IconTrash } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -14,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { OnlineButton } from '@/components/offline/online-button'
 import { PageShell } from '@/features/securities/components/page-shell'
 import { formatShortDate, formatXof } from '@/features/securities/format'
 import { removeFromWatchlist, watchlistQuery } from './api'
@@ -48,7 +48,7 @@ export function WatchlistPage() {
         <CardContent>
           {watchlist.isPending ? (
             <Skeleton className='h-48 w-full' />
-          ) : watchlist.isError ? (
+          ) : watchlist.isLoadingError ? (
             <p role='alert'>{t('securities.loadError')}</p>
           ) : watchlist.data.length === 0 ? (
             <div className='space-y-2 py-8 text-center text-sm'>
@@ -101,7 +101,7 @@ export function WatchlistPage() {
                         : '—'}
                     </TableCell>
                     <TableCell className='text-right'>
-                      <Button
+                      <OnlineButton
                         variant='ghost'
                         size='icon'
                         aria-label={t('watchlist.remove', {
@@ -111,7 +111,7 @@ export function WatchlistPage() {
                         onClick={() => remove.mutate(item.ticker)}
                       >
                         <IconTrash aria-hidden='true' />
-                      </Button>
+                      </OnlineButton>
                     </TableCell>
                   </TableRow>
                 ))}
