@@ -2,7 +2,6 @@ import { queryOptions } from '@tanstack/react-query'
 import { api, unwrap } from '@/api/client'
 import type { components } from '@/api/schema'
 
-export type BulletinSummary = components['schemas']['BulletinSummaryDto']
 export type Bulletin = components['schemas']['BulletinDto']
 type CorrectBulletinBody = components['schemas']['CorrectBulletinDto']
 
