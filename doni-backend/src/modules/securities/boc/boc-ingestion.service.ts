@@ -12,7 +12,7 @@ import {
   type ParsedTradingDay,
   type PriceDocumentParser,
 } from '../prices/price-source';
-import { BocBulletin } from './boc-bulletin.entity';
+import { BocBulletin, BulletinOrigin } from './boc-bulletin.entity';
 import {
   BocCheck,
   type CheckContext,
@@ -20,7 +20,7 @@ import {
   outcomeOf,
   runChecks,
 } from './boc-checks';
-import { BOC_FETCHER, type BocFetcher } from './boc-fetcher';
+import { BOC_FETCHER, type BocFetcher, type FetchedBoc } from './boc-fetcher';
 import { BocNotifier } from './boc-notifier';
 
 /**
@@ -47,6 +47,19 @@ export enum IngestionOutcome {
   PUBLISHED_KEPT = 'published_kept',
   /** No bulletin is available for that day (not yet, or no session). */
   NOT_AVAILABLE = 'not_available',
+}
+
+/** How a bulletin is being ingested. */
+export interface IngestionOptions {
+  /**
+   * daily (default) or backfill. A backfill day is checked against what was
+   * already priced before it rather than today's whole catalogue, is never
+   * announced as new prices, and keeps its origin so the read side can hide
+   * it (HISTORY_PUBLIC). A bulletin already stored keeps its origin.
+   */
+  origin?: BulletinOrigin;
+  /** Email the admins about a held day (default true; the backfill sends one summary instead). */
+  notify?: boolean;
 }
 
 export interface IngestionResult {
@@ -82,6 +95,16 @@ export class BocIngestionService {
       this.logger.log(`No BOC available for ${tradingDate}`);
       return result(tradingDate, IngestionOutcome.NOT_AVAILABLE);
     }
+    return this.ingestDocument(tradingDate, fetched);
+  }
+
+  /** Stores, reads and checks a bulletin already downloaded for a day. */
+  async ingestDocument(
+    tradingDate: string,
+    fetched: FetchedBoc,
+    options: IngestionOptions = {},
+  ): Promise<IngestionResult> {
+    const notify = options.notify ?? true;
     const checksum = sha256(fetched.document);
 
     const existing = await this.dataSource
@@ -94,6 +117,7 @@ export class BocIngestionService {
       this.logger.warn(
         `A different BOC was found for ${tradingDate}, which is already published; kept the published one`,
       );
+      if (!notify) return result(tradingDate, IngestionOutcome.PUBLISHED_KEPT);
       await this.notifier.notifyAdmins({
         tradingDate,
         sourceUrl: fetched.sourceUrl,
@@ -105,9 +129,11 @@ export class BocIngestionService {
       return result(tradingDate, IngestionOutcome.PUBLISHED_KEPT);
     }
 
+    const origin = existing?.origin ?? options.origin ?? BulletinOrigin.DAILY;
     const { day, failures } = await this.readAndCheck(
       fetched.document,
       tradingDate,
+      origin,
     );
     const status = outcomeOf(failures);
 
@@ -115,6 +141,7 @@ export class BocIngestionService {
       const bulletin = existing ?? manager.create(BocBulletin, { tradingDate });
       Object.assign(bulletin, {
         status,
+        origin,
         document: fetched.document,
         checksum,
         sourceUrl: fetched.sourceUrl,
@@ -130,12 +157,14 @@ export class BocIngestionService {
 
     if (status === PriceStatus.PUBLISHED) {
       this.logger.log(`Published the BOC of ${tradingDate}`);
-      this.announcePublished(tradingDate);
+      // History is not news: listeners (e.g. alerts) hear of daily days only.
+      if (origin === BulletinOrigin.DAILY) this.announcePublished(tradingDate);
       return result(tradingDate, IngestionOutcome.PUBLISHED);
     }
     this.logger.warn(
       `Held the BOC of ${tradingDate} for review: ${failures.length} failed check(s)`,
     );
+    if (!notify) return result(tradingDate, IngestionOutcome.HELD, failures);
     await this.notifier.notifyAdmins({
       tradingDate,
       sourceUrl: fetched.sourceUrl,
@@ -154,6 +183,7 @@ export class BocIngestionService {
   private async readAndCheck(
     document: Buffer,
     tradingDate: string,
+    origin: BulletinOrigin,
   ): Promise<{ day: ParsedTradingDay | null; failures: CheckFailure[] }> {
     let day: ParsedTradingDay;
     try {
@@ -173,6 +203,7 @@ export class BocIngestionService {
     const context = await this.checkContext(
       this.dataSource.manager,
       tradingDate,
+      origin,
     );
     return { day, failures: runChecks(day, context) };
   }
@@ -181,6 +212,7 @@ export class BocIngestionService {
   async checkContext(
     manager: EntityManager,
     tradingDate: string,
+    origin: BulletinOrigin = BulletinOrigin.DAILY,
   ): Promise<CheckContext> {
     const securities = await manager.find(Security, {
       select: ['id', 'ticker'],
@@ -224,9 +256,39 @@ export class BocIngestionService {
       expectedTradingDate: tradingDate,
       catalogueTickers: securities.map((s) => s.ticker),
       catalogueIndexCodes: indices.map((i) => i.code),
+      expected:
+        origin === BulletinOrigin.BACKFILL
+          ? await this.pricedBefore(manager, tradingDate, tickerOf, codeOf)
+          : undefined,
       previousIndexValues,
       publishedCloses,
     };
+  }
+
+  /**
+   * The catalogued securities and indices with a price stored (at any
+   * status) on a day before this one: what a historical bulletin must list.
+   * One listed only later is not missing from an older bulletin.
+   */
+  private async pricedBefore(
+    manager: EntityManager,
+    tradingDate: string,
+    tickerOf: Map<string, string>,
+    codeOf: Map<string, string>,
+  ): Promise<{ tickers: string[]; indexCodes: string[] }> {
+    const rows = (await manager.query(
+      `SELECT DISTINCT "securityId", "indexId" FROM "eod_prices" WHERE "tradingDate" < $1`,
+      [tradingDate],
+    )) as { securityId: string | null; indexId: string | null }[];
+    const tickers = new Set<string>();
+    const indexCodes = new Set<string>();
+    for (const row of rows) {
+      const ticker = row.securityId ? tickerOf.get(row.securityId) : undefined;
+      const code = row.indexId ? codeOf.get(row.indexId) : undefined;
+      if (ticker) tickers.add(ticker);
+      if (code) indexCodes.add(code);
+    }
+    return { tickers: [...tickers], indexCodes: [...indexCodes] };
   }
 
   /**

@@ -74,7 +74,11 @@ export function detectBocLayout(pages: Line[][]): BocLayout | null {
 @Injectable()
 export class BocDocumentParser implements PriceDocumentParser {
   async parse(document: Uint8Array): Promise<ParsedTradingDay> {
-    const pages = await readPages(document);
+    return this.parsePages(await readPages(document));
+  }
+
+  /** The same, from a document's pages already read. */
+  parsePages(pages: Line[][]): ParsedTradingDay {
     const layout = detectBocLayout(pages);
     if (!layout) {
       throw new BocLayoutError(

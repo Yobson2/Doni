@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { BulletinOrigin } from '../boc/boc-bulletin.entity';
 import { EodPrice, PriceStatus } from '../entities/eod-price.entity';
 import type {
   DateRange,
@@ -9,13 +11,30 @@ import type {
   PriceSubject,
 } from './price-source';
 
-/** Reads end-of-day prices stored in the database (hand-seeded from BOCs). */
+/**
+ * Reads end-of-day prices stored in the database (hand-seeded from BOCs, or
+ * read from ingested ones).
+ *
+ * The licence gate (ADR 0003, ADR 0018): prices read from backfilled
+ * bulletins are history the BRVM's redistribution terms may not cover yet.
+ * They are served only when HISTORY_PUBLIC is "true"; otherwise every
+ * consumer of the PriceSource (catalogue, company page, indices, valuation,
+ * returns, watchlist) behaves as if they were not there. Admins still see
+ * them on the bulletin review screens.
+ */
 @Injectable()
 export class DatabasePriceSource implements PriceSource {
+  private readonly served: string;
+
   constructor(
     @InjectRepository(EodPrice)
     private readonly prices: Repository<EodPrice>,
-  ) {}
+    config: ConfigService,
+  ) {
+    this.served = isHistoryPublic(config)
+      ? BULLETIN_PUBLISHED
+      : BULLETIN_PUBLISHED_NOT_BACKFILL;
+  }
 
   async getLatest(subject: PriceSubject): Promise<EndOfDayPrice | null> {
     const row = await this.published(subject)
@@ -34,7 +53,7 @@ export class DatabasePriceSource implements PriceSource {
       .createQueryBuilder('p')
       .distinctOn(['p.securityId'])
       .where({ securityId: In(securityIds), status: PriceStatus.PUBLISHED })
-      .andWhere(BULLETIN_PUBLISHED)
+      .andWhere(this.served)
       .orderBy('p.securityId')
       .addOrderBy('p.tradingDate', 'DESC')
       .getMany();
@@ -59,7 +78,7 @@ export class DatabasePriceSource implements PriceSource {
     return this.prices
       .createQueryBuilder('p')
       .where({ ...subject, status: PriceStatus.PUBLISHED })
-      .andWhere(BULLETIN_PUBLISHED);
+      .andWhere(this.served);
   }
 }
 
@@ -68,6 +87,14 @@ export class DatabasePriceSource implements PriceSource {
  * published, whatever the row's own status says: a held day can never leak.
  */
 const BULLETIN_PUBLISHED = `NOT EXISTS (SELECT 1 FROM "boc_bulletins" "b" WHERE "b"."id" = "p"."bulletinId" AND "b"."status" <> '${PriceStatus.PUBLISHED}')`;
+
+/** The same, and the bulletin is not part of the historical backfill. */
+const BULLETIN_PUBLISHED_NOT_BACKFILL = `NOT EXISTS (SELECT 1 FROM "boc_bulletins" "b" WHERE "b"."id" = "p"."bulletinId" AND ("b"."status" <> '${PriceStatus.PUBLISHED}' OR "b"."origin" = '${BulletinOrigin.BACKFILL}'))`;
+
+/** Whether backfilled history is shown to users: HISTORY_PUBLIC=true. Off by default. */
+export function isHistoryPublic(config: ConfigService): boolean {
+  return config.get<string>('HISTORY_PUBLIC', 'false').trim() === 'true';
+}
 
 export function toEndOfDayPrice(row: EodPrice): EndOfDayPrice {
   return {

@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { ISO_DATE } from '../dto/price.dto';
 import { PriceStatus } from '../entities/price-status';
+import { BulletinOrigin } from './boc-bulletin.entity';
 import { BocCheck } from './boc-checks';
 import { IngestionOutcome } from './boc-ingestion.service';
 
@@ -46,6 +47,14 @@ export class BulletinSummaryDto {
 
   @ApiProperty({ type: String, nullable: true, example: '215' })
   reference: string | null;
+
+  @ApiProperty({
+    enum: BulletinOrigin,
+    enumName: 'BulletinOrigin',
+    description:
+      'daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on',
+  })
+  origin: BulletinOrigin;
 
   @ApiProperty({
     example: 'https://www.brvm.org/sites/default/files/boc_20261111_2.pdf',

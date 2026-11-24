@@ -42,6 +42,12 @@ export interface CheckContext {
   /** Codes of every index in the catalogue. */
   catalogueIndexCodes: string[];
   /**
+   * The tickers and index codes the bulletin must list, when not the whole
+   * catalogue. A historical bulletin predates securities and indices listed
+   * since: the backfill expects only those already priced on an earlier day.
+   */
+  expected?: { tickers: string[]; indexCodes: string[] };
+  /**
    * Each index's published value on the previous trading day, by code. Only
    * the session just before this one: after a gap there is nothing to
    * compare the printed daily variation with.
@@ -97,7 +103,7 @@ export function checkSecuritiesPresent(
   ctx: CheckContext,
 ): CheckFailure[] {
   const listed = new Set(day.securities.map((s) => s.ticker));
-  return ctx.catalogueTickers
+  return (ctx.expected?.tickers ?? ctx.catalogueTickers)
     .filter((ticker) => !listed.has(ticker))
     .sort()
     .map((ticker) => ({
@@ -145,7 +151,8 @@ export function checkIndexConsistency(
     failures.push({ check: BocCheck.INDEX_CONSISTENCY, subject, reason });
   const byCode = new Map(day.indices.map((i) => [i.code, i]));
 
-  for (const code of [...ctx.catalogueIndexCodes].sort()) {
+  const expected = ctx.expected?.indexCodes ?? ctx.catalogueIndexCodes;
+  for (const code of [...expected].sort()) {
     if (!byCode.has(code)) {
       fail(code, `${code} is in the catalogue but not in the bulletin.`);
     }

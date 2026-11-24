@@ -178,6 +178,7 @@ function toSummary(bulletin: BocBulletin): BulletinSummaryDto {
     tradingDate: bulletin.tradingDate,
     status: bulletin.status,
     reference: bulletin.parsed?.reference ?? null,
+    origin: bulletin.origin,
     sourceUrl: bulletin.sourceUrl,
     checksum: bulletin.checksum,
     fetchedAt: bulletin.fetchedAt.toISOString(),
