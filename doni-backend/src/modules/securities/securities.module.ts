@@ -44,6 +44,8 @@ import {
       EodPrice,
       CorporateAction,
       ReferenceDividend,
+      BocBulletin,
+      User,
     ]),
     MailModule,
   ],
@@ -53,6 +55,7 @@ import {
     IndicesController,
     CorporateActionsController,
     ReferenceDividendsController,
+    BulletinsController,
   ],
   providers: [
     CatalogueService,
