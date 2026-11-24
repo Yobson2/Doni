@@ -8,6 +8,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { ReferenceDividend } from '@modules/securities/dividends/reference-dividend.entity';
 import { Security } from '@modules/securities/entities/security.entity';
 import { Portfolio } from './portfolio.entity';
 
@@ -16,17 +17,28 @@ export enum LedgerEntryKind {
   SELL = 'sell',
   /** Quantity and PMP held as of a date, instead of past trades (ADR 0001). */
   OPENING_POSITION = 'opening_position',
+  /** The net dividend the user confirms they received (a user dividend). */
+  DIVIDEND = 'dividend',
 }
 
 /**
  * One dated, immutable record in a portfolio's ledger (ADR 0004). Rows are
  * only ever inserted: the table has no `updatedAt`, and the database rejects
  * any UPDATE. Amounts are XOF, stored as `numeric` (ADR 0005, 0008).
+ *
+ * A user dividend is the only kind with an `amount` and a reference
+ * dividend: its quantity is the shares held at the ex-date, its price the
+ * gross amount per share then declared, its fees 0 and its date the payment
+ * date.
  */
 @Entity('ledger_entries')
 @Check(
   'CHK_ledger_entries_amounts',
   `"quantity" > 0 AND "price" >= 0 AND "fees" >= 0`,
+)
+@Check(
+  'CHK_ledger_entries_dividend',
+  `("kind"::text = 'dividend') = ("amount" IS NOT NULL AND "referenceDividendId" IS NOT NULL) AND ("amount" IS NULL OR "amount" > 0)`,
 )
 @Index('IDX_ledger_entries_portfolio_date', ['portfolioId', 'tradeDate'])
 export class LedgerEntryRecord {
@@ -54,7 +66,10 @@ export class LedgerEntryRecord {
   @JoinColumn({ name: 'securityId' })
   security?: Security;
 
-  /** The trade date, or the date an opening position is stated for. */
+  /**
+   * The trade date, the date an opening position is stated for, or a user
+   * dividend's payment date.
+   */
   @Column({ type: 'date' })
   tradeDate: string;
 
@@ -73,7 +88,22 @@ export class LedgerEntryRecord {
   @Column({ type: 'numeric', default: 0 })
   fees: string;
 
-  /** The SGI the trade went through. */
+  /** A user dividend's net amount received; null for every other kind. */
+  @Column({ type: 'numeric', nullable: true })
+  amount: string | null;
+
+  /**
+   * The reference dividend a user dividend was confirmed from; null for
+   * every other kind.
+   */
+  @Column({ type: 'uuid', nullable: true })
+  referenceDividendId: string | null;
+
+  @ManyToOne(() => ReferenceDividend, { onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'referenceDividendId' })
+  referenceDividend?: ReferenceDividend;
+
+  /** The SGI the trade went through (or the dividend was paid into). */
   @Column({ type: 'varchar', length: 100 })
   sgi: string;
 

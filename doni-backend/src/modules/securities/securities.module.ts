@@ -4,6 +4,9 @@ import { CatalogueService } from './catalogue.service';
 import { CorporateAction } from './corporate-actions/corporate-action.entity';
 import { CorporateActionsController } from './corporate-actions/corporate-actions.controller';
 import { CorporateActionsService } from './corporate-actions/corporate-actions.service';
+import { ReferenceDividend } from './dividends/reference-dividend.entity';
+import { ReferenceDividendsController } from './dividends/reference-dividends.controller';
+import { ReferenceDividendsService } from './dividends/reference-dividends.service';
 import { EodPrice } from './entities/eod-price.entity';
 import { MarketIndex } from './entities/market-index.entity';
 import { Sector } from './entities/sector.entity';
@@ -29,6 +32,7 @@ import {
       MarketIndex,
       EodPrice,
       CorporateAction,
+      ReferenceDividend,
     ]),
   ],
   controllers: [
@@ -36,13 +40,15 @@ import {
     SecuritiesController,
     IndicesController,
     CorporateActionsController,
+    ReferenceDividendsController,
   ],
   providers: [
     CatalogueService,
     PriceEntryService,
     CorporateActionsService,
+    ReferenceDividendsService,
     { provide: PRICE_SOURCE, useClass: DatabasePriceSource },
   ],
-  exports: [PRICE_SOURCE, CorporateActionsService],
+  exports: [PRICE_SOURCE, CorporateActionsService, ReferenceDividendsService],
 })
 export class SecuritiesModule {}

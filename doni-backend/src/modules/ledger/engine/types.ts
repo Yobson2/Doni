@@ -44,8 +44,25 @@ export interface OpeningPositionEntry {
   pmp: string;
 }
 
+/**
+ * A user dividend: the net amount the user confirms they actually received
+ * for a holding (after withholding tax and charges). It changes neither the
+ * quantity nor the PMP; it adds to the position's dividends and so to the
+ * portfolio's total gain. A suggestion derived from a reference dividend is
+ * not a ledger entry and never reaches the engine until it is confirmed.
+ */
+export interface DividendEntry {
+  id: string;
+  kind: 'dividend';
+  securityId: string;
+  /** The payment date. */
+  date: string;
+  /** Net amount received, XOF, greater than zero. */
+  amount: string;
+}
+
 /** One dated, immutable record of a portfolio's ledger. */
-export type LedgerEntry = TradeEntry | OpeningPositionEntry;
+export type LedgerEntry = TradeEntry | OpeningPositionEntry | DividendEntry;
 
 /** The end-of-day price a position is valued at, with the day it applies to. */
 export interface ValuationPrice {
@@ -136,6 +153,8 @@ export interface Position {
   costBasis: string;
   /** Sum of (net sale proceeds − PMP × quantity sold) over every sale. */
   realisedGain: string;
+  /** Sum of the user dividends received on the security (net amounts). */
+  dividends: string;
   /** Null when the position is closed or has no end-of-day price. */
   valuation: PositionValuation | null;
 }
@@ -147,12 +166,59 @@ export interface PortfolioTotals {
   marketValue: string | null;
   /** Null when some open position has no end-of-day price. */
   unrealisedGain: string | null;
+  /** Sum of the user dividends received (net amounts). */
+  dividends: string;
+  /**
+   * realisedGain + unrealisedGain + dividends: what the portfolio has gained
+   * overall. Null when some open position has no end-of-day price.
+   */
+  totalGain: string | null;
 }
 
 export interface ReplayResult {
   /** Every security the ledger touches, ordered by security id. */
   positions: Position[];
   totals: PortfolioTotals;
+}
+
+/**
+ * The terms of a reference dividend the engine needs to work out who is
+ * entitled to it: the security, its ex-date and its gross amount per share.
+ */
+export interface ReferenceDividendTerms {
+  /** Stable identity of the reference dividend. */
+  id: string;
+  securityId: string;
+  /**
+   * The first trading day on which the security trades without the
+   * dividend: shares bought that day or later do not receive it, shares
+   * sold that day or later still do.
+   */
+  exDate: string;
+  /** Gross amount per share, XOF, in the shares of the ex-date. */
+  grossPerShare: string;
+}
+
+export interface EntitlementInput {
+  /** The ledger entries, in any order. */
+  entries: readonly LedgerEntry[];
+  /** Corporate actions on the securities, in any order; omitted means none. */
+  corporateActions?: readonly CorporateAction[];
+  dividends: readonly ReferenceDividendTerms[];
+}
+
+/**
+ * What a ledger is entitled to from one reference dividend: the shares held
+ * going into its ex-date and the gross amount they earn. A suggestion, not a
+ * ledger entry: it counts nowhere until the user confirms the net amount.
+ */
+export interface DividendEntitlement {
+  referenceDividendId: string;
+  securityId: string;
+  /** Shares held at the close of the day before the ex-date. */
+  shares: string;
+  /** shares × grossPerShare, XOF. */
+  grossAmount: string;
 }
 
 /** A market value to allocate, under the key it is grouped by. */
