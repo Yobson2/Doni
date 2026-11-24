@@ -31,6 +31,7 @@ import { Route as AuthenticatedDashboardIndexImport } from './routes/_authentica
 import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedSecuritiesTickerImport } from './routes/_authenticated/securities/$ticker'
 import { Route as AuthenticatedAdminCatalogueImport } from './routes/_authenticated/admin/catalogue'
+import { Route as AuthenticatedAdminBulletinsImport } from './routes/_authenticated/admin/bulletins'
 
 // Create/Update Routes
 
@@ -163,6 +164,13 @@ const AuthenticatedAdminCatalogueRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
+const AuthenticatedAdminBulletinsRoute =
+  AuthenticatedAdminBulletinsImport.update({
+    id: '/admin/bulletins',
+    path: '/admin/bulletins',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -251,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexImport
       parentRoute: typeof PublicRouteImport
     }
+    '/_authenticated/admin/bulletins': {
+      id: '/_authenticated/admin/bulletins'
+      path: '/admin/bulletins'
+      fullPath: '/admin/bulletins'
+      preLoaderRoute: typeof AuthenticatedAdminBulletinsImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/admin/catalogue': {
       id: '/_authenticated/admin/catalogue'
       path: '/admin/catalogue'
@@ -330,6 +345,7 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
+  AuthenticatedAdminBulletinsRoute: typeof AuthenticatedAdminBulletinsRoute
   AuthenticatedAdminCatalogueRoute: typeof AuthenticatedAdminCatalogueRoute
   AuthenticatedSecuritiesTickerRoute: typeof AuthenticatedSecuritiesTickerRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
@@ -340,6 +356,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
+  AuthenticatedAdminBulletinsRoute: AuthenticatedAdminBulletinsRoute,
   AuthenticatedAdminCatalogueRoute: AuthenticatedAdminCatalogueRoute,
   AuthenticatedSecuritiesTickerRoute: AuthenticatedSecuritiesTickerRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
@@ -375,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof PublicIndexRoute
+  '/admin/bulletins': typeof AuthenticatedAdminBulletinsRoute
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -396,6 +414,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof PublicIndexRoute
+  '/admin/bulletins': typeof AuthenticatedAdminBulletinsRoute
   '/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -420,6 +439,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_public/': typeof PublicIndexRoute
+  '/_authenticated/admin/bulletins': typeof AuthenticatedAdminBulletinsRoute
   '/_authenticated/admin/catalogue': typeof AuthenticatedAdminCatalogueRoute
   '/_authenticated/securities/$ticker': typeof AuthenticatedSecuritiesTickerRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
@@ -444,6 +464,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/admin/bulletins'
     | '/admin/catalogue'
     | '/securities/$ticker'
     | '/settings/account'
@@ -464,6 +485,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/admin/bulletins'
     | '/admin/catalogue'
     | '/securities/$ticker'
     | '/settings/account'
@@ -486,6 +508,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_public/'
+    | '/_authenticated/admin/bulletins'
     | '/_authenticated/admin/catalogue'
     | '/_authenticated/securities/$ticker'
     | '/_authenticated/settings/account'
@@ -549,6 +572,7 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/route.tsx",
       "children": [
         "/_authenticated/settings",
+        "/_authenticated/admin/bulletins",
         "/_authenticated/admin/catalogue",
         "/_authenticated/securities/$ticker",
         "/_authenticated/dashboard/",
@@ -598,6 +622,10 @@ export const routeTree = rootRoute
     "/_public/": {
       "filePath": "_public/index.tsx",
       "parent": "/_public"
+    },
+    "/_authenticated/admin/bulletins": {
+      "filePath": "_authenticated/admin/bulletins.tsx",
+      "parent": "/_authenticated"
     },
     "/_authenticated/admin/catalogue": {
       "filePath": "_authenticated/admin/catalogue.tsx",

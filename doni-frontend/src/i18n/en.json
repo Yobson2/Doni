@@ -18,6 +18,7 @@
     "skipToMain": "Skip to main content",
     "securities": "Securities",
     "adminCatalogue": "Catalogue and prices",
+    "adminBulletins": "Bulletins to review",
     "portfolio": "My portfolio",
     "watchlist": "My watchlist"
   },
@@ -518,6 +519,49 @@
           "sourceNoticeUrlHelp": "The link to the notice on brvm.org, shown to users."
         }
       }
+    },
+    "bulletins": {
+      "title": "Bulletins awaiting review",
+      "description": "BOCs fetched each evening that failed an automatic check. Until a trading day is published, users keep seeing the last validated day.",
+      "none": "No day awaiting review: every fetched BOC has been published.",
+      "heldDays": "Days awaiting review",
+      "failureCount_one": "{{count}} failed check",
+      "failureCount_other": "{{count}} failed checks",
+      "dayTitle": "Trading day {{date}}",
+      "status": {
+        "pending_review": "Awaiting review",
+        "published": "Published"
+      },
+      "source": "BOC no. {{reference}} (original PDF)",
+      "failures": "Failed checks",
+      "noFailures": "Every check now passes.",
+      "checks": {
+        "trading_date": "Trading date",
+        "readable": "PDF reading",
+        "securities_present": "Securities present",
+        "variation_limits": "Variation limits",
+        "index_consistency": "Index consistency",
+        "volumes": "Volumes",
+        "agrees_with_published": "Prices already published"
+      },
+      "rows": "Values read from the bulletin",
+      "rowsHelp": "The catalogue’s securities and indices as read from the BOC. Fix a misread value by copying it from the PDF: the checks run again.",
+      "columns": {
+        "security": "Security",
+        "previous": "Previous close",
+        "close": "Close / value",
+        "variation": "Variation",
+        "volume": "Volume"
+      },
+      "notTraded": "not traded that day",
+      "notInCatalogue_one": "{{count}} security in the bulletin is not in the catalogue and is not stored.",
+      "notInCatalogue_other": "{{count}} securities in the bulletin are not in the catalogue and are not stored.",
+      "valueOf": "Value of {{name}}",
+      "saveCorrections": "Save corrections",
+      "corrected": "Corrections saved, checks run again.",
+      "publish": "Publish the day",
+      "publishHelp": "Publishing makes this day’s prices visible to every user, even if a check still fails.",
+      "published": "Trading day {{date}} published."
     }
   },
   "portfolio": {

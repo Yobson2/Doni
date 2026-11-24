@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { getEnvironmentConfig } from '@common/config/environment.loader';
 import { buildDbConfig } from '@common/database/database.config';
@@ -52,6 +53,8 @@ import { AccountModule } from '@modules/account/account.module';
     }),
 
     // ─── Infrastructure ─────────────────────────────────────
+    // In-process domain events (e.g. a trading day's prices published).
+    EventEmitterModule.forRoot(),
     MailModule,
     JobsModule,
     UserDataModule,
