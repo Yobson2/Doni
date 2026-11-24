@@ -54,13 +54,20 @@ const opening = fc.record({
   pmp: amount,
 });
 
+const dividend = fc.record({
+  ...common,
+  kind: fc.constant('dividend' as const),
+  amount: amount.filter((a) => Number(a) > 0),
+});
+
 /**
- * A ledger: trades and opening positions over a few securities and dates,
+ * A ledger: trades, opening positions and user dividends over a few
+ * securities and dates,
  * at most one opening position per security and day (two would contradict
  * each other; the engine refuses them).
  */
 const ledger = fc
-  .array(fc.oneof({ arbitrary: trade, weight: 4 }, opening), {
+  .array(fc.oneof({ arbitrary: trade, weight: 4 }, opening, dividend), {
     maxLength: 25,
   })
   .map((drafts: Draft[]) => {

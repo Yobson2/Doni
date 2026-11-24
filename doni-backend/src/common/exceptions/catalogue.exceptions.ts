@@ -73,6 +73,42 @@ export class InvalidCorporateActionTermsError extends BaseAppException {
   }
 }
 
+/** No reference dividend with that id on that security. */
+export class ReferenceDividendNotFoundError extends BaseAppException {
+  constructor(id: string) {
+    super(
+      `Reference dividend not found: ${id}`,
+      HttpStatus.NOT_FOUND,
+      CatalogueErrorCode.DIVIDEND_NOT_FOUND,
+      { id },
+    );
+  }
+}
+
+/** The security already has a reference dividend with that ex-date. */
+export class ReferenceDividendAlreadyExistsError extends BaseAppException {
+  constructor(ticker: string, exDate: string) {
+    super(
+      `${ticker} already has a dividend with ex-date ${exDate}`,
+      HttpStatus.CONFLICT,
+      CatalogueErrorCode.DIVIDEND_ALREADY_EXISTS,
+      { ticker, exDate },
+    );
+  }
+}
+
+/** The dividend's dates do not fit together. */
+export class InvalidReferenceDividendTermsError extends BaseAppException {
+  constructor(reason: string) {
+    super(
+      `Invalid dividend terms: ${reason}`,
+      HttpStatus.BAD_REQUEST,
+      CatalogueErrorCode.DIVIDEND_INVALID_TERMS,
+      { reason },
+    );
+  }
+}
+
 /** A request refers to a sector that is not in the catalogue. */
 export class UnknownSectorError extends BaseAppException {
   constructor(code: string) {

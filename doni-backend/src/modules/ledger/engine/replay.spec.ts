@@ -68,6 +68,7 @@ describe('ledger engine replay', () => {
         pmp: '4020',
         costBasis: '402000',
         realisedGain: '0',
+        dividends: '0',
         valuation: null,
       });
     });
@@ -120,6 +121,7 @@ describe('ledger engine replay', () => {
         pmp: '0',
         costBasis: '0',
         realisedGain: '44595',
+        dividends: '0',
         valuation: null,
       });
     });
@@ -195,6 +197,8 @@ describe('ledger engine replay', () => {
         realisedGain: '21420',
         marketValue: '673100',
         unrealisedGain: '-745',
+        dividends: '0',
+        totalGain: '20675',
       });
     });
 
@@ -209,6 +213,8 @@ describe('ledger engine replay', () => {
         realisedGain: '21420',
         marketValue: null,
         unrealisedGain: null,
+        dividends: '0',
+        totalGain: null,
       });
     });
 
@@ -226,6 +232,8 @@ describe('ledger engine replay', () => {
         realisedGain: '-300',
         marketValue: '0',
         unrealisedGain: '0',
+        dividends: '0',
+        totalGain: '-300',
       });
 
       expect(run([])).toEqual({
@@ -235,6 +243,8 @@ describe('ledger engine replay', () => {
           realisedGain: '0',
           marketValue: '0',
           unrealisedGain: '0',
+          dividends: '0',
+          totalGain: '0',
         },
       });
     });
@@ -374,6 +384,7 @@ describe('ledger engine replay', () => {
         pmp: '3850.25',
         costBasis: '770050',
         realisedGain: '0',
+        dividends: '0',
         valuation: null,
       });
     });
@@ -423,6 +434,7 @@ describe('ledger engine replay', () => {
         pmp: '0',
         costBasis: '0',
         realisedGain: '25950',
+        dividends: '0',
         valuation: null,
       });
     });

@@ -186,6 +186,7 @@ describe('Account data export and deletion (e2e)', () => {
             }),
           ],
           corrections: [],
+          dismissedDividends: [],
         },
       ]);
 

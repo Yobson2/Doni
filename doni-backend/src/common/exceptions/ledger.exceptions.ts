@@ -99,3 +99,46 @@ export class FutureTradeDateError extends BaseAppException {
     );
   }
 }
+
+/**
+ * The portfolio has no dividend suggestion from that reference dividend: it
+ * does not exist, or the portfolio held no shares at its ex-date (or the
+ * ex-date has not come yet).
+ */
+export class DividendNotSuggestedError extends BaseAppException {
+  constructor(referenceDividendId: string) {
+    super(
+      `No dividend suggestion for reference dividend ${referenceDividendId}`,
+      HttpStatus.NOT_FOUND,
+      LedgerErrorCode.DIVIDEND_NOT_SUGGESTED,
+      { referenceDividendId },
+    );
+  }
+}
+
+/** A dividend cannot be confirmed as received before its payment date. */
+export class DividendNotPaidYetError extends BaseAppException {
+  constructor(paymentDate: string) {
+    super(
+      `The dividend is paid on ${paymentDate}: confirm it once received`,
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      LedgerErrorCode.DIVIDEND_NOT_PAID_YET,
+      { paymentDate },
+    );
+  }
+}
+
+/**
+ * The portfolio's ledger already holds a user dividend for that reference
+ * dividend: it is corrected by deleting that entry and confirming again.
+ */
+export class DividendAlreadyConfirmedError extends BaseAppException {
+  constructor(context: { referenceDividendId: string; entryId: string }) {
+    super(
+      `This dividend is already recorded as ledger entry ${context.entryId}`,
+      HttpStatus.CONFLICT,
+      LedgerErrorCode.DIVIDEND_ALREADY_CONFIRMED,
+      context,
+    );
+  }
+}
