@@ -1225,6 +1225,179 @@
         ]
       }
     },
+    "/api/securities/{ticker}/dividends": {
+      "get": {
+        "operationId": "listReferenceDividends",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReferenceDividendDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "Unknown ticker or reference dividend"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Dividends declared on a security, by ex-date, oldest first",
+        "tags": [
+          "Catalogue"
+        ]
+      },
+      "post": {
+        "operationId": "createReferenceDividend",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReferenceDividendDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceDividendDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, or a payment date before the ex-date"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown ticker or reference dividend"
+          },
+          "409": {
+            "description": "A dividend already has that ex-date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enter a declared dividend from its notice",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
+    "/api/securities/{ticker}/dividends/{id}": {
+      "put": {
+        "operationId": "replaceReferenceDividend",
+        "parameters": [
+          {
+            "name": "ticker",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReferenceDividendDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceDividendDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid values, or a payment date before the ex-date"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "403": {
+            "description": "Admin role required"
+          },
+          "404": {
+            "description": "Unknown ticker or reference dividend"
+          },
+          "409": {
+            "description": "A dividend already has that ex-date"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Correct a declared dividend: suggestions follow, confirmed user dividends keep their amounts",
+        "tags": [
+          "Catalogue"
+        ]
+      }
+    },
     "/api/portfolios": {
       "get": {
         "operationId": "listPortfolios",
@@ -1668,6 +1841,207 @@
           }
         ],
         "summary": "Correct an opening position: a new entry replaces it and the portfolio is recomputed",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/dividends": {
+      "get": {
+        "operationId": "getDividendCalendar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DividendCalendarItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Upcoming and past dividends on the securities held, with their suggestion or confirmed amount, by payment date",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/dividends/{referenceDividendId}/confirmation": {
+      "post": {
+        "operationId": "confirmDividend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "referenceDividendId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmDividendDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid amount or SGI"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or it has no suggestion from that reference dividend (no shares held at its ex-date, or the ex-date is still to come)"
+          },
+          "409": {
+            "description": "This dividend is already recorded"
+          },
+          "422": {
+            "description": "The dividend is not paid yet"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Confirm the net amount received for a suggested dividend: it is recorded in the ledger as a user dividend",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/api/portfolios/{id}/dividends/{referenceDividendId}/dismissal": {
+      "put": {
+        "operationId": "dismissDividend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "referenceDividendId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dismissed"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you, or it has no suggestion from that reference dividend (no shares held at its ex-date, or the ex-date is still to come)"
+          },
+          "409": {
+            "description": "This dividend is already recorded"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Dismiss a dividend suggestion: it stays listed as dismissed and counts nowhere",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "delete": {
+        "operationId": "restoreDividend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "referenceDividendId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Restored, or was not dismissed"
+          },
+          "401": {
+            "description": "Missing or invalid access token"
+          },
+          "404": {
+            "description": "No portfolio with that id belongs to you"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Undo a dismissal: the suggestion shows again",
         "tags": [
           "Portfolios"
         ]
@@ -2732,6 +3106,79 @@
           "sourceNoticeUrl"
         ]
       },
+      "ReferenceDividendDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "grossPerShare": {
+            "type": "string",
+            "example": "1655",
+            "description": "Gross amount per share, XOF"
+          },
+          "exDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-12",
+            "description": "First trading day without the dividend: shares held at the close of the day before earn it"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-20"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example",
+            "description": "The notice the dividend was read from"
+          }
+        },
+        "required": [
+          "id",
+          "ticker",
+          "grossPerShare",
+          "exDate",
+          "paymentDate",
+          "sourceNoticeUrl"
+        ]
+      },
+      "CreateReferenceDividendDto": {
+        "type": "object",
+        "properties": {
+          "grossPerShare": {
+            "type": "string",
+            "example": "1655",
+            "description": "Gross amount per share, XOF"
+          },
+          "exDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-12"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-20",
+            "description": "On or after the ex-date"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example"
+          }
+        },
+        "required": [
+          "grossPerShare",
+          "exDate",
+          "paymentDate",
+          "sourceNoticeUrl"
+        ]
+      },
       "PortfolioDto": {
         "type": "object",
         "properties": {
@@ -2829,6 +3276,11 @@
             "type": "string",
             "example": "21420"
           },
+          "dividends": {
+            "type": "string",
+            "example": "14940",
+            "description": "User dividends received on the security (net amounts)"
+          },
           "valuation": {
             "nullable": true,
             "description": "Null when the position is closed or has no price",
@@ -2846,6 +3298,7 @@
           "pmp",
           "costBasis",
           "realisedGain",
+          "dividends",
           "valuation"
         ]
       },
@@ -2871,13 +3324,26 @@
             "nullable": true,
             "example": "6255",
             "description": "Null when an open position has no end-of-day price"
+          },
+          "dividends": {
+            "type": "string",
+            "example": "14940",
+            "description": "User dividends received (net amounts confirmed by the user); dividend suggestions never count"
+          },
+          "totalGain": {
+            "type": "string",
+            "nullable": true,
+            "example": "42615",
+            "description": "Total gain: realisedGain + unrealisedGain + dividends. Null when an open position has no end-of-day price"
           }
         },
         "required": [
           "costBasis",
           "realisedGain",
           "marketValue",
-          "unrealisedGain"
+          "unrealisedGain",
+          "dividends",
+          "totalGain"
         ]
       },
       "SecurityAllocationDto": {
@@ -3035,7 +3501,8 @@
         "enum": [
           "buy",
           "sell",
-          "opening_position"
+          "opening_position",
+          "dividend"
         ]
       },
       "LedgerEntryDto": {
@@ -3077,7 +3544,19 @@
           "fees": {
             "type": "string",
             "example": "2000",
-            "description": "0 for an opening position"
+            "description": "0 for an opening position or a dividend"
+          },
+          "amount": {
+            "type": "string",
+            "nullable": true,
+            "example": "140675",
+            "description": "A dividend’s net amount received, XOF; null for every other kind. For a dividend, quantity is the shares held at the ex-date and price the gross amount per share declared."
+          },
+          "referenceDividendId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The reference dividend a dividend was confirmed from; null for every other kind"
           },
           "sgi": {
             "type": "string",
@@ -3104,6 +3583,8 @@
           "quantity",
           "price",
           "fees",
+          "amount",
+          "referenceDividendId",
           "sgi",
           "recordedAt",
           "replacesId"
@@ -3203,6 +3684,116 @@
           "quantity",
           "pmp",
           "sgi"
+        ]
+      },
+      "DividendStatus": {
+        "type": "string",
+        "enum": [
+          "upcoming",
+          "awaiting_payment",
+          "suggested",
+          "confirmed",
+          "dismissed"
+        ],
+        "description": "upcoming: ex-date not reached, shares not final. awaiting_payment: entitled, not paid yet. suggested: paid, waiting for the user to confirm the net amount received. confirmed: recorded in the ledger. dismissed: the user dismissed the suggestion."
+      },
+      "DividendCalendarItemDto": {
+        "type": "object",
+        "properties": {
+          "referenceDividendId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ticker": {
+            "type": "string",
+            "example": "SNTS"
+          },
+          "securityName": {
+            "type": "string",
+            "example": "Sonatel"
+          },
+          "exDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-12"
+          },
+          "paymentDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-20"
+          },
+          "grossPerShare": {
+            "type": "string",
+            "example": "1655",
+            "description": "Gross amount per share, XOF"
+          },
+          "sourceNoticeUrl": {
+            "type": "string",
+            "example": "https://www.brvm.org/fr/avis/example"
+          },
+          "shares": {
+            "type": "string",
+            "example": "100",
+            "description": "Shares held at the close of the day before the ex-date; for an upcoming dividend, the shares held now. For a confirmed dividend, as recorded."
+          },
+          "grossAmount": {
+            "type": "string",
+            "example": "165500",
+            "description": "shares × grossPerShare: the suggestion, before withholding. Never counted until confirmed."
+          },
+          "status": {
+            "description": "upcoming: ex-date not reached, shares not final. awaiting_payment: entitled, not paid yet. suggested: paid, waiting for the user to confirm the net amount received. confirmed: recorded in the ledger. dismissed: the user dismissed the suggestion.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DividendStatus"
+              }
+            ]
+          },
+          "netAmount": {
+            "type": "string",
+            "nullable": true,
+            "example": "140675",
+            "description": "The net amount the user confirmed; null unless confirmed"
+          },
+          "entryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "The ledger entry recording it; null unless confirmed"
+          }
+        },
+        "required": [
+          "referenceDividendId",
+          "ticker",
+          "securityName",
+          "exDate",
+          "paymentDate",
+          "grossPerShare",
+          "sourceNoticeUrl",
+          "shares",
+          "grossAmount",
+          "status",
+          "netAmount",
+          "entryId"
+        ]
+      },
+      "ConfirmDividendDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "140675",
+            "description": "Net amount received, XOF, after withholding tax and charges, as the SGI statement shows"
+          },
+          "sgi": {
+            "type": "string",
+            "example": "SGI Example",
+            "maxLength": 100,
+            "description": "The SGI the dividend was paid into; defaults to the SGI of the latest buy or opening position of the security before the ex-date"
+          }
+        },
+        "required": [
+          "amount"
         ]
       },
       "WatchlistItemDto": {

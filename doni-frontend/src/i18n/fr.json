@@ -18,6 +18,7 @@
     "skipToMain": "Aller au contenu principal",
     "securities": "Valeurs",
     "adminCatalogue": "Catalogue et cours",
+    "adminBulletins": "Bulletins à revoir",
     "portfolio": "Mon portefeuille",
     "watchlist": "Ma liste de suivi"
   },
@@ -520,6 +521,49 @@
           "sourceNoticeUrlHelp": "Le lien de l’avis publié sur brvm.org, montré aux utilisateurs."
         }
       }
+    },
+    "bulletins": {
+      "title": "Bulletins en attente de revue",
+      "description": "Les BOC récupérés chaque soir qui n’ont pas passé un contrôle automatique. Tant qu’une séance n’est pas publiée, les utilisateurs voient la dernière séance validée.",
+      "none": "Aucune séance en attente : tous les BOC récupérés ont été publiés.",
+      "heldDays": "Séances en attente",
+      "failureCount_one": "{{count}} contrôle échoué",
+      "failureCount_other": "{{count}} contrôles échoués",
+      "dayTitle": "Séance du {{date}}",
+      "status": {
+        "pending_review": "En attente de revue",
+        "published": "Publiée"
+      },
+      "source": "BOC n° {{reference}} (PDF d’origine)",
+      "failures": "Contrôles échoués",
+      "noFailures": "Tous les contrôles passent désormais.",
+      "checks": {
+        "trading_date": "Date de séance",
+        "readable": "Lecture du PDF",
+        "securities_present": "Valeurs présentes",
+        "variation_limits": "Seuils de variation",
+        "index_consistency": "Cohérence des indices",
+        "volumes": "Volumes",
+        "agrees_with_published": "Cours déjà publiés"
+      },
+      "rows": "Valeurs lues dans le bulletin",
+      "rowsHelp": "Les valeurs et indices du catalogue, tels que lus dans le BOC. Corrigez une valeur mal lue en la recopiant du PDF : les contrôles sont relancés.",
+      "columns": {
+        "security": "Valeur",
+        "previous": "Cours précédent",
+        "close": "Clôture / valeur",
+        "variation": "Variation",
+        "volume": "Volume"
+      },
+      "notTraded": "non cotée ce jour",
+      "notInCatalogue_one": "{{count}} valeur du bulletin n’est pas au catalogue et n’est pas enregistrée.",
+      "notInCatalogue_other": "{{count}} valeurs du bulletin ne sont pas au catalogue et ne sont pas enregistrées.",
+      "valueOf": "Valeur de {{name}}",
+      "saveCorrections": "Enregistrer les corrections",
+      "corrected": "Corrections enregistrées, contrôles relancés.",
+      "publish": "Publier la séance",
+      "publishHelp": "Publier rend les cours de cette séance visibles par tous les utilisateurs, même si un contrôle échoue encore.",
+      "published": "Séance du {{date}} publiée."
     }
   },
   "portfolio": {
@@ -530,7 +574,8 @@
     "kind": {
       "buy": "Achat",
       "sell": "Vente",
-      "opening_position": "Position d’ouverture"
+      "opening_position": "Position d’ouverture",
+      "dividend": "Dividende"
     },
     "create": {
       "title": "Créez votre portefeuille",
@@ -544,7 +589,10 @@
       "marketValue": "Valeur de marché",
       "unrealisedGain": "Plus-value latente",
       "realisedGain": "Plus-value réalisée",
-      "costBasis": "Coût d'acquisition"
+      "costBasis": "Coût d'acquisition",
+      "dividends": "Dividendes reçus",
+      "totalGain": "Gain total",
+      "totalGainHint": "Gain total : plus-values réalisées et latentes, plus les dividendes nets que vous avez confirmés."
     },
     "positions": {
       "title": "Positions",
@@ -557,7 +605,8 @@
       "marketValue": "Valeur de marché",
       "unrealisedGain": "Plus-value latente",
       "realisedGain": "Plus-value réalisée",
-      "closed": "Position soldée"
+      "closed": "Position soldée",
+      "dividends": "Dividendes reçus"
     },
     "entries": {
       "title": "Écritures",
@@ -574,7 +623,8 @@
       "actions": "Actions",
       "name": "{{ticker}} du {{date}}",
       "edit": "Modifier l’écriture {{entry}}",
-      "delete": "Supprimer l’écriture {{entry}}"
+      "delete": "Supprimer l’écriture {{entry}}",
+      "net": "net reçu"
     },
     "correction": {
       "title": "Corriger l’écriture",
@@ -660,6 +710,48 @@
       "bySector": "Par secteur",
       "empty": "Aucune position valorisée à répartir pour l’instant.",
       "unpriced": "Hors répartition, faute de cours de clôture publié : {{tickers}}."
+    },
+    "dividends": {
+      "title": "Dividendes",
+      "description": "Les dividendes déclarés sur les valeurs que vous détenez. Doni suggère un montant brut à partir des titres détenus à la date de détachement ; seul le montant net que vous confirmez est compté.",
+      "empty": "Aucun dividende déclaré sur vos valeurs pour le moment.",
+      "upcoming": "À venir",
+      "past": "Passés",
+      "security": "Valeur",
+      "exDate": "Détachement",
+      "paymentDate": "Paiement",
+      "shares": "Titres",
+      "grossPerShare": "Brut par titre",
+      "amount": "Montant",
+      "gross": "brut suggéré",
+      "estimate": "estimation sur vos titres actuels",
+      "net": "net reçu",
+      "notice": "Avis",
+      "status": {
+        "label": "Statut",
+        "upcoming": "À venir",
+        "awaiting_payment": "En attente de paiement",
+        "suggested": "À confirmer",
+        "confirmed": "Confirmé",
+        "dismissed": "Ignoré"
+      },
+      "confirm": "Confirmer",
+      "confirmLabel": "Confirmer le dividende {{dividend}}",
+      "dismiss": "Ignorer",
+      "dismissLabel": "Ignorer le dividende {{dividend}}",
+      "restore": "Rétablir",
+      "restoreLabel": "Rétablir le dividende {{dividend}}",
+      "dismissed": "Suggestion ignorée : elle n’est pas comptée",
+      "restored": "Suggestion rétablie",
+      "form": {
+        "title": "Confirmer le dividende {{ticker}} reçu",
+        "description": "Saisissez le montant net crédité sur votre compte, après retenue à la source, tel qu’il figure sur votre relevé SGI. Brut suggéré pour {{shares}} titres : {{gross}}.",
+        "amount": "Montant net reçu (F CFA)",
+        "submit": "Enregistrer le dividende",
+        "saved": "Dividende enregistré : il compte dans votre gain total",
+        "invalid": "Saisissez un montant supérieur à zéro, par exemple 140675.",
+        "already": "Ce dividende est déjà enregistré."
+      }
     }
   },
   "legal": {

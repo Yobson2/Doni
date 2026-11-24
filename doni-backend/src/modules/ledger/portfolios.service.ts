@@ -2,12 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import {
-  ConflictingOpeningPositionsException,
   FutureTradeDateError,
-  InsufficientQuantityException,
-  InvalidLedgerEntryException,
   LedgerEntryNotFoundError,
-  PortfolioNotFoundError,
   UnknownLedgerSecurityError,
 } from '@common/exceptions/ledger.exceptions';
 import { CorporateActionsService } from '@modules/securities/corporate-actions/corporate-actions.service';
@@ -26,11 +22,7 @@ import {
   PositionDto,
 } from './dto/portfolio.dto';
 import {
-  ConflictingOpeningPositionsError,
   type CorporateAction,
-  InsufficientQuantityError,
-  InvalidLedgerEntryError,
-  type LedgerEntry,
   type ReplayResult,
   type ValuationPrice,
   performanceStart,
@@ -42,6 +34,14 @@ import {
 } from './entities/ledger-entry.entity';
 import { LedgerEntryVoid } from './entities/ledger-entry-void.entity';
 import { Portfolio } from './entities/portfolio.entity';
+import {
+  findOwnedPortfolio,
+  ledgerOf,
+  toEngineEntry,
+  toLedgerEntryDto,
+  today,
+  withLedgerErrors,
+} from './ledger-records';
 import { allocationOf } from './portfolio-allocation';
 
 /**
@@ -82,8 +82,8 @@ export class PortfoliosService {
     portfolioId: string,
   ): Promise<LedgerEntryDto[]> {
     const manager = this.portfolios.manager;
-    await this.findOwned(manager, ownerId, portfolioId);
-    const entries = await this.ledgerOf(manager, portfolioId);
+    await findOwnedPortfolio(manager, ownerId, portfolioId);
+    const entries = await ledgerOf(manager, portfolioId);
     const replaced =
       entries.length === 0
         ? []
@@ -185,8 +185,8 @@ export class PortfoliosService {
     },
   ): Promise<LedgerEntryDto | null> {
     return this.dataSource.transaction(async (manager) => {
-      await this.findOwned(manager, ownerId, portfolioId, { lock: true });
-      const ledger = await this.ledgerOf(manager, portfolioId);
+      await findOwnedPortfolio(manager, ownerId, portfolioId, { lock: true });
+      const ledger = await ledgerOf(manager, portfolioId);
 
       let voided: LedgerEntryRecord | undefined;
       if (change.voids) {
@@ -258,12 +258,12 @@ export class PortfoliosService {
     ownerId: string,
     portfolioId: string,
   ): Promise<PortfolioValuationDto> {
-    const portfolio = await this.findOwned(
+    const portfolio = await findOwnedPortfolio(
       this.portfolios.manager,
       ownerId,
       portfolioId,
     );
-    const ledger = await this.ledgerOf(this.portfolios.manager, portfolioId);
+    const ledger = await ledgerOf(this.portfolios.manager, portfolioId);
     const securities = new Map(
       ledger.map((entry) => [entry.securityId, entry.security as Security]),
     );
@@ -312,42 +312,6 @@ export class PortfoliosService {
       relations: { sector: true },
     });
     return new Map(securities.map((security) => [security.id, security]));
-  }
-
-  /** The user's portfolio with that id; anyone else's is "not found". */
-  private async findOwned(
-    manager: EntityManager,
-    ownerId: string,
-    id: string,
-    { lock = false } = {},
-  ): Promise<Portfolio> {
-    const portfolio = await manager.findOne(Portfolio, {
-      where: { id, ownerId },
-      ...(lock && { lock: { mode: 'pessimistic_write' as const } }),
-    });
-    if (!portfolio) throw new PortfolioNotFoundError(id);
-    return portfolio;
-  }
-
-  /**
-   * The portfolio's ledger as it stands: every entry not voided by a
-   * correction, oldest trade first.
-   */
-  private ledgerOf(
-    manager: EntityManager,
-    portfolioId: string,
-  ): Promise<LedgerEntryRecord[]> {
-    return manager
-      .createQueryBuilder(LedgerEntryRecord, 'entry')
-      .innerJoinAndSelect('entry.security', 'security')
-      .where('entry.portfolioId = :portfolioId', { portfolioId })
-      .andWhere(
-        `NOT EXISTS (SELECT 1 FROM "ledger_entry_voids" "void" WHERE "void"."entryId" = "entry"."id")`,
-      )
-      .orderBy('entry.tradeDate', 'ASC')
-      .addOrderBy('entry.createdAt', 'ASC')
-      .addOrderBy('entry.id', 'ASC')
-      .getMany();
   }
 }
 
@@ -399,52 +363,9 @@ function replayLedger(
   prices: ReadonlyMap<string, ValuationPrice>,
   corporateActions: CorporateAction[],
 ): ReplayResult {
-  try {
-    return replay({
-      entries: ledger.map(toEngineEntry),
-      prices,
-      corporateActions,
-    });
-  } catch (error) {
-    if (error instanceof InsufficientQuantityError) {
-      const entry = ledger.find((e) => e.id === error.entryId);
-      throw new InsufficientQuantityException({
-        ticker: entry?.security?.ticker ?? '',
-        date: error.date,
-        held: error.held,
-        sold: error.sold,
-      });
-    }
-    if (error instanceof ConflictingOpeningPositionsError) {
-      const entry = ledger.find((e) => e.id === error.entryId);
-      throw new ConflictingOpeningPositionsException({
-        ticker: entry?.security?.ticker ?? '',
-        date: error.date,
-      });
-    }
-    if (error instanceof InvalidLedgerEntryError) {
-      throw new InvalidLedgerEntryException(error.field, error.value);
-    }
-    throw error;
-  }
-}
-
-function toEngineEntry(record: LedgerEntryRecord): LedgerEntry {
-  const common = {
-    id: record.id,
-    securityId: record.securityId,
-    date: record.tradeDate,
-    quantity: record.quantity,
-  };
-  if (record.kind === LedgerEntryKind.OPENING_POSITION) {
-    return { ...common, kind: 'opening_position', pmp: record.price };
-  }
-  return {
-    ...common,
-    kind: record.kind,
-    price: record.price,
-    fees: record.fees,
-  };
+  return withLedgerErrors(ledger, () =>
+    replay({ entries: ledger.map(toEngineEntry), prices, corporateActions }),
+  );
 }
 
 function toPortfolioDto(portfolio: Portfolio): PortfolioDto {
@@ -454,25 +375,3 @@ function toPortfolioDto(portfolio: Portfolio): PortfolioDto {
     createdAt: portfolio.createdAt.toISOString(),
   };
 }
-
-function toLedgerEntryDto(
-  record: LedgerEntryRecord,
-  replacesId: string | null,
-): LedgerEntryDto {
-  return {
-    id: record.id,
-    kind: record.kind,
-    ticker: record.security?.ticker ?? '',
-    securityName: record.security?.name ?? '',
-    date: record.tradeDate,
-    quantity: record.quantity,
-    price: record.price,
-    fees: record.fees,
-    sgi: record.sgi,
-    recordedAt: record.createdAt.toISOString(),
-    replacesId,
-  };
-}
-
-/** Today's date (UTC) as YYYY-MM-DD. */
-const today = () => new Date().toISOString().slice(0, 10);

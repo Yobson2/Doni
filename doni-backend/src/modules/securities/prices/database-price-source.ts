@@ -34,6 +34,7 @@ export class DatabasePriceSource implements PriceSource {
       .createQueryBuilder('p')
       .distinctOn(['p.securityId'])
       .where({ securityId: In(securityIds), status: PriceStatus.PUBLISHED })
+      .andWhere(BULLETIN_PUBLISHED)
       .orderBy('p.securityId')
       .addOrderBy('p.tradingDate', 'DESC')
       .getMany();
@@ -57,9 +58,16 @@ export class DatabasePriceSource implements PriceSource {
   private published(subject: PriceSubject): SelectQueryBuilder<EodPrice> {
     return this.prices
       .createQueryBuilder('p')
-      .where({ ...subject, status: PriceStatus.PUBLISHED });
+      .where({ ...subject, status: PriceStatus.PUBLISHED })
+      .andWhere(BULLETIN_PUBLISHED);
   }
 }
+
+/**
+ * A price read from an ingested BOC is served only while that bulletin is
+ * published, whatever the row's own status says: a held day can never leak.
+ */
+const BULLETIN_PUBLISHED = `NOT EXISTS (SELECT 1 FROM "boc_bulletins" "b" WHERE "b"."id" = "p"."bulletinId" AND "b"."status" <> '${PriceStatus.PUBLISHED}')`;
 
 export function toEndOfDayPrice(row: EodPrice): EndOfDayPrice {
   return {

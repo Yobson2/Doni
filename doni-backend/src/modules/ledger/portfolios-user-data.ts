@@ -4,6 +4,7 @@ import {
   UserDataRegistry,
   UserDataSection,
 } from '@common/user-data/user-data.registry';
+import { DividendDismissal } from './entities/dividend-dismissal.entity';
 import { LedgerEntryVoid } from './entities/ledger-entry-void.entity';
 import { LedgerEntryRecord } from './entities/ledger-entry.entity';
 import { Portfolio } from './entities/portfolio.entity';
@@ -13,11 +14,18 @@ import { Portfolio } from './entities/portfolio.entity';
  * whole ledger, every stored column of every ledger entry (so columns added
  * later are exported too), plus the security's ticker, and the corrections
  * (ADR 0004): which entries were voided, when, and what replaced them.
+ * User dividends are ledger entries, so they are in the ledger; dismissed
+ * dividend suggestions are listed with their portfolio.
  */
 @Injectable()
 export class PortfoliosUserData implements UserDataSection, OnModuleInit {
   readonly key = 'portfolios';
-  readonly entities = [Portfolio, LedgerEntryRecord, LedgerEntryVoid];
+  readonly entities = [
+    Portfolio,
+    LedgerEntryRecord,
+    LedgerEntryVoid,
+    DividendDismissal,
+  ];
 
   constructor(private readonly registry: UserDataRegistry) {}
 
@@ -37,6 +45,11 @@ export class PortfoliosUserData implements UserDataSection, OnModuleInit {
     });
     const voids = await manager.find(LedgerEntryVoid, {
       where: { entryId: In(entries.map((entry) => entry.id)) },
+      order: { createdAt: 'ASC' },
+    });
+    const dismissals = await manager.find(DividendDismissal, {
+      where: { portfolioId: In(portfolios.map((p) => p.id)) },
+      relations: { referenceDividend: { security: true } },
       order: { createdAt: 'ASC' },
     });
     const portfolioOf = new Map(
@@ -64,6 +77,14 @@ export class PortfoliosUserData implements UserDataSection, OnModuleInit {
           entryId,
           replacementId,
           createdAt,
+        })),
+      dismissedDividends: dismissals
+        .filter((d) => d.portfolioId === portfolio.id)
+        .map(({ referenceDividendId, referenceDividend, createdAt }) => ({
+          referenceDividendId,
+          ticker: referenceDividend?.security?.ticker,
+          exDate: referenceDividend?.exDate,
+          dismissedAt: createdAt,
         })),
     }));
   }

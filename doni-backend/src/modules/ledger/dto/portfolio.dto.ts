@@ -173,8 +173,29 @@ export class LedgerEntryDto {
   })
   price: string;
 
-  @ApiProperty({ example: '2000', description: '0 for an opening position' })
+  @ApiProperty({
+    example: '2000',
+    description: '0 for an opening position or a dividend',
+  })
   fees: string;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: '140675',
+    description:
+      'A dividend’s net amount received, XOF; null for every other kind. For a dividend, quantity is the shares held at the ex-date and price the gross amount per share declared.',
+  })
+  amount: string | null;
+
+  @ApiProperty({
+    type: String,
+    format: 'uuid',
+    nullable: true,
+    description:
+      'The reference dividend a dividend was confirmed from; null for every other kind',
+  })
+  referenceDividendId: string | null;
 
   @ApiProperty({ example: 'SGI Example' })
   sgi: string;
@@ -235,6 +256,12 @@ export class PositionDto {
   realisedGain: string;
 
   @ApiProperty({
+    example: '14940',
+    description: 'User dividends received on the security (net amounts)',
+  })
+  dividends: string;
+
+  @ApiProperty({
     type: PositionValuationDto,
     nullable: true,
     description: 'Null when the position is closed or has no price',
@@ -264,6 +291,22 @@ export class PortfolioTotalsDto {
     description: 'Null when an open position has no end-of-day price',
   })
   unrealisedGain: string | null;
+
+  @ApiProperty({
+    example: '14940',
+    description:
+      'User dividends received (net amounts confirmed by the user); dividend suggestions never count',
+  })
+  dividends: string;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: '42615',
+    description:
+      'Total gain: realisedGain + unrealisedGain + dividends. Null when an open position has no end-of-day price',
+  })
+  totalGain: string | null;
 }
 
 const PERCENT_DESCRIPTION =

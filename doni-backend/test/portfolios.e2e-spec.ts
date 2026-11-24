@@ -153,6 +153,7 @@ describe('Portfolios and ledger (e2e)', () => {
           pmp: '20500',
           costBasis: '205000',
           realisedGain: '0',
+          dividends: '0',
           valuation: {
             price: '20000',
             priceDate: '2026-11-11',
@@ -167,6 +168,7 @@ describe('Portfolios and ledger (e2e)', () => {
           pmp: '4120.5',
           costBasis: '370845',
           realisedGain: '21420',
+          dividends: '0',
           valuation: {
             price: '4190',
             priceDate: '2026-11-11',
@@ -180,6 +182,8 @@ describe('Portfolios and ledger (e2e)', () => {
         realisedGain: '21420',
         marketValue: '577100',
         unrealisedGain: '1255',
+        dividends: '0',
+        totalGain: '22675',
       },
       // The full trade history: performance runs from the first entry.
       performanceSince: '2026-01-05',
@@ -372,6 +376,8 @@ describe('Portfolios and ledger (e2e)', () => {
         realisedGain: '26300',
         marketValue: '702800',
         unrealisedGain: '35770',
+        dividends: '0',
+        totalGain: '62070',
       });
       // SNTS before 2026-01-02 is unknown: never earlier, despite ORAC.
       expect(res.body.performanceSince).toBe('2026-01-02');

@@ -73,6 +73,42 @@ export class InvalidCorporateActionTermsError extends BaseAppException {
   }
 }
 
+/** No reference dividend with that id on that security. */
+export class ReferenceDividendNotFoundError extends BaseAppException {
+  constructor(id: string) {
+    super(
+      `Reference dividend not found: ${id}`,
+      HttpStatus.NOT_FOUND,
+      CatalogueErrorCode.DIVIDEND_NOT_FOUND,
+      { id },
+    );
+  }
+}
+
+/** The security already has a reference dividend with that ex-date. */
+export class ReferenceDividendAlreadyExistsError extends BaseAppException {
+  constructor(ticker: string, exDate: string) {
+    super(
+      `${ticker} already has a dividend with ex-date ${exDate}`,
+      HttpStatus.CONFLICT,
+      CatalogueErrorCode.DIVIDEND_ALREADY_EXISTS,
+      { ticker, exDate },
+    );
+  }
+}
+
+/** The dividend's dates do not fit together. */
+export class InvalidReferenceDividendTermsError extends BaseAppException {
+  constructor(reason: string) {
+    super(
+      `Invalid dividend terms: ${reason}`,
+      HttpStatus.BAD_REQUEST,
+      CatalogueErrorCode.DIVIDEND_INVALID_TERMS,
+      { reason },
+    );
+  }
+}
+
 /** A request refers to a sector that is not in the catalogue. */
 export class UnknownSectorError extends BaseAppException {
   constructor(code: string) {
@@ -81,6 +117,45 @@ export class UnknownSectorError extends BaseAppException {
       HttpStatus.BAD_REQUEST,
       CatalogueErrorCode.SECTOR_NOT_FOUND,
       { code },
+    );
+  }
+}
+
+/** No BOC has been stored for that trading day. */
+export class BulletinNotFoundError extends BaseAppException {
+  constructor(tradingDate: string) {
+    super(
+      `No BOC stored for ${tradingDate}`,
+      HttpStatus.NOT_FOUND,
+      CatalogueErrorCode.BULLETIN_NOT_FOUND,
+      { tradingDate },
+    );
+  }
+}
+
+/**
+ * The trading day is already published: only a held (pending_review) day is
+ * corrected or published from its bulletin.
+ */
+export class BulletinNotHeldError extends BaseAppException {
+  constructor(tradingDate: string) {
+    super(
+      `The BOC of ${tradingDate} is already published`,
+      HttpStatus.CONFLICT,
+      CatalogueErrorCode.BULLETIN_NOT_HELD,
+      { tradingDate },
+    );
+  }
+}
+
+/** A correction names a security or index the bulletin does not list. */
+export class BulletinUnknownRowError extends BaseAppException {
+  constructor(tradingDate: string, code: string) {
+    super(
+      `The BOC of ${tradingDate} has no row for ${code}`,
+      HttpStatus.BAD_REQUEST,
+      CatalogueErrorCode.BULLETIN_UNKNOWN_ROW,
+      { tradingDate, code },
     );
   }
 }

@@ -18,6 +18,7 @@
     "skipToMain": "Skip to main content",
     "securities": "Securities",
     "adminCatalogue": "Catalogue and prices",
+    "adminBulletins": "Bulletins to review",
     "portfolio": "My portfolio",
     "watchlist": "My watchlist"
   },
@@ -520,6 +521,49 @@
           "sourceNoticeUrlHelp": "The link to the notice on brvm.org, shown to users."
         }
       }
+    },
+    "bulletins": {
+      "title": "Bulletins awaiting review",
+      "description": "BOCs fetched each evening that failed an automatic check. Until a trading day is published, users keep seeing the last validated day.",
+      "none": "No day awaiting review: every fetched BOC has been published.",
+      "heldDays": "Days awaiting review",
+      "failureCount_one": "{{count}} failed check",
+      "failureCount_other": "{{count}} failed checks",
+      "dayTitle": "Trading day {{date}}",
+      "status": {
+        "pending_review": "Awaiting review",
+        "published": "Published"
+      },
+      "source": "BOC no. {{reference}} (original PDF)",
+      "failures": "Failed checks",
+      "noFailures": "Every check now passes.",
+      "checks": {
+        "trading_date": "Trading date",
+        "readable": "PDF reading",
+        "securities_present": "Securities present",
+        "variation_limits": "Variation limits",
+        "index_consistency": "Index consistency",
+        "volumes": "Volumes",
+        "agrees_with_published": "Prices already published"
+      },
+      "rows": "Values read from the bulletin",
+      "rowsHelp": "The catalogue’s securities and indices as read from the BOC. Fix a misread value by copying it from the PDF: the checks run again.",
+      "columns": {
+        "security": "Security",
+        "previous": "Previous close",
+        "close": "Close / value",
+        "variation": "Variation",
+        "volume": "Volume"
+      },
+      "notTraded": "not traded that day",
+      "notInCatalogue_one": "{{count}} security in the bulletin is not in the catalogue and is not stored.",
+      "notInCatalogue_other": "{{count}} securities in the bulletin are not in the catalogue and are not stored.",
+      "valueOf": "Value of {{name}}",
+      "saveCorrections": "Save corrections",
+      "corrected": "Corrections saved, checks run again.",
+      "publish": "Publish the day",
+      "publishHelp": "Publishing makes this day’s prices visible to every user, even if a check still fails.",
+      "published": "Trading day {{date}} published."
     }
   },
   "portfolio": {
@@ -530,7 +574,8 @@
     "kind": {
       "buy": "Buy",
       "sell": "Sell",
-      "opening_position": "Opening position"
+      "opening_position": "Opening position",
+      "dividend": "Dividend"
     },
     "create": {
       "title": "Create your portfolio",
@@ -544,7 +589,10 @@
       "marketValue": "Market value",
       "unrealisedGain": "Unrealised gain",
       "realisedGain": "Realised gain",
-      "costBasis": "Cost basis"
+      "costBasis": "Cost basis",
+      "dividends": "Dividends received",
+      "totalGain": "Total gain",
+      "totalGainHint": "Total gain: realised and unrealised gains, plus the net dividends you confirmed."
     },
     "positions": {
       "title": "Positions",
@@ -557,7 +605,8 @@
       "marketValue": "Market value",
       "unrealisedGain": "Unrealised gain",
       "realisedGain": "Realised gain",
-      "closed": "Position closed"
+      "closed": "Position closed",
+      "dividends": "Dividends received"
     },
     "entries": {
       "title": "Ledger entries",
@@ -574,7 +623,8 @@
       "actions": "Actions",
       "name": "{{ticker}} of {{date}}",
       "edit": "Edit ledger entry {{entry}}",
-      "delete": "Delete ledger entry {{entry}}"
+      "delete": "Delete ledger entry {{entry}}",
+      "net": "net received"
     },
     "correction": {
       "title": "Correct the ledger entry",
@@ -660,6 +710,48 @@
       "bySector": "By sector",
       "empty": "No valued position to allocate yet.",
       "unpriced": "Left out of the allocation, no published closing price yet: {{tickers}}."
+    },
+    "dividends": {
+      "title": "Dividends",
+      "description": "Dividends declared on the securities you hold. Doni suggests a gross amount from the shares held at the ex-date; only the net amount you confirm is counted.",
+      "empty": "No dividend declared on your securities yet.",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "security": "Security",
+      "exDate": "Ex-date",
+      "paymentDate": "Payment",
+      "shares": "Shares",
+      "grossPerShare": "Gross per share",
+      "amount": "Amount",
+      "gross": "suggested gross",
+      "estimate": "estimate on the shares you hold now",
+      "net": "net received",
+      "notice": "Notice",
+      "status": {
+        "label": "Status",
+        "upcoming": "Upcoming",
+        "awaiting_payment": "Awaiting payment",
+        "suggested": "To confirm",
+        "confirmed": "Confirmed",
+        "dismissed": "Dismissed"
+      },
+      "confirm": "Confirm",
+      "confirmLabel": "Confirm the dividend {{dividend}}",
+      "dismiss": "Dismiss",
+      "dismissLabel": "Dismiss the dividend {{dividend}}",
+      "restore": "Restore",
+      "restoreLabel": "Restore the dividend {{dividend}}",
+      "dismissed": "Suggestion dismissed: it is not counted",
+      "restored": "Suggestion restored",
+      "form": {
+        "title": "Confirm the {{ticker}} dividend received",
+        "description": "Enter the net amount credited to your account, after withholding tax, as shown on your SGI statement. Suggested gross for {{shares}} shares: {{gross}}.",
+        "amount": "Net amount received (F CFA)",
+        "submit": "Save the dividend",
+        "saved": "Dividend saved: it counts toward your total gain",
+        "invalid": "Enter an amount greater than zero, for example 140675.",
+        "already": "This dividend is already recorded."
+      }
     }
   },
   "legal": {
