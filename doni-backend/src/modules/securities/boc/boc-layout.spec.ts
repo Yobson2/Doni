@@ -25,9 +25,11 @@ const fixture = (file: string) => readFileSync(join(FIXTURES, file));
 const LAYOUTS: Record<string, string> = {
   'boc_20160801.pdf': 'sector-2016',
   'boc_20171002.pdf': 'sector-2016',
+  'boc_20171204.pdf': 'sector-2016',
   'boc_20171229.pdf': 'sector-2018',
   'boc_20180123.pdf': 'sector-2018',
   'boc_20190115.pdf': 'sector-2018',
+  'boc_20190304.pdf': 'sector-2018',
   'boc_20200115.pdf': 'sector-2018',
   'boc_20210115.pdf': 'sector-2018',
   'boc_20221230_2.pdf': 'sector-2018',
@@ -146,6 +148,32 @@ describe('BOC layouts (real bulletins 2016-2026)', () => {
     });
     expect(day('boc_20190115.pdf').securities).toHaveLength(45);
     expect(day('boc_20190115.pdf').controls.totalVolume).toBe('111651');
+  });
+
+  it('rejoins numbers printed in pieces, and reads past printed mentions', () => {
+    // 2019-03-04 prints "1 390" as "1" "390" and "-6,47 %" as "-" "6,47 %".
+    expect(security('boc_20190304.pdf', 'FTSC')).toMatchObject({
+      previousClose: '1390',
+      open: '1390',
+      close: '1300',
+      volume: '461',
+      value: '614390',
+      variation: '-6.47',
+    });
+    expect(security('boc_20190304.pdf', 'CABC')).toMatchObject({
+      previousClose: '1490',
+      close: '1490',
+      traded: false,
+    });
+    // A theoretical reference price is printed "790 Val-T".
+    expect(security('boc_20171204.pdf', 'SCRC')).toMatchObject({
+      previousClose: '790',
+      close: '790',
+      traded: false,
+    });
+    for (const file of ['boc_20171204.pdf', 'boc_20190304.pdf']) {
+      expect(day(file).unreadableRows).toEqual([]);
+    }
   });
 
   it('reads a compartment-2023 share row', () => {

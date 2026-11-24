@@ -48,7 +48,10 @@ export interface BackfillOptions {
   /** The trading days to backfill, oldest first (see weekdaysBetween). */
   days: string[];
   fetcher: BocFetcher;
-  /** Download again the days a previous run held (default: keep them). */
+  /**
+   * Download, read and check again the days a previous run held (default:
+   * keep them), e.g. after a parser fix.
+   */
   retryHeld?: boolean;
   /** Called after each day, e.g. to print progress. */
   onDay?: (day: BackfillDay) => void;
@@ -110,7 +113,11 @@ export class BocBackfillService {
           const result = await this.ingestion.ingestDocument(
             tradingDate,
             fetched,
-            { origin: BulletinOrigin.BACKFILL, notify: false },
+            {
+              origin: BulletinOrigin.BACKFILL,
+              notify: false,
+              reread: options.retryHeld,
+            },
           );
           const stored = await bulletins.findOneByOrFail({ tradingDate });
           day = toDay(

@@ -61,6 +61,9 @@ export function readLegacyLayout(
   const error = (detail: string) =>
     new BocLayoutError(`Not a BOC in the ${layout} layout: ${detail}`);
   if (pages.length < 2) throw error('no share listing');
+  pages = pages.map((lines) =>
+    lines.map((line) => ({ ...line, cells: joinSplitNumbers(line.cells) })),
+  );
   const front = pages[0];
   const { tradingDate, reference } = readHeader(front, error);
 
@@ -263,7 +266,52 @@ function readDailyIndexTable(front: Line[]): RepeatedValue[] {
   return repeated;
 }
 
+// ─── Split numbers ───────────────────────────────────────────
+
+/** Text that is part of a printed number: digits, separators, sign, %. */
+const NUMBER_PART = /^[-\d\s,.%]+$/;
+/**
+ * Parts of one number printed as separate cells sit this close (PDF units:
+ * about a space); columns are much further apart.
+ */
+const SPLIT_NUMBER_GAP = 3.5;
+
+/**
+ * Some bulletins print one number as several cells: "1" "490" for 1 490,
+ * "-" "6,04 %" for -6,04 %. Rejoins cells that touch and are all number.
+ */
+export function joinSplitNumbers(cells: TextCell[]): TextCell[] {
+  const joined: TextCell[] = [];
+  for (const cell of cells) {
+    const last = joined[joined.length - 1];
+    const touching =
+      last &&
+      last.width > 0 &&
+      cell.x - (last.x + last.width) < SPLIT_NUMBER_GAP;
+    if (
+      touching &&
+      !isPercent(last.text) &&
+      NUMBER_PART.test(last.text) &&
+      NUMBER_PART.test(cell.text)
+    ) {
+      joined[joined.length - 1] = {
+        ...last,
+        text: `${last.text} ${cell.text}`,
+        width: cell.x + cell.width - last.x,
+      };
+    } else {
+      joined.push(cell);
+    }
+  }
+  return joined;
+}
+
 // ─── Share listing ───────────────────────────────────────────
+
+/** A note printed beside a title, e.g. "(d)" ex-dividend, "(V)", "(#)". */
+const MENTION = /^\((\w+|\*+|#)\)$/;
+/** A reference price may be printed with "Val-T" (theoretical value). */
+const PRICE_MENTION = /\s*Val-T$/;
 
 /** BRVM symbols: upper-case letters, e.g. SNTS, CBIBF. */
 const SYMBOL = /^[A-Z]{3,6}$/;
@@ -399,8 +447,8 @@ function readShareRow(
     .map((c) => c.text)
     .join(' ');
   const f = line.cells
-    .filter((c) => c.x >= columns.figuresX)
-    .map((c) => c.text);
+    .filter((c) => c.x >= columns.figuresX && !MENTION.test(c.text))
+    .map((c) => c.text.replace(PRICE_MENTION, ''));
   const n = (i: number) => (f[i] ? readNumber(f[i]) : null);
 
   if (NOT_TRADED.has(f[1]) && NOT_TRADED.has(f[2])) {

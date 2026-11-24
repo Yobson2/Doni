@@ -11,6 +11,8 @@
  * For a sample, --ranges takes several periods instead of --from/--to:
  *   --ranges 2017-11-01:2017-11-30,2019-03-01:2019-03-31
  *
+ * --retry-held reads and checks the held days again (e.g. after a parser fix).
+ *
  * It can be stopped and run again: days already stored are not downloaded
  * again, published days are never overwritten. --pause-ms is the wait before
  * each request to brvm.org (at most two per weekday).

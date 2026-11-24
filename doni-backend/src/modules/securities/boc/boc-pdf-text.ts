@@ -9,6 +9,8 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf';
 export interface TextCell {
   x: number;
   y: number;
+  /** Printed width, in PDF units (0 when the PDF does not say). */
+  width: number;
   text: string;
 }
 
@@ -53,7 +55,12 @@ export async function readPages(document: Uint8Array): Promise<Line[][]> {
         // Some cells hold only control characters (layout artefacts).
         const text = item.str.replace(CONTROL_CHARACTERS, '').trim();
         if (!text) continue;
-        cells.push({ x: item.transform[4], y: item.transform[5], text });
+        cells.push({
+          x: item.transform[4],
+          y: item.transform[5],
+          width: item.width ?? 0,
+          text,
+        });
       }
       pages.push(toLines(cells));
     }

@@ -60,6 +60,11 @@ export interface IngestionOptions {
   origin?: BulletinOrigin;
   /** Email the admins about a held day (default true; the backfill sends one summary instead). */
   notify?: boolean;
+  /**
+   * Read and check a held day again even when its PDF has not changed (e.g.
+   * after a parser fix). A published day is never read again.
+   */
+  reread?: boolean;
 }
 
 export interface IngestionResult {
@@ -110,7 +115,9 @@ export class BocIngestionService {
     const existing = await this.dataSource
       .getRepository(BocBulletin)
       .findOneBy({ tradingDate });
-    if (existing?.checksum === checksum) {
+    const reread =
+      options.reread === true && existing?.status !== PriceStatus.PUBLISHED;
+    if (existing?.checksum === checksum && !reread) {
       return result(tradingDate, IngestionOutcome.UNCHANGED, existing.failures);
     }
     if (existing?.status === PriceStatus.PUBLISHED) {
