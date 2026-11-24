@@ -86,23 +86,64 @@ export class HttpBocFetcher implements BocFetcher {
     }
   }
 
-  private async download(url: string): Promise<Buffer | null> {
-    try {
-      const response = await fetch(url, {
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      });
-      if (!response.ok) return null;
-      const length = Number(response.headers.get('content-length') ?? 0);
-      if (length > MAX_BYTES) return null;
-      const document = Buffer.from(await response.arrayBuffer());
-      if (document.length > MAX_BYTES || !isPdf(document)) return null;
-      return document;
-    } catch (error) {
-      this.logger.warn(
-        `Could not download ${url}: ${(error as Error).message}`,
-      );
-      return null;
+  private download(url: string): Promise<Buffer | null> {
+    return downloadBoc(url, this.logger);
+  }
+}
+
+/**
+ * Bulletins of past days, straight from where the BRVM keeps its files (the
+ * listing page only shows recent ones). Old bulletins are named
+ * `boc_YYYYMMDD.pdf` up to 2021 and `boc_YYYYMMDD_2.pdf` since, so the likelier
+ * name is tried first. Waits `pauseMs` before every request, to be polite to
+ * brvm.org during a long backfill.
+ */
+export class ArchivedBocFetcher implements BocFetcher {
+  private readonly logger = new Logger(ArchivedBocFetcher.name);
+  private readonly filesUrl: string;
+  /** Requests made, for the backfill report. */
+  requests = 0;
+
+  constructor(
+    filesUrl: string = DEFAULT_BOC_FILES_URL,
+    private readonly pauseMs = 2000,
+  ) {
+    this.filesUrl = filesUrl.replace(/\/+$/, '');
+  }
+
+  async fetch(tradingDate: string): Promise<FetchedBoc | null> {
+    const day = tradingDate.replace(/-/g, '');
+    const names = [`boc_${day}.pdf`, `boc_${day}_2.pdf`];
+    if (tradingDate >= '2022') names.reverse();
+    for (const name of names) {
+      const url = `${this.filesUrl}/${name}`;
+      await new Promise((resolve) => setTimeout(resolve, this.pauseMs));
+      this.requests++;
+      const document = await downloadBoc(url, this.logger);
+      if (document) return { document, sourceUrl: url };
     }
+    return null;
+  }
+}
+
+/** A BOC PDF from a URL, or null when it is not there or not a PDF. */
+async function downloadBoc(
+  url: string,
+  logger: Logger,
+): Promise<Buffer | null> {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!response.ok) return null;
+    const length = Number(response.headers.get('content-length') ?? 0);
+    if (length > MAX_BYTES) return null;
+    const document = Buffer.from(await response.arrayBuffer());
+    if (document.length > MAX_BYTES || !isPdf(document)) return null;
+    return document;
+  } catch (error) {
+    logger.warn(`Could not download ${url}: ${(error as Error).message}`);
+    return null;
   }
 }
 

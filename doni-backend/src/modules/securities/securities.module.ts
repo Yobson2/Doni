@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from '@common/mail/mail.module';
 import { User } from '@modules/users/entities/user.entity';
+import { BocBackfillService } from './boc/boc-backfill.service';
 import { BocBulletin } from './boc/boc-bulletin.entity';
 import { BOC_FETCHER, HttpBocFetcher } from './boc/boc-fetcher';
 import { BocIngestionJob } from './boc/boc-ingestion.job';
@@ -70,6 +71,7 @@ import {
     BocIngestionService,
     BocReviewService,
     BocIngestionJob,
+    BocBackfillService,
   ],
   exports: [PRICE_SOURCE, CorporateActionsService, ReferenceDividendsService],
 })
