@@ -123,4 +123,4 @@ The logo, colours and icon set are described in [`docs/brand/logo.md`](../docs/b
 
 ## Deployment
 
-The frontend is a static build (`dist/`). `vercel.json` configures Vercel (SPA rewrites to `index.html`). See [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md), including the caveat that the `Dockerfile` in this folder does not build inside the pnpm workspace as written.
+The frontend is a static build (`dist/`). `vercel.json` configures Vercel (SPA rewrites to `index.html`). The `Dockerfile` in this folder serves the build with nginx; build it from the repository root (`docker build -f doni-frontend/Dockerfile .`). See [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md).

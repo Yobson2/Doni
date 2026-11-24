@@ -1,7 +1,7 @@
 # Deployment
 
 > [!IMPORTANT]
-> Doni has **no production deployment yet**: [issue #6](https://github.com/Yobson2/Doni/issues/6) is open. This page describes the target setup chosen in [ADR 0013](adr/0013-eu-hosting-with-pitr.md) and what the repository provides for it. Read the [caveats](#caveats) before relying on the Dockerfiles.
+> Doni has **no production deployment yet**: [issue #6](https://github.com/Yobson2/Doni/issues/6) is open. This page describes the target setup chosen in [ADR 0013](adr/0013-eu-hosting-with-pitr.md) and what the repository provides for it.
 
 ## Target setup
 
@@ -38,7 +38,18 @@ APP_NAME=Doni
 HISTORY_PUBLIC=false              # until the BRVM licence gate is cleared (ADR 0003, 0018)
 ```
 
-The Docker image already sets `NODE_ENV=production` and `RUNNING_IN_DOCKER=true`.
+### Docker image
+
+Both Dockerfiles build from the **repository root**, so the image installs exactly the versions in the workspace lockfile (`pnpm install --frozen-lockfile`). The root [`.dockerignore`](../.dockerignore) keeps `node_modules`, builds, `.env` files and other local files out of the context.
+
+```bash
+docker build -f doni-backend/Dockerfile -t doni-backend .
+docker run -p 3000:3000 --env-file doni-backend/.env doni-backend
+```
+
+With `NODE_ENV` set to `production` (or `staging`), the database connection always uses TLS, so the database must accept TLS connections. `DB_SSL_REJECT_UNAUTHORIZED` and `DB_CA_CERT` control how its certificate is checked.
+
+The image runs as a non-root user, contains only production dependencies, and already sets `NODE_ENV=production` and `RUNNING_IN_DOCKER=true`. When building on a hosting platform, set the build context to the repository root and the Dockerfile path to `doni-backend/Dockerfile`.
 
 ### Migrations
 
@@ -89,7 +100,17 @@ An app on `*.vercel.app` calling an API on an unrelated domain would lose its se
 
 ### Static hosting elsewhere
 
-`pnpm --filter doni-frontend build` produces a static site in `doni-frontend/dist/`. Any static host works if it falls back to `index.html` for unknown paths and serves `sw.js` and `index.html` without long-lived caching. `doni-frontend/nginx.conf` is an example (SPA fallback, one-year cache on hashed `/assets`).
+`pnpm --filter doni-frontend build` produces a static site in `doni-frontend/dist/`. Any static host works if it falls back to `index.html` for unknown paths and serves `sw.js` and `index.html` without long-lived caching.
+
+### Docker (nginx)
+
+`doni-frontend/Dockerfile` builds the app and serves it with nginx (`doni-frontend/nginx.conf`: SPA fallback, one-year cache on hashed `/assets`). Build from the repository root; `VITE_API_URL` is a build argument because Vite reads it at build time:
+
+```bash
+docker build -f doni-frontend/Dockerfile \
+  --build-arg VITE_API_URL=https://api.example.com -t doni-frontend .
+docker run -p 8080:80 doni-frontend
+```
 
 ### Production build checks
 
@@ -112,12 +133,3 @@ pnpm lighthouse     # installability
 | Heartbeat | `* * * * *` (every minute) | Shows the job runner is alive |
 
 Historical backfill is a one-off, manual command, never scheduled. See the [backend README](../doni-backend/README.md#historical-boc-backfill-adr-0018).
-
-## Caveats
-
-The Dockerfiles predate the move to a single pnpm workspace, whose only lockfile is `pnpm-lock.yaml` at the repository root:
-
-- **`doni-frontend/Dockerfile`** copies `pnpm-lock.yaml` from its own folder, which does not exist, so `docker build doni-frontend` fails as written. Prefer Vercel (or the static build above) for the frontend.
-- **`doni-backend/Dockerfile`** finds no lockfile in `doni-backend/` and falls back to an unlocked `yarn install`, so dependency versions are not pinned to the ones CI tested. Make the image install from the workspace lockfile before using it in production.
-
-These are infrastructure fixes that belong with [#6](https://github.com/Yobson2/Doni/issues/6). This documentation does not apply them.

@@ -343,7 +343,14 @@ Email and password ([ADR 0011](docs/adr/0011-auth-session-model.md)):
 
 The target setup ([ADR 0013](docs/adr/0013-eu-hosting-with-pitr.md)) is the **frontend on Vercel** (`doni-frontend/vercel.json`), the **backend as one managed container** (`doni-backend/Dockerfile`) and **managed PostgreSQL in an EU region with point-in-time recovery**, with migrations run on each deploy. The production deployment itself is still an open task ([#6](https://github.com/Yobson2/Doni/issues/6)).
 
-Step-by-step instructions and caveats: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
+Both Dockerfiles build from the repository root:
+
+```bash
+docker build -f doni-backend/Dockerfile -t doni-backend .
+docker build -f doni-frontend/Dockerfile --build-arg VITE_API_URL=https://api.example.com -t doni-frontend .
+```
+
+Step-by-step instructions: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ## Project status
 

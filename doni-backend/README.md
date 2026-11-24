@@ -290,15 +290,14 @@ Key variables:
 pnpm build
 pnpm start:prod
 
-# Or build the Docker image
-docker build -t doni-backend .
-docker run -p 3000:3000 --env-file .env doni-backend
+# Or build the Docker image, from the repository root (the workspace
+# lockfile must be in the build context)
+docker build -f doni-backend/Dockerfile -t doni-backend .
+docker run -p 3000:3000 --env-file doni-backend/.env doni-backend
 ```
 
-The `Dockerfile` predates the pnpm workspace: it finds no lockfile in this
-folder and installs dependencies unlocked. See
-[`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md) for migrations on deploy and
-this caveat.
+See [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md) for the image and for
+running migrations on deploy.
 
 ## License
 
