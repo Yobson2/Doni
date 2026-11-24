@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { ThrottlerModuleOptions, getOptionsToken } from '@nestjs/throttler';
 import { AppModule } from '../../src/app.module';
 import { configureApp } from '../../src/app.setup';
@@ -11,6 +11,8 @@ interface TestAppOptions {
    * keeps them.
    */
   rateLimit?: boolean;
+  /** Replaces providers before the app compiles, e.g. a fake BOC fetcher. */
+  override?: (builder: TestingModuleBuilder) => TestingModuleBuilder;
 }
 
 /** Boots the full AppModule against the test database, Postgres only. */
@@ -26,6 +28,7 @@ export async function createTestApp(
     };
     builder = builder.overrideProvider(getOptionsToken()).useValue(unlimited);
   }
+  if (options.override) builder = options.override(builder);
   const moduleFixture = await builder.compile();
 
   const app = moduleFixture.createNestApplication();

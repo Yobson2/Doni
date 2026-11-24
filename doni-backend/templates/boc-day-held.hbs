@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>BOC held for review</title></head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h1>{{headline}}</h1>
+  <p>Trading day: <strong>{{tradingDate}}</strong></p>
+  <p>Source: {{sourceUrl}}</p>
+  <p>Users keep seeing the last published trading day until an admin reviews this one.</p>
+  <ul>
+    {{#each reasons}}
+    <li>{{this}}</li>
+    {{/each}}
+  </ul>
+  <p>Review it in Doni: Admin &gt; Bulletins.</p>
+</body>
+</html>

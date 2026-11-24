@@ -91,6 +91,21 @@ pg-boss itself on startup). `JobsService` starts and stops with the app; to
 add a scheduled job, call `jobs.schedule(name, cron, handler)` from a
 provider's `onApplicationBootstrap` (see `src/common/jobs/heartbeat.job.ts`).
 
+### Daily BOC ingestion
+
+`BocIngestionJob` (`src/modules/securities/boc/`) runs on weekdays at 18:30
+and 21:30, Abidjan time. For the day's session it downloads the BOC from
+brvm.org (link found on the bulletins listing page, falling back to
+`boc_YYYYMMDD_2.pdf` / `boc_YYYYMMDD.pdf`), stores the original PDF and its
+SHA-256 in `boc_bulletins`, reads it (`BocParser`, 2026 layout) and runs the
+automatic checks (`boc-checks.ts`). If every check passes the day's prices are
+published; otherwise the day is held as `pending_review`, never served, and
+every active admin is emailed the reasons (Mailpit locally). Admins review
+held days at `/admin/bulletins` (API: `/api/bulletins`). Re-running a day with
+the same PDF changes nothing; a new PDF replaces a held day; a published day is
+never overwritten by ingestion. When a day is published, `boc.day-published`
+is emitted (`@nestjs/event-emitter`) for anything that reacts to new prices.
+
 Rate limiting (`@nestjs/throttler`) keeps its counters in process memory,
 which suits a single backend instance (ADR 0009).
 
@@ -148,6 +163,12 @@ docker compose logs -f     # View logs
 | `GET` | `/api/users/:id` | Admin | Read an account |
 | `PATCH` | `/api/users/:id` | Admin | Update an account |
 | `DELETE` | `/api/users/:id` | Admin | Deactivate an account |
+| `GET` | `/api/bulletins` | Admin | Ingested BOCs (`?status=pending_review` for held days) |
+| `GET` | `/api/bulletins/:date` | Admin | One day's BOC: rows read and failed checks |
+| `GET` | `/api/bulletins/:date/document` | Admin | The original BOC PDF |
+| `POST` | `/api/bulletins/:date/ingest` | Admin | Fetch and ingest that day's BOC now |
+| `PATCH` | `/api/bulletins/:date` | Admin | Correct a held day's values (checks run again) |
+| `POST` | `/api/bulletins/:date/publish` | Admin | Publish a held day |
 
 No or invalid access token: `401`. Authenticated without the required role: `403`.
 
@@ -221,6 +242,7 @@ Key variables:
 - `DB_*` — PostgreSQL connection
 - `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` — Token signing; both required and distinct (boot fails otherwise)
 - `JOBS_*` — Job runner tuning (optional)
+- `BOC_*` — Daily BOC ingestion schedule and source URLs (optional)
 - `MAIL_*` — SMTP email
 
 ## Production Build

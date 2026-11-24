@@ -18,6 +18,7 @@
     "skipToMain": "Aller au contenu principal",
     "securities": "Valeurs",
     "adminCatalogue": "Catalogue et cours",
+    "adminBulletins": "Bulletins à revoir",
     "portfolio": "Mon portefeuille",
     "watchlist": "Ma liste de suivi"
   },
@@ -518,6 +519,49 @@
           "sourceNoticeUrlHelp": "Le lien de l’avis publié sur brvm.org, montré aux utilisateurs."
         }
       }
+    },
+    "bulletins": {
+      "title": "Bulletins en attente de revue",
+      "description": "Les BOC récupérés chaque soir qui n’ont pas passé un contrôle automatique. Tant qu’une séance n’est pas publiée, les utilisateurs voient la dernière séance validée.",
+      "none": "Aucune séance en attente : tous les BOC récupérés ont été publiés.",
+      "heldDays": "Séances en attente",
+      "failureCount_one": "{{count}} contrôle échoué",
+      "failureCount_other": "{{count}} contrôles échoués",
+      "dayTitle": "Séance du {{date}}",
+      "status": {
+        "pending_review": "En attente de revue",
+        "published": "Publiée"
+      },
+      "source": "BOC n° {{reference}} (PDF d’origine)",
+      "failures": "Contrôles échoués",
+      "noFailures": "Tous les contrôles passent désormais.",
+      "checks": {
+        "trading_date": "Date de séance",
+        "readable": "Lecture du PDF",
+        "securities_present": "Valeurs présentes",
+        "variation_limits": "Seuils de variation",
+        "index_consistency": "Cohérence des indices",
+        "volumes": "Volumes",
+        "agrees_with_published": "Cours déjà publiés"
+      },
+      "rows": "Valeurs lues dans le bulletin",
+      "rowsHelp": "Les valeurs et indices du catalogue, tels que lus dans le BOC. Corrigez une valeur mal lue en la recopiant du PDF : les contrôles sont relancés.",
+      "columns": {
+        "security": "Valeur",
+        "previous": "Cours précédent",
+        "close": "Clôture / valeur",
+        "variation": "Variation",
+        "volume": "Volume"
+      },
+      "notTraded": "non cotée ce jour",
+      "notInCatalogue_one": "{{count}} valeur du bulletin n’est pas au catalogue et n’est pas enregistrée.",
+      "notInCatalogue_other": "{{count}} valeurs du bulletin ne sont pas au catalogue et ne sont pas enregistrées.",
+      "valueOf": "Valeur de {{name}}",
+      "saveCorrections": "Enregistrer les corrections",
+      "corrected": "Corrections enregistrées, contrôles relancés.",
+      "publish": "Publier la séance",
+      "publishHelp": "Publier rend les cours de cette séance visibles par tous les utilisateurs, même si un contrôle échoue encore.",
+      "published": "Séance du {{date}} publiée."
     }
   },
   "portfolio": {

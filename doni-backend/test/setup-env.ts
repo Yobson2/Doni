@@ -18,6 +18,8 @@ const defaults: Record<string, string> = {
   // Check schedules every second so scheduled jobs run within the test.
   JOBS_CRON_MONITOR_INTERVAL_SECONDS: '1',
   JOBS_CRON_WORKER_INTERVAL_SECONDS: '1',
+  // Never fetch real BOCs from a test: the ingestion suite drives it itself.
+  BOC_INGESTION_CRON: 'off',
 };
 
 for (const [key, value] of Object.entries(defaults)) {
