@@ -29,6 +29,14 @@ _Avoid_: price provider, price API, feed
 The status of a trading day whose ingested data failed an automatic check. The day is held for an admin to inspect and its prices are never shown to users, who keep seeing the last validated date.
 _Avoid_: draft, unverified, error day
 
+**BOC ingestion**:
+The automatic run, each trading-day evening, that downloads the day's BOC, keeps the original PDF with its checksum, reads it and runs the automatic checks. The day's prices are then published, or held as pending_review. Running it again for the same day and the same PDF changes nothing.
+_Avoid_: scraping, import, sync
+
+**Automatic check**:
+One of the tests an ingested BOC must pass before its prices are published: the bulletin is for the expected day and fully readable, every security in the catalogue is listed, no daily move exceeds the BRVM variation limit, index values are consistent, and volumes are non-negative and add up. Each failure gives a readable reason shown to the admin who reviews the day.
+_Avoid_: validation (unqualified), rule
+
 **Corporate action**:
 An issuer decision that changes the quantity or terms of a security held (split, reverse split, free-share allotment, rights issue), recorded with its effective date and its source BRVM notice.
 _Avoid_: event, adjustment (on its own)

@@ -84,3 +84,42 @@ export class UnknownSectorError extends BaseAppException {
     );
   }
 }
+
+/** No BOC has been stored for that trading day. */
+export class BulletinNotFoundError extends BaseAppException {
+  constructor(tradingDate: string) {
+    super(
+      `No BOC stored for ${tradingDate}`,
+      HttpStatus.NOT_FOUND,
+      CatalogueErrorCode.BULLETIN_NOT_FOUND,
+      { tradingDate },
+    );
+  }
+}
+
+/**
+ * The trading day is already published: only a held (pending_review) day is
+ * corrected or published from its bulletin.
+ */
+export class BulletinNotHeldError extends BaseAppException {
+  constructor(tradingDate: string) {
+    super(
+      `The BOC of ${tradingDate} is already published`,
+      HttpStatus.CONFLICT,
+      CatalogueErrorCode.BULLETIN_NOT_HELD,
+      { tradingDate },
+    );
+  }
+}
+
+/** A correction names a security or index the bulletin does not list. */
+export class BulletinUnknownRowError extends BaseAppException {
+  constructor(tradingDate: string, code: string) {
+    super(
+      `The BOC of ${tradingDate} has no row for ${code}`,
+      HttpStatus.BAD_REQUEST,
+      CatalogueErrorCode.BULLETIN_UNKNOWN_ROW,
+      { tradingDate, code },
+    );
+  }
+}

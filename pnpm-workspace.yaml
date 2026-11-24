@@ -13,3 +13,8 @@ ignoredBuiltDependencies:
   - '@scarf/scarf'
   - '@swc/core'
   - esbuild
+
+# Optional dependencies never installed. canvas is pdf.js's optional renderer
+# (a native build); BOC parsing only extracts text and does not need it.
+ignoredOptionalDependencies:
+  - canvas
