@@ -81,6 +81,7 @@ pnpm migration:run       # Apply pending migrations
 pnpm migration:revert    # Revert the last migration
 pnpm migration:generate  # Generate a migration from entity changes
 pnpm seed:catalogue      # Add seed securities and real BOC prices (only what is missing)
+pnpm backfill:boc --from YYYY-MM-DD --to YYYY-MM-DD  # Historical BOC backfill (see below)
 ```
 
 ## Background and scheduled jobs
@@ -97,7 +98,9 @@ provider's `onApplicationBootstrap` (see `src/common/jobs/heartbeat.job.ts`).
 and 21:30, Abidjan time. For the day's session it downloads the BOC from
 brvm.org (link found on the bulletins listing page, falling back to
 `boc_YYYYMMDD_2.pdf` / `boc_YYYYMMDD.pdf`), stores the original PDF and its
-SHA-256 in `boc_bulletins`, reads it (`BocParser`, 2026 layout) and runs the
+SHA-256 in `boc_bulletins`, reads it (`BocDocumentParser`, which detects the
+layout and reads 2026 bulletins with `boc-parser.ts` and the 2016 to 2025
+layouts with `boc-legacy-parser.ts`; an unknown layout holds the day) and runs the
 automatic checks (`boc-checks.ts`). If every check passes the day's prices are
 published; otherwise the day is held as `pending_review`, never served, and
 every active admin is emailed the reasons (Mailpit locally). Admins review
@@ -105,6 +108,35 @@ held days at `/admin/bulletins` (API: `/api/bulletins`). Re-running a day with
 the same PDF changes nothing; a new PDF replaces a held day; a published day is
 never overwritten by ingestion. When a day is published, `boc.day-published`
 is emitted (`@nestjs/event-emitter`) for anything that reacts to new prices.
+
+### Historical BOC backfill (ADR 0018)
+
+A one-time command loads price and index history from past BOCs, through the
+same ingestion service and automatic checks:
+
+```bash
+pnpm --filter doni-backend backfill:boc --from 2016-01-01 --to 2025-12-31 --report ../docs/backfill-report.md [--pause-ms 2000] [--retry-held]
+```
+
+It walks every weekday, downloads `boc_YYYYMMDD.pdf` / `boc_YYYYMMDD_2.pdf`
+from brvm.org with a pause before each request (at most two per day, about
+30 minutes per year at the default pause), and writes a report (days imported,
+held by reason, not found, securities not in the catalogue). It can be stopped
+and run again: a stored day is not downloaded again (a held one only with
+`--retry-held`), a published day or a day stored by the daily ingestion is
+never touched. Held days send no email each; admins get one summary at the end
+and review them like any held day. In the backfill, a bulletin must list only
+the catalogued securities and indices already priced on an earlier day (a
+security listed later is not missing from an older bulletin). Securities no
+longer in the catalogue (delisted, renamed) are read but not stored, and
+counted in the report. Bulletins before mid-2016 are not on brvm.org.
+
+Backfilled bulletins have `origin = 'backfill'`. **Licence gate:** their prices
+are served to users only when `HISTORY_PUBLIC=true` (default off), until the
+BRVM's redistribution terms cover historical data (ADR 0003). The gate lives in
+`DatabasePriceSource`, so the catalogue, company pages, indices, valuation,
+returns and benchmark, and watchlist all follow it; admins still see the
+bulletins on the review screens.
 
 Rate limiting (`@nestjs/throttler`) keeps its counters in process memory,
 which suits a single backend instance (ADR 0009).
@@ -243,6 +275,7 @@ Key variables:
 - `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` — Token signing; both required and distinct (boot fails otherwise)
 - `JOBS_*` — Job runner tuning (optional)
 - `BOC_*` — Daily BOC ingestion schedule and source URLs (optional)
+- `HISTORY_PUBLIC` — `true` to show backfilled price history to users once the licence gate is cleared (default `false`)
 - `MAIL_*` — SMTP email
 
 ## Production Build

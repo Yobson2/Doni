@@ -3517,6 +3517,14 @@
           "sourceNoticeUrl"
         ]
       },
+      "BulletinOrigin": {
+        "type": "string",
+        "enum": [
+          "daily",
+          "backfill"
+        ],
+        "description": "daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on"
+      },
       "BocCheck": {
         "type": "string",
         "enum": [
@@ -3576,6 +3584,14 @@
             "nullable": true,
             "example": "215"
           },
+          "origin": {
+            "description": "daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulletinOrigin"
+              }
+            ]
+          },
           "sourceUrl": {
             "type": "string",
             "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf"
@@ -3604,6 +3620,7 @@
           "tradingDate",
           "status",
           "reference",
+          "origin",
           "sourceUrl",
           "checksum",
           "fetchedAt",
@@ -3721,6 +3738,14 @@
             "nullable": true,
             "example": "215"
           },
+          "origin": {
+            "description": "daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulletinOrigin"
+              }
+            ]
+          },
           "sourceUrl": {
             "type": "string",
             "example": "https://www.brvm.org/sites/default/files/boc_20261111_2.pdf"
@@ -3761,6 +3786,7 @@
           "tradingDate",
           "status",
           "reference",
+          "origin",
           "sourceUrl",
           "checksum",
           "fetchedAt",

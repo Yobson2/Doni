@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from '@common/mail/mail.module';
 import { User } from '@modules/users/entities/user.entity';
+import { BocBackfillService } from './boc/boc-backfill.service';
 import { BocBulletin } from './boc/boc-bulletin.entity';
 import { BOC_FETCHER, HttpBocFetcher } from './boc/boc-fetcher';
 import { BocIngestionJob } from './boc/boc-ingestion.job';
 import { BocIngestionService } from './boc/boc-ingestion.service';
 import { BocNotifier } from './boc/boc-notifier';
-import { BocParser } from './boc/boc-parser';
+import { BocDocumentParser } from './boc/boc-layout';
 import { BocReviewService } from './boc/boc-review.service';
 import { BulletinsController } from './boc/bulletins.controller';
 import { CatalogueService } from './catalogue.service';
@@ -64,12 +65,13 @@ import {
     ReferenceDividendsService,
     { provide: PRICE_SOURCE, useClass: DatabasePriceSource },
     // Daily BOC ingestion (the write side of the PriceSource).
-    { provide: PRICE_DOCUMENT_PARSER, useClass: BocParser },
+    { provide: PRICE_DOCUMENT_PARSER, useClass: BocDocumentParser },
     { provide: BOC_FETCHER, useClass: HttpBocFetcher },
     BocNotifier,
     BocIngestionService,
     BocReviewService,
     BocIngestionJob,
+    BocBackfillService,
   ],
   exports: [PRICE_SOURCE, CorporateActionsService, ReferenceDividendsService],
 })

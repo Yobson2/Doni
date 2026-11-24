@@ -1099,6 +1099,11 @@ export interface components {
             /** @example https://www.brvm.org/fr/avis/example */
             sourceNoticeUrl: string;
         };
+        /**
+         * @description daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on
+         * @enum {string}
+         */
+        BulletinOrigin: "daily" | "backfill";
         /** @enum {string} */
         BocCheck: "trading_date" | "readable" | "securities_present" | "variation_limits" | "index_consistency" | "volumes" | "agrees_with_published";
         CheckFailureDto: {
@@ -1120,6 +1125,8 @@ export interface components {
             status: components["schemas"]["PriceStatus"];
             /** @example 215 */
             reference: string | null;
+            /** @description daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on */
+            origin: components["schemas"]["BulletinOrigin"];
             /** @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf */
             sourceUrl: string;
             /** @description SHA-256 of the original PDF, hex */
@@ -1174,6 +1181,8 @@ export interface components {
             status: components["schemas"]["PriceStatus"];
             /** @example 215 */
             reference: string | null;
+            /** @description daily: the daily ingestion; backfill: the historical backfill, whose prices users see only once HISTORY_PUBLIC is on */
+            origin: components["schemas"]["BulletinOrigin"];
             /** @example https://www.brvm.org/sites/default/files/boc_20261111_2.pdf */
             sourceUrl: string;
             /** @description SHA-256 of the original PDF, hex */

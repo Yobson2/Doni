@@ -144,6 +144,28 @@ describe('BOC checks', () => {
     });
   });
 
+  it('expects only what a historical bulletin should list, when told (backfill)', () => {
+    // BOAB and BRVM-X are catalogued but were listed after this day.
+    const ctx = context({
+      catalogueTickers: ['SNTS', 'ORAC', 'SICC', 'BOAB'],
+      catalogueIndexCodes: ['BRVM-C', 'BRVM-X'],
+      expected: { tickers: ['SNTS', 'ORAC'], indexCodes: ['BRVM-C'] },
+    });
+    expect(evaluate(goodDay(), ctx).failures).toEqual([]);
+
+    // One that was priced before and is missing still holds the day.
+    const missing = context({
+      catalogueTickers: ['SNTS', 'ORAC', 'SICC', 'BOAB'],
+      expected: { tickers: ['BOAB'], indexCodes: ['BRVM-X'] },
+    });
+    expect(
+      evaluate(goodDay(), missing).failures.map((f) => [f.check, f.subject]),
+    ).toEqual([
+      [BocCheck.SECURITIES_PRESENT, 'BOAB'],
+      [BocCheck.INDEX_CONSISTENCY, 'BRVM-X'],
+    ]);
+  });
+
   it('holds a day when a move exceeds the BRVM daily variation limit', () => {
     const day = goodDay();
     // 4000 to 4400 is +10%, beyond ±7.5%.

@@ -33,6 +33,18 @@ _Avoid_: draft, unverified, error day
 The automatic run, each trading-day evening, that downloads the day's BOC, keeps the original PDF with its checksum, reads it and runs the automatic checks. The day's prices are then published, or held as pending_review. Running it again for the same day and the same PDF changes nothing.
 _Avoid_: scraping, import, sync
 
+**BOC layout**:
+The way a BOC is printed (which indices, tables and columns, in which order). The BRVM has changed it several times; Doni recognises each known layout from what the bulletin prints, never from its date, and holds a bulletin in an unknown layout.
+_Avoid_: format, template, version
+
+**Historical backfill**:
+The one-time loading of past BOCs (from mid-2016) through the BOC ingestion and its automatic checks. Backfilled prices are hidden from users until the licence gate is cleared.
+_Avoid_: import, history sync, migration
+
+**Licence gate**:
+The condition, under ADR 0003, that the BRVM's redistribution terms cover a kind of data before Doni shows it to users. For historical prices it is the `HISTORY_PUBLIC` setting, off until the terms cover historical data.
+_Avoid_: paywall, feature toggle (on its own)
+
 **Automatic check**:
 One of the tests an ingested BOC must pass before its prices are published: the bulletin is for the expected day and fully readable, every security in the catalogue is listed, no daily move exceeds the BRVM variation limit, index values are consistent, and volumes are non-negative and add up. Each failure gives a readable reason shown to the admin who reviews the day.
 _Avoid_: validation (unqualified), rule

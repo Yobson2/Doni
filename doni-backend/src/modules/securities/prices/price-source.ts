@@ -75,6 +75,12 @@ export interface ParsedTradingDay {
   tradingDate: string;
   /** The bulletin's number, e.g. "215", when printed. */
   reference: string | null;
+  /**
+   * Which layout of the source document was read (e.g. "2026",
+   * "sector-2018"), when the source has several. Absent on days stored before
+   * layouts were told apart.
+   */
+  layout?: string;
   securities: ParsedSecurityPrice[];
   indices: ParsedIndexValue[];
   /** Figures printed twice or as totals, which checks compare with the rows. */
